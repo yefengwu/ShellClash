@@ -23,7 +23,7 @@
       { "rule_set": [ "tld-proxy" ], "outbound": "🧱 代理域名" },
       { "rule_set": [ "proxy" ], "outbound": "🧱 代理域名" },
       { "rule_set": [ "cn" ], "outbound": "🎯 本地直连" },
-      { "rule_set": [ "privateip" ], "outbound": "🎯 本地直连" },
+      { "ip_is_private": true, "outbound": "🎯 本地直连" },
       { "rule_set": [ "telegramip" ], "outbound": "📲 电报消息" },
 
       { "action": "resolve", "server": "dns_proxy", "strategy": "prefer_ipv4", "match_only": true},
@@ -63,11 +63,11 @@
         "download_detour": "DIRECT"
       },
       {
-        "tag": "privateip",
+        "tag": "telegramip",
         "type": "remote",
         "format": "binary",
-        "path": "./ruleset/privateip.srs",
-        "url": "https://testingcf.jsdelivr.net/gh/DustinWin/ruleset_geodata@sing-box-ruleset/privateip.srs",
+        "path": "./ruleset/telegramip.srs",
+        "url": "https://testingcf.jsdelivr.net/gh/DustinWin/ruleset_geodata@sing-box-ruleset/telegramip.srs",
         "download_detour": "DIRECT"
       },
       {
@@ -76,14 +76,6 @@
         "format": "binary",
         "path": "./ruleset/cnip.srs",
         "url": "https://testingcf.jsdelivr.net/gh/DustinWin/ruleset_geodata@sing-box-ruleset/cnip.srs",
-        "download_detour": "DIRECT"
-      },
-      {
-        "tag": "telegramip",
-        "type": "remote",
-        "format": "binary",
-        "path": "./ruleset/telegramip.srs",
-        "url": "https://testingcf.jsdelivr.net/gh/DustinWin/ruleset_geodata@sing-box-ruleset/telegramip.srs",
         "download_detour": "DIRECT"
       }
     ],
