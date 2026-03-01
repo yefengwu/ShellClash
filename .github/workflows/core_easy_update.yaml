@@ -20,6 +20,7 @@ jobs:
           [ "${{ inputs.tag1 }}" = singbox ] && repo="SagerNet/sing-box"
           [ "${{ inputs.tag1 }}" = singboxr ] && repo="SagerNet/sing-box"
           latest_tag=$(curl -s "https://api.github.com/repos/$repo/releases/latest" | jq -r .tag_name)
+{{ inputs.tag1 }}" = singboxr ] && latest_tag="${latest_tag}-reF1nd"
           echo "version=$latest_tag" >> $GITHUB_OUTPUT
           
   update_meta_upx:
