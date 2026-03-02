@@ -8,9 +8,9 @@ proxy-groups:
   - {name: 🪟 微软服务, type: select, proxies: [🎯 本地直连, 🚀 节点选择]}
   - {name: 🇬 谷歌服务, type: select, proxies: [🎯 本地直连, 🚀 节点选择]}
   - {name: 🍎 苹果服务, type: select, proxies: [🎯 本地直连, 🚀 节点选择]}
-  - {name: 🛡️ 直连域名, type: select, proxies: [🎯 本地直连, 🚀 节点选择]}
-  - {name: 🀄️ 直连 IP, type: select, proxies: [🎯 本地直连, 🚀 节点选择]}
-  - {name: 🧱 代理域名, type: select, proxies: [🚀 节点选择, 🎯 本地直连]}
+  - {name: 🇨🇳 国内域名, type: select, proxies: [🎯 本地直连, 🚀 节点选择]}
+  - {name: 🀄️ 国内 IP, type: select, proxies: [🎯 本地直连, 🚀 节点选择]}
+  - {name: 🌎 国外域名, type: select, proxies: [🚀 节点选择, 🎯 本地直连]}
   - {name: 📲 电报消息, type: select, proxies: [🚀 节点选择, 🇭🇰 香港节点, 🇹🇼 台湾节点, 🇯🇵 日本节点, 🇸🇬 新加坡节点, 🇺🇸 美国节点, 👑 高级节点, 📉 省流节点, {providers_tags}]}
   - {name: 🔒 私有网络, type: select, proxies: [🎯 本地直连], hidden: true}
   - {name: 🐟 漏网之鱼, type: select, proxies: [🚀 节点选择, 🇭🇰 香港节点, 🇹🇼 台湾节点, 🇯🇵 日本节点, 🇸🇬 新加坡节点, 🇺🇸 美国节点, 👑 高级节点, 📉 省流节点, {providers_tags}, 🎯 本地直连]}
@@ -152,9 +152,9 @@ rules:
   - RULE-SET,games-cn,🎮 游戏服务
   - RULE-SET,ai,🤖 AI 平台
   - RULE-SET,networktest,📈 网络测试
-  - RULE-SET,proxy,🧱 代理域名
-  - RULE-SET,cn,🛡️ 直连域名
+  - RULE-SET,proxy,🌎 国外域名
+  - RULE-SET,cn,🇨🇳 国内域名
   - RULE-SET,privateip,🔒 私有网络,no-resolve
-  - RULE-SET,cnip,🀄️ 直连 IP
+  - RULE-SET,cnip,🀄️ 国内 IP
   - RULE-SET,telegramip,📲 电报消息,no-resolve
   - MATCH,🐟 漏网之鱼

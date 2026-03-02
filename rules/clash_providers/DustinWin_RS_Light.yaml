@@ -2,7 +2,7 @@
 proxy-groups:
   - {name: 🚀 节点选择, type: select, proxies: [♻️ 自动选择, 👉 手动选择, 🇭🇰 香港节点, 🇹🇼 台湾节点, 🇯🇵 日本节点, 🇸🇬 新加坡节点, 🇺🇸 美国节点, 👑 高级节点, 📉 省流节点, {providers_tags}]}
   - {name: 🎯 本地直连, type: select, proxies: [DIRECT, 🚀 节点选择]}
-  - {name: 🧱 代理域名, type: select, proxies: [🚀 节点选择, DIRECT]}
+  - {name: 🌎 国外域名, type: select, proxies: [🚀 节点选择, DIRECT]}
   - {name: 📲 电报消息, type: select, proxies: [🚀 节点选择, 🇭🇰 香港节点, 🇹🇼 台湾节点, 🇯🇵 日本节点, 🇸🇬 新加坡节点, 🇺🇸 美国节点, 👑 高级节点, 📉 省流节点, {providers_tags}]}
   - {name: 🐟 漏网之鱼, type: select, proxies: [🚀 节点选择, 🇭🇰 香港节点, 🇹🇼 台湾节点, 🇯🇵 日本节点, 🇸🇬 新加坡节点, 🇺🇸 美国节点, 👑 高级节点, 📉 省流节点, {providers_tags}, 🎯 本地直连]}
 
@@ -75,8 +75,8 @@ rule-providers:
 
 rules:
   - RULE-SET,private,DIRECT
-  - RULE-SET,tld-proxy,🧱 代理域名
-  - RULE-SET,proxy,🧱 代理域名
+  - RULE-SET,tld-proxy,🌎 国外域名
+  - RULE-SET,proxy,🌎 国外域名
   - RULE-SET,cn,🎯 本地直连
   - RULE-SET,privateip,DIRECT,no-resolve
   - RULE-SET,cnip,🎯 本地直连

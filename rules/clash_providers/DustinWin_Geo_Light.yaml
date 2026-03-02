@@ -1,8 +1,8 @@
 #DustinWin-gesite轻量规则
 proxy-groups:
   - {name: 🚀 节点选择, type: select, proxies: [♻️ 自动选择, 👉 手动选择, 🇭🇰 香港节点, 🇹🇼 台湾节点, 🇯🇵 日本节点, 🇸🇬 新加坡节点, 🇺🇸 美国节点, 👑 高级节点, 📉 省流节点, {providers_tags}]}
-  - {name: 🀄️ 直连 IP, type: select, proxies: [🎯 本地直连, 🚀 节点选择]}
-  - {name: 🧱 代理域名, type: select, proxies: [🚀 节点选择, 🎯 本地直连]}
+  - {name: 🀄️ 国内 IP, type: select, proxies: [🎯 本地直连, 🚀 节点选择]}
+  - {name: 🌎 国外域名, type: select, proxies: [🚀 节点选择, 🎯 本地直连]}
   - {name: 📲 电报消息, type: select, proxies: [🚀 节点选择, 🇭🇰 香港节点, 🇹🇼 台湾节点, 🇯🇵 日本节点, 🇸🇬 新加坡节点, 🇺🇸 美国节点, 👑 高级节点, 📉 省流节点, {providers_tags}]}
   - {name: 🔒 私有网络, type: select, proxies: [全球直连], hidden: true}
   - {name: 🐟 漏网之鱼, type: select, proxies: [🚀 节点选择, 🇭🇰 香港节点, 🇹🇼 台湾节点, 🇯🇵 日本节点, 🇸🇬 新加坡节点, 🇺🇸 美国节点, 👑 高级节点, 📉 省流节点, {providers_tags}, 🎯 本地直连]}
@@ -20,9 +20,9 @@ proxy-groups:
 
 rules:
   - GEOSITE,private,🔒 私有网络
-  - GEOSITE,tld-proxy,🧱 代理域名
-  - GEOSITE,proxy,🧱 代理域名
+  - GEOSITE,tld-proxy,🌎 国外域名
+  - GEOSITE,proxy,🌎 国外域名
   - GEOIP,private,🔒 私有网络,no-resolve
-  - GEOIP,cn,🀄️ 直连 IP
+  - GEOIP,cn,🀄️ 国内 IP
   - GEOIP,telegram,📲 电报消息,no-resolve
   - MATCH,🐟 漏网之鱼

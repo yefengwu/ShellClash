@@ -9,9 +9,9 @@
     { "tag": "🪟 微软服务", "type": "selector", "outbounds": [ "🎯 本地直连", "🚀 节点选择" ] },
     { "tag": "🇬 谷歌服务", "type": "selector", "outbounds": [ "🎯 本地直连", "🚀 节点选择" ] },
     { "tag": "🍎 苹果服务", "type": "selector", "outbounds": [ "🎯 本地直连", "🚀 节点选择" ] },
-    { "tag": "🛡️ 直连域名", "type": "selector", "outbounds": [ "🎯 本地直连", "🚀 节点选择" ] },
-    { "tag": "🀄️ 直连 IP", "type": "selector", "outbounds": [ "🎯 本地直连", "🚀 节点选择" ] },
-    { "tag": "🧱 代理域名", "type": "selector", "outbounds": [ "🚀 节点选择", "🎯 本地直连" ] },
+    { "tag": "🇨🇳 国内域名", "type": "selector", "outbounds": [ "🎯 本地直连", "🚀 节点选择" ] },
+    { "tag": "🀄️ 国内 IP", "type": "selector", "outbounds": [ "🎯 本地直连", "🚀 节点选择" ] },
+    { "tag": "🌎 国外域名", "type": "selector", "outbounds": [ "🚀 节点选择", "🎯 本地直连" ] },
     { "tag": "📲 电报消息", "type": "selector", "outbounds": [ "🚀 节点选择", "🇭🇰 香港节点", "🇹🇼 台湾节点", "🇯🇵 日本节点", "🇸🇬 新加坡节点", "🇺🇸 美国节点", "👑 高级节点", "📉 省流节点", {providers_tags} ] },
     { "tag": "🐟 漏网之鱼", "type": "selector", "outbounds": [ "🚀 节点选择", "🇭🇰 香港节点", "🇹🇼 台湾节点", "🇯🇵 日本节点", "🇸🇬 新加坡节点", "🇺🇸 美国节点", "👑 高级节点", "📉 省流节点", {providers_tags}, "🎯 本地直连" ] },
     { "tag": "🎯 本地直连", "type": "direct" },
@@ -36,13 +36,13 @@
       { "rule_set": [ "games-cn" ], "outbound": "🎮 游戏服务" },
       { "rule_set": [ "ai" ], "outbound": "🤖 AI 平台" },
       { "rule_set": [ "networktest" ], "outbound": "📈 网络测试" },
-      { "rule_set": [ "proxy" ], "outbound": "🧱 代理域名" },
-      { "rule_set": [ "cn" ], "outbound": "🛡️ 直连域名" },
+      { "rule_set": [ "proxy" ], "outbound": "🌎 国外域名" },
+      { "rule_set": [ "cn" ], "outbound": "🇨🇳 国内域名" },
       { "ip_is_private": true, "outbound": "🎯 本地直连" },
       { "rule_set": [ "telegramip" ], "outbound": "📲 电报消息" },
 
       { "action": "resolve", "server": "dns_proxy", "strategy": "prefer_ipv4", "match_only": true},
-      { "rule_set": [ "cnip" ], "outbound": "🀄️ 直连 IP" }
+      { "rule_set": [ "cnip" ], "outbound": "🀄️ 国内 IP" }
 
     ],
     "rule_set": [
