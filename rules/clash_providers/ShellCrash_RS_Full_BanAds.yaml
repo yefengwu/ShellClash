@@ -169,13 +169,6 @@ rule-providers:
     behavior: domain
     proxy: DIRECT
     url: "https://testingcf.jsdelivr.net/gh/DustinWin/ruleset_geodata@refs/heads/mihomo-ruleset/games.mrs"
-  gamesip:
-    type: http
-    format: mrs
-    interval: 86400
-    behavior: ipcidr
-    proxy: DIRECT
-    url: "https://testingcf.jsdelivr.net/gh/DustinWin/ruleset_geodata@refs/heads/mihomo-ruleset/gamesip.mrs"
   mediaip:
     type: http
     format: mrs
@@ -247,7 +240,6 @@ rules:
 
   - RULE-SET,proxy,🌐 国际流量
   - RULE-SET,cn,🀄️ 国内流量
-  - RULE-SET,gamesip,🎮 外服游戏
   - RULE-SET,mediaip,🌍 国际媒体
   - RULE-SET,cnip,🀄️ 国内流量
 

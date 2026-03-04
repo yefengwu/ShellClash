@@ -54,7 +54,6 @@
 
       { "action": "resolve", "server": "dns_proxy", "strategy": "prefer_ipv4", "match_only": true},
       { "rule_set": [ "cnip" ], "outbound": "🀄️ 国内 IP" },
-      { "rule_set": [ "gamesip" ], "outbound": "🕹️ 游戏平台" },
       { "rule_set": [ "netflixip" ], "outbound": "🎥 奈飞视频" },
       { "rule_set": [ "mediaip" ], "outbound": "🌍 国外媒体" }
     ],
@@ -193,14 +192,6 @@
         "format": "binary",
         "path": "./ruleset/cnip.srs",
         "url": "https://testingcf.jsdelivr.net/gh/DustinWin/ruleset_geodata@sing-box-ruleset/cnip.srs",
-        "download_detour": "DIRECT"
-      },
-      {
-        "tag": "gamesip",
-        "type": "remote",
-        "format": "binary",
-        "path": "./ruleset/gamesip.srs",
-        "url": "https://testingcf.jsdelivr.net/gh/DustinWin/ruleset_geodata@sing-box-ruleset/gamesip.srs",
         "download_detour": "DIRECT"
       },
       {
