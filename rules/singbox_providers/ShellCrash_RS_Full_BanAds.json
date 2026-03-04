@@ -11,7 +11,7 @@
     { "tag": "🎬 奈飞视频", "type": "selector", "outbounds": ["🚀 节点选择", "🎬 奈飞节点", "🎯 本地直连", "♻️ 自动选择", "🛠️ 手动切换", "🇭🇰 香港节点", "🇹🇼 台湾节点", "🇺🇸 美国节点", "🇯🇵 日本节点", "🇪🇺 欧洲节点", "🇰🇷 韩国节点", "🇸🇬 狮城节点", "👑 高级节点", "📉 省流节点", {providers_tags}] },
     { "tag": "🎬 奈飞节点", "type": "urltest", "use_all_providers": true, "include": "(?i)(NF|奈飞|解锁|Netflix|NETFLIX|Media)" },
     { "tag": "▶️ 油管视频", "type": "selector", "outbounds": ["🚀 节点选择", "🎯 本地直连", "♻️ 自动选择", "🛠️ 手动切换", "🇭🇰 香港节点", "🇹🇼 台湾节点", "🇺🇸 美国节点", "🇯🇵 日本节点", "🇪🇺 欧洲节点", "🇰🇷 韩国节点", "🇸🇬 狮城节点", "👑 高级节点", "📉 省流节点", {providers_tags}] },
-    { "tag": "📢 谷歌推送", "type": "selector", "outbounds": ["🚀 节点选择", "🎯 本地直连", "♻️ 自动选择", "🛠️ 手动切换", "🇭🇰 香港节点", "🇹🇼 台湾节点", "🇺🇸 美国节点", "🇯🇵 日本节点", "🇪🇺 欧洲节点", "🇰🇷 韩国节点", "🇸🇬 狮城节点", "👑 高级节点", "📉 省流节点", {providers_tags}] },    
+    { "tag": "📢 谷歌推送", "type": "selector", "outbounds": ["🚀 节点选择", "🎯 本地直连", "♻️ 自动选择", "🛠️ 手动切换", "🇭🇰 香港节点", "🇹🇼 台湾节点", "🇺🇸 美国节点", "🇯🇵 日本节点", "🇪🇺 欧洲节点", "🇰🇷 韩国节点", "🇸🇬 狮城节点", "👑 高级节点", "📉 省流节点", {providers_tags}] },
     { "tag": "📲 电报消息", "type": "selector", "outbounds": ["🚀 节点选择", "🎯 本地直连", "♻️ 自动选择", "🛠️ 手动切换", "🇭🇰 香港节点", "🇹🇼 台湾节点", "🇺🇸 美国节点", "🇯🇵 日本节点", "🇪🇺 欧洲节点", "🇰🇷 韩国节点", "🇸🇬 狮城节点", "👑 高级节点", "📉 省流节点", {providers_tags}] },
     { "tag": "🌍 国际媒体", "type": "selector", "outbounds": ["🚀 节点选择", "🎯 本地直连", "♻️ 自动选择", "🛠️ 手动切换", "🇭🇰 香港节点", "🇹🇼 台湾节点", "🇺🇸 美国节点", "🇯🇵 日本节点", "🇪🇺 欧洲节点", "🇰🇷 韩国节点", "🇸🇬 狮城节点", "👑 高级节点", "📉 省流节点", {providers_tags}] },
     { "tag": "🌐 国际流量", "type": "selector", "outbounds": ["🚀 节点选择", "🎯 本地直连", "♻️ 自动选择", "🛠️ 手动切换", "🇭🇰 香港节点", "🇹🇼 台湾节点", "🇺🇸 美国节点", "🇯🇵 日本节点", "🇪🇺 欧洲节点", "🇰🇷 韩国节点", "🇸🇬 狮城节点", "👑 高级节点", "📉 省流节点", {providers_tags}] },
@@ -77,7 +77,6 @@
       { "rule_set": ["telegramip"], "outbound": "📲 电报消息" },
 
       { "action": "resolve", "server": "dns_proxy", "strategy": "prefer_ipv4" },
-      { "rule_set": ["gamesip"], "outbound": "🎮 外服游戏" },
       { "rule_set": ["mediaip"], "outbound": "🌍 国际媒体" },
       { "rule_set": ["cnip"], "outbound": "🀄️ 国内流量" }
     ],
@@ -240,14 +239,6 @@
         "format": "binary",
         "path": "./ruleset/telegramip.srs",
         "url": "https://testingcf.jsdelivr.net/gh/DustinWin/ruleset_geodata@refs/heads/sing-box-ruleset/telegramip.srs",
-        "download_detour": "DIRECT"
-      },
-      {
-        "tag": "gamesip",
-        "type": "remote",
-        "format": "binary",
-        "path": "./ruleset/gamesip.srs",
-        "url": "https://testingcf.jsdelivr.net/gh/DustinWin/ruleset_geodata@refs/heads/sing-box-ruleset/gamesip.srs",
         "download_detour": "DIRECT"
       },
       {
