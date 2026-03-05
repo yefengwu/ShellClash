@@ -296,12 +296,48 @@ log_pusher() {
                 read -r -p "请输入对应标号> " res
                 if [ "$res" = 1 ]; then
                     push_Deer=
+                    push_Deer_url=
                     setconfig push_Deer
+                    setconfig push_Deer_url
                 else
                     continue
                 fi
             else
                 # echo -e "\033[33m详细设置指南请参考 https://juewuy.github.io/ \033[0m"
+                comp_box "请选择PushDeer服务器类型：" \
+                    "1) 官方服务器（api2.pushdeer.com）" \
+                    "2) 自建服务器" \
+                    "" \
+                    "0) 返回上级菜单"
+                read -r -p "请输入对应标号> " num
+                case "$num" in
+                0)
+                    continue
+                    ;;
+                2)
+                    comp_box "请输入自建PushDeer服务器地址（不含/message/push）" \
+                        "例如：\033[36mhttps://push.example.com\033[0m"
+                    btm_box "\033[36m请直接输入服务器地址\033[0m" \
+                        "或输入 0 返回上级菜单"
+                    read -r -p "请输入> " url
+                    if [ "$url" = 0 ]; then
+                        continue
+                    elif [ -z "$url" ]; then
+                        msg_alert "\033[31m输入错误，请重新输入！\033[0m"
+                        continue
+                    fi
+                    push_Deer_url=${url%/}
+                    setconfig push_Deer_url "${url%/}"
+                    ;;
+                1)
+                    push_Deer_url=
+                    setconfig push_Deer_url
+                    ;;
+                *)
+                    errornum
+                    continue
+                    ;;
+                esac
                 comp_box "1. 请先前往 \033[32;4mhttp://www.pushdeer.com/official.html\033[0m 扫码安装快应用或下载APP" \
                     "2. 打开快应用/APP，并完成登陆" \
                     "3. \033[33m切换到「设备」标签页，点击右上角的加号，注册当前设备\033[0m" \

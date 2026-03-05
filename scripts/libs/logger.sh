@@ -27,7 +27,8 @@ logger() {
             web_json_post "$url" "$content" &
         }
         [ -n "$push_Deer" ] && {
-            url="https://api2.pushdeer.com/message/push"
+            url="${push_Deer_url%/}"
+            url="${url:-https://api2.pushdeer.com}/message/push"
             content="{\"pushkey\":\"${push_Deer}\",\"text\":\"$log_text\"}"
             web_json_post "$url" "$content" &
         }
