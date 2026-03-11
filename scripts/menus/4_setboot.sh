@@ -4,6 +4,8 @@
 [ -n "$__IS_MODULE_4_SETBOOT_LOADED" ] && return
 __IS_MODULE_4_SETBOOT_LOADED=1
 
+load_lang setboot
+
 allow_autostart() {
     if [ -f /etc/rc.common ] && [ "$(cat /proc/1/comm)" = "procd" ]; then
         /etc/init.d/shellcrash enable
@@ -29,25 +31,25 @@ setboot() {
         [ -z "$start_old" ] && start_old=OFF
 
         if [ -z "$start_delay" ] || [ "$start_delay" = 0 ]; then
-            delay=未设置
+            delay="$SETBOOT_NOT_SET"
         else
-            delay="${start_delay}秒"
+            delay="${start_delay}$SETBOOT_SECOND"
         fi
 
         check_autostart && auto_set="ON" || auto_set="OFF"
         [ "${BINDIR}" = "$CRASHDIR" ] && mini_clash=OFF || mini_clash=ON
         [ -z "$network_check" ] && network_check=ON
-        comp_box "\033[30;47m启动设置菜单\033[0m"
-        content_line "1) 开机自启动：     \033[36m$(printf '%-4s' "$auto_set")\033[0m"
-        content_line "2) 使用保守模式：   \033[36m$(printf '%-4s' "$start_old")\033[0m   ———基于定时任务(每分钟检测)"
-        content_line "3) 设置自启延时：   \033[36m$(printf '%-7s' "$delay")\033[0m ———用于解决自启后服务受限"
-        content_line "4) 启用小闪存模式： \033[36m$(printf '%-4s' "$mini_clash")\033[0m   ———用于闪存空间不足的设备"
-        [ "${BINDIR}" != "$CRASHDIR" ] && content_line "5) 设置小闪存目录： \033[36m${BINDIR}\033[0m"
-        btm_box "6) 自启网络检查：   \033[36m$(printf '%-4s' "$network_check")\033[0m   ———禁用则跳过自启时网络检查" \
-            "7) 查看启动日志" \
+        comp_box "\033[30;47m$SETBOOT_TITLE\033[0m"
+        content_line "1) $SETBOOT_ITEM_AUTO     \033[36m$(printf '%-4s' "$auto_set")\033[0m"
+        content_line "2) $SETBOOT_ITEM_OLD   \033[36m$(printf '%-4s' "$start_old")\033[0m   $SETBOOT_ITEM_OLD_DESC"
+        content_line "3) $SETBOOT_ITEM_DELAY   \033[36m$(printf '%-7s' "$delay")\033[0m $SETBOOT_ITEM_DELAY_DESC"
+        content_line "4) $SETBOOT_ITEM_MINI \033[36m$(printf '%-4s' "$mini_clash")\033[0m   $SETBOOT_ITEM_MINI_DESC"
+        [ "${BINDIR}" != "$CRASHDIR" ] && content_line "5) $SETBOOT_ITEM_MINI_DIR \033[36m${BINDIR}\033[0m"
+        btm_box "6) $SETBOOT_ITEM_NETCHK   \033[36m$(printf '%-4s' "$network_check")\033[0m   $SETBOOT_ITEM_NETCHK_DESC" \
+            "7) $SETBOOT_VIEW_LOG" \
             "" \
-            "0) 返回上级菜单"
-        read -r -p "请输入对应标号> " num
+            "0) $COMMON_BACK"
+        read -r -p "$COMMON_INPUT> " num
         case "$num" in
         "" | 0)
             break
@@ -57,11 +59,11 @@ setboot() {
             if check_autostart; then
                 # 禁止自启动：删除各系统的启动项
                 disable_autostart
-                msg_alert "\033[33m已禁止ShellCrash开机自启动！\033[0m"
+                msg_alert "\033[33m$SETBOOT_AUTO_OFF\033[0m"
             else
                 # 允许自启动：配置各系统的启动项
                 allow_autostart
-                msg_alert "\033[32m已设置ShellCrash开机自启动！\033[0m"
+                msg_alert "\033[32m$SETBOOT_AUTO_ON\033[0m"
             fi
             ;;
         2)
@@ -70,31 +72,31 @@ setboot() {
                 start_old=ON
                 setconfig start_old "$start_old"
                 "$CRASHDIR"/start.sh stop
-                msg_alert "\033[33m改为使用保守模式启动服务！\033[0m"
+                msg_alert "\033[33m$SETBOOT_OLDMODE_ON\033[0m"
             else
                 if grep -qE 'procd|systemd|s6' /proc/1/comm || rc-status -r >/dev/null 2>&1; then
-                    "$CRASHDIR"/start.sh cronset "ShellCrash初始化"
+                    "$CRASHDIR"/start.sh cronset "$SETBOOT_CRON_INIT"
                     start_old=OFF
                     setconfig start_old "$start_old"
                     "$CRASHDIR"/start.sh stop
-                    msg_alert "\033[32m改为使用系统守护进程启动服务！\033[0m"
+                    msg_alert "\033[32m$SETBOOT_OLDMODE_OFF\033[0m"
                 else
-                    msg_alert "\033[31m当前设备不支持以其他模式启动！\033[0m"
+                    msg_alert "\033[31m$SETBOOT_MODE_UNSUPPORTED\033[0m"
                 fi
             fi
             ;;
         3)
-            comp_box "\033[33m如果你的设备启动后可以正常使用，则无需设置！\033[0m" \
-                "\033[36m推荐设置为30～120秒之间，请根据设备问题自行试验\033[0m"
-            read -r -p "请输入启动延迟时间（0～300秒）> " sec
+            comp_box "\033[33m$SETBOOT_DELAY_HINT1\033[0m" \
+                "\033[36m$SETBOOT_DELAY_HINT2\033[0m"
+            read -r -p "$SETBOOT_DELAY_INPUT> " sec
             case "$sec" in
             [0-9] | [0-9][0-9] | [0-2][0-9][0-9] | 300)
                 start_delay=$sec
                 setconfig start_delay "$sec"
-                msg_alert "\033[32m设置成功！\033[0m"
+                msg_alert "\033[32m$SETBOOT_SET_OK\033[0m"
                 ;;
             *)
-                msg_alert "\033[31m输入有误，或超过300秒，请重新输入！\033[0m"
+                msg_alert "\033[31m$SETBOOT_DELAY_INVALID\033[0m"
                 ;;
             esac
             ;;
@@ -102,31 +104,31 @@ setboot() {
             dir_size=$(df "$CRASHDIR" | awk '{ for(i=1;i<=NF;i++){ if(NR==1){ arr[i]=$i; }else{ arr[i]=arr[i]" "$i; } } } END{ for(i=1;i<=NF;i++){ print arr[i]; } }' | grep Ava | awk '{print $2}')
             if [ "$mini_clash" = "OFF" ]; then
                 if [ "$dir_size" -gt 20480 ]; then
-                    msg_alert "\033[33m您的设备空间充足（>20M），无需开启！\033[0m"
+                    msg_alert "\033[33m$SETBOOT_MINI_NEEDED_NO\033[0m"
                 elif [ "$start_old" != 'ON' ] && [ "$(cat /proc/1/comm)" = "systemd" ]; then
-                    msg_alert "\033[33m不支持systemd启动模式，请先启用保守模式！\033[0m"
+                    msg_alert "\033[33m$SETBOOT_SYSTEMD_WARN\033[0m"
                 else
                     [ "$BINDIR" = "$CRASHDIR" ] && BINDIR="$TMPDIR"
-                    msg_alert "\033[32m已经启用小闪存功能！\033[0m" \
-                        "如需更换目录，请使用【设置小闪存目录】功能\033[0m"
+                    msg_alert "\033[32m$SETBOOT_MINI_ENABLED\033[0m" \
+                        "$SETBOOT_MINI_DIR_HINT\033[0m"
                 fi
             else
                 if [ "$dir_size" -lt 8192 ]; then
-                    comp_box "\033[31m您的设备剩余空间不足8M，停用后可能无法正常运行！\033[0m" \
-                        "是否确认停用此功能？"
-                    btm_box "1) 是" \
-                        "0) 否，返回上级菜单"
-                    read -r -p "请输入对应标号> " res
+                    comp_box "\033[31m$SETBOOT_MINI_DISABLE_WARN\033[0m" \
+                        "$SETBOOT_MINI_DISABLE_CONFIRM"
+                    btm_box "1) $SETBOOT_YES" \
+                        "0) $SETBOOT_NO_BACK"
+                    read -r -p "$COMMON_INPUT> " res
                     if [ "$res" = 1 ]; then
                         BINDIR="$CRASHDIR"
-                        msg_alert "\033[33m已经停用小闪存功能！\033[0m"
+                        msg_alert "\033[33m$SETBOOT_MINI_DISABLED\033[0m"
                     else
                         continue
                     fi
                 else
                     rm -rf /tmp/ShellCrash
                     BINDIR="$CRASHDIR"
-                    msg_alert "\033[33m已经停用小闪存功能！\033[0m"
+                    msg_alert "\033[33m$SETBOOT_MINI_DISABLED\033[0m"
                 fi
             fi
             sed -i "s#BINDIR=.*#BINDIR=$BINDIR#" "$CRASHDIR"/configs/command.env
@@ -134,14 +136,14 @@ setboot() {
             ;;
         5)
             while true; do
-                comp_box "\033[33m如设置到内存，则每次开机后都自动重新下载相关文件\033[0m" \
-                    "\033[33m请确保安装源可用裸连，否则会导致启动失败\033[0m"
-                btm_box "1) 使用内存（/tmp）" \
-                    "2) 选择U盘目录" \
-                    "3) 自定义目录" \
+                comp_box "\033[33m$SETBOOT_BINDIR_HINT1\033[0m" \
+                    "\033[33m$SETBOOT_BINDIR_HINT2\033[0m"
+                btm_box "1) $SETBOOT_BINDIR_TMP" \
+                    "2) $SETBOOT_BINDIR_USB" \
+                    "3) $SETBOOT_BINDIR_CUSTOM" \
                     "" \
-                    "0) 返回上级菜单"
-                read -r -p "请输入对应标号> " num
+                    "0) $COMMON_BACK"
+                read -r -p "$COMMON_INPUT> " num
                 case "$num" in
                 "" | 0)
                     break
@@ -152,21 +154,21 @@ setboot() {
                 2)
                     set_usb_dir() {
                         while true; do
-                            comp_box "请选择安装目录："
+                            comp_box "$SETBOOT_SELECT_INSTALL_DIR"
                             du -hL /mnt |
-                                awk '{print NR") "$2"  （已占用的储存空间："$1"）"}' |
+                                awk '{print NR") "$2"  ($SETBOOT_SPACE_USED$1")"}' |
                                 while IFS= read -r line; do
                                     content_line "$line"
                                 done
                             content_line ""
-                            content_line "0) 返回上级菜单"
+                            content_line "0) $COMMON_BACK"
                             separator_line "="
-                            read -r -p "请输入对应标号> " num
+                            read -r -p "$COMMON_INPUT> " num
                             BINDIR=$(du -hL /mnt | awk '{print $2}' | sed -n "$num"p)
                             if [ "$num" = 0 ]; then
                                 return 1
                             elif [ -z "$BINDIR" ]; then
-                                msg_alert "\033[31m输入错误！请重新设置！\033[0m"
+                                msg_alert "\033[31m$SETBOOT_INPUT_ERROR\033[0m"
                             else
                                 return 0
                             fi
@@ -180,13 +182,13 @@ setboot() {
                 3)
                     input_dir() {
                         while true; do
-                            comp_box "\033[36m请直接输入命令语句\033[0m" \
-                                "或输入 0 返回上级菜单"
-                            read -r -p "请输入> " BINDIR
+                            comp_box "\033[36m$SETBOOT_INPUT_CMD\033[0m" \
+                                "$SETBOOT_INPUT_OR_BACK"
+                            read -r -p "$SETBOOT_INPUT> " BINDIR
                             if [ "$BINDIR" = 0 ]; then
                                 return 1
                             elif [ ! -d "$BINDIR" ]; then
-                                msg_alert "\033[31m输入错误！请重新设置！\033[0m"
+                                msg_alert "\033[31m$SETBOOT_INPUT_ERROR\033[0m"
                             fi
                             return 0
                         done
@@ -206,19 +208,19 @@ setboot() {
             done
             ;;
         6)
-            comp_box "\033[33m如果你的设备启动后可以正常使用，则无需变更设置！\033[0m" \
-                "\033[36m禁用时，如果使用了小闪存模式或者rule-set等在线规则，则可能会因无法联网而导致启动失败！\033[0m" \
-                "\033[32m启用时，会导致部分性能较差或者拨号较慢的设备可能会因查询超时导致启动失败！\033[0m"
+            comp_box "\033[33m$SETBOOT_NETCHK_HINT1\033[0m" \
+                "\033[36m$SETBOOT_NETCHK_HINT2\033[0m" \
+                "\033[32m$SETBOOT_NETCHK_HINT3\033[0m"
 
             if [ "$network_check" = "OFF" ]; then
-                content_line "当前\033[33m已禁用\033[0m自启网络检查，是否确认启用？"
+                content_line "$SETBOOT_NETCHK_OFF_CONFIRM"
             else
-                content_line "当前\033[33m已启用\033[0m自启网络检查，是否确认禁用？"
+                content_line "$SETBOOT_NETCHK_ON_CONFIRM"
             fi
             separator_line "-"
-            btm_box "1) 是" \
-                "0) 否，返回上级菜单"
-            read -r -p "请输入对应标号> " res
+            btm_box "1) $SETBOOT_YES" \
+                "0) $SETBOOT_NO_BACK"
+            read -r -p "$COMMON_INPUT> " res
             if [ "$res" = '1' ]; then
                 if [ "$network_check" = "OFF" ]; then
                     network_check=ON
@@ -236,12 +238,12 @@ setboot() {
             if [ -s "$TMPDIR"/ShellCrash.log ]; then
                 line_break
                 echo "==========================================================="
-                grep -v '任务' "$TMPDIR"/ShellCrash.log
+                grep -v "$SETBOOT_TASK_WORD" "$TMPDIR"/ShellCrash.log
                 echo "==========================================================="
                 line_break
                 exit
             else
-                msg_alert "\033[31m未找到相关日志！\033[0m"
+                msg_alert "\033[31m$SETBOOT_LOG_NOT_FOUND\033[0m"
             fi
             ;;
         *)

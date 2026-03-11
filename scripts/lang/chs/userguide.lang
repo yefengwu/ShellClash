@@ -12,3 +12,6 @@ UG_IMPORT_CONFIG="这是运行前的最后一步"
 UG_CONFIG_TIP="你必须拥有一份配置文件才能运行服务！"
 UG_CONFIG_RES="是否立即导入配置文件？"
 UG_FINAL_TIP="很好！现在只需要执行启动就可以愉快的使用了！"
+
+UG_IMPORT_NOW="立即导入"
+UG_IMPORT_LATER="暂不导入"

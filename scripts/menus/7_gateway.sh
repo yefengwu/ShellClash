@@ -7,6 +7,7 @@ __IS_MODULE_7_GATEWAY_LOADED=1
 . "$GT_CFG_PATH"
 . "$CRASHDIR"/menus/check_port.sh
 . "$CRASHDIR"/libs/gen_base64.sh
+load_lang 7_gateway
 
 # 访问与控制主菜单
 gateway() {
@@ -22,8 +23,8 @@ gateway() {
             content_line "7) 配置\033[36mWireguard客户端\033[0m（限Singbox）	\033[32m$wg_service\033[0m"
         }
         btm_box "" \
-            "0) 返回上级菜单"
-        read -r -p "请输入对应标号> " num
+            "0) $COMMON_BACK"
+        read -r -p "$COMMON_INPUT> " num
         case "$num" in
         "" | 0)
             break
@@ -95,8 +96,8 @@ set_fw_wan() {
             "3) 移除指定手动放行端口" \
             "4) 清空全部手动放行端口" \
             "" \
-            "0) 返回上级菜单"
-        read -r -p "请输入对应标号> " num
+            "0) $COMMON_BACK"
+        read -r -p "$COMMON_INPUT> " num
         case $num in
         "" | 0)
             break
@@ -124,7 +125,7 @@ set_fw_wan() {
                 msg_alert "\033[31m最多支持设置放行10个端口，请先减少一些！\033[0m"
             else
                 line_break
-                read -r -p "请输入要放行的端口号> " port
+                read -r -p "$GW_INPUT_ALLOW_PORT> " port
                 if echo ",$fw_wan_ports," | grep -q ",$port,"; then
                     msg_alert "\033[31m输入错误！请勿重复添加！\033[0m"
                 elif [ "$port" -lt 1 ] || [ "$port" -gt 65535 ]; then
@@ -188,7 +189,7 @@ set_bot_tg_config() {
 }
 EOF
     )
-    TEXT="已完成Telegram机器人设置！请使用 /$my_alias 呼出功能菜单！"
+    TEXT="$GW_TG_DONE_PREFIX /$my_alias $GW_TG_DONE_SUFFIX"
     . "$CRASHDIR"/libs/web_json.sh
     bot_api="https://api.telegram.org/bot$TOKEN"
     web_json_post "$bot_api/setMyCommands" "$JSON"
@@ -221,15 +222,15 @@ set_bot_tg_service() {
 
 set_bot_tg() {
     while true; do
-        [ -n "$ts_auth_key" ] && ts_auth_key_info='已设置'
-        [ -n "$TG_CHATID" ] && TG_CHATID_info='已绑定'
+        [ -n "$ts_auth_key" ] && ts_auth_key_info="$GW_SET"
+        [ -n "$TG_CHATID" ] && TG_CHATID_info="$GW_BOUND"
         comp_box "\033[31m注意：\033[0m由于网络环境原因，此机器人仅限服务启动时运行！"
         btm_box "1) 启用／关闭TG-BOT服务	\033[32m$bot_tg_service\033[0m" \
             "2) TG-BOT绑定设置	\033[32m$TG_CHATID_info\033[0m" \
 			"3) 启动时推送菜单	\033[32m$TG_menupush\033[0m" \
             "" \
-            "0) 返回上级菜单"
-        read -r -p "请输入对应标号> " num
+            "0) $COMMON_BACK"
+        read -r -p "$COMMON_INPUT> " num
         case "$num" in
         "" | 0)
             break
@@ -289,8 +290,8 @@ set_vmess() {
             content_line "6) 设置\033[36m混淆host（可选）\033[0m：	\033[33m$vms_host\033[0m"
         btm_box "7) 一键生成\033[32m分享链接\033[0m" \
             "" \
-            "0) 返回上级菜单"
-        read -r -p "请输入对应标号> " num
+            "0) $COMMON_BACK"
+        read -r -p "$COMMON_INPUT> " num
         case "$num" in
         "" | 0)
             break
@@ -310,7 +311,7 @@ set_vmess() {
             ;;
         2)
             line_break
-            read -r -p "请输入端口号（输入0删除）> " text
+            read -r -p "$GW_INPUT_PORT_DEL0> " text
             if [ "$text" = 0 ]; then
                 vms_port=''
                 setconfig vms_port "" "$GT_CFG_PATH"
@@ -323,7 +324,7 @@ set_vmess() {
             ;;
         3)
             line_break
-            read -r -p "请输入ws-path路径（输入0删除）> " text
+            read -r -p "$GW_INPUT_WSPATH> " text
             if [ "$text" = 0 ]; then
                 vms_ws_path=''
                 setconfig vms_ws_path "" "$GT_CFG_PATH"
@@ -336,7 +337,7 @@ set_vmess() {
             ;;
         4)
             line_break
-            read -r -p "请输入UUID（输入0删除）> " text
+            read -r -p "$GW_INPUT_UUID> " text
             if [ "$text" = 0 ]; then
                 vms_uuid=''
                 setconfig vms_uuid "" "$GT_CFG_PATH"
@@ -412,8 +413,8 @@ set_shadowsocks() {
         gen_base64 1 >/dev/null 2>&1 &&
             content_line "5) 一键生成分享链接"
         btm_box "" \
-            "0) 返回上级菜单"
-        read -r -p "请输入对应标号> " num
+            "0) $COMMON_BACK"
+        read -r -p "$COMMON_INPUT> " num
         case "$num" in
         "" | 0)
             break
@@ -433,7 +434,7 @@ set_shadowsocks() {
             ;;
         2)
             line_break
-            read -r -p "请输入端口号（输入0删除）> " text
+            read -r -p "$GW_INPUT_PORT_DEL0> " text
             if [ "$text" = 0 ]; then
                 sss_port=''
                 setconfig sss_port "" "$GT_CFG_PATH"
@@ -459,8 +460,8 @@ set_shadowsocks() {
                 content_line "7) \033[32m2022-blake3-aes-256-gcm\033[0m"
             }
             btm_box "" \
-                "0) 返回上级菜单"
-            read -r -p "请输入对应标号> " num
+                "0) $COMMON_BACK"
+            read -r -p "$COMMON_INPUT> " num
             case "$num" in
             0) ;;
             1)
@@ -510,7 +511,7 @@ set_shadowsocks() {
             ;;
         5)
             line_break
-            read -r -p "请输入本机公网IP(4/6)或域名> " text
+            read -r -p "$GW_INPUT_HOST> " text
             if [ -n "$text" ] && [ -n "$sss_port" ] && [ -n "$sss_cipher" ] && [ -n "$sss_pwd" ]; then
                 ss_link="ss://$(gen_base64 "$sss_cipher":"$sss_pwd")@${text}:${sss_port}#ShellCrash_ss_in"
                 line_break
@@ -541,8 +542,8 @@ set_tailscale() {
             "4) 通告路由\033[31m全部流量\033[0m（EXIT-NODE）	\033[36m$ts_exit_node\033[0m" \
             "5) 设置\033[36m设备名称\033[0m（可选）		$ts_hostname" \
             "" \
-            "0) 返回上级菜单"
-        read -r -p "请输入对应标号> " num
+            "0) $COMMON_BACK"
+        read -r -p "$COMMON_INPUT> " num
         case "$num" in
         "" | 0)
             break
@@ -621,8 +622,8 @@ set_wireguard() {
             "7) 设置\033[33m组网IPV4地址\033[0m：		\033[33m$wg_ipv4\033[0m" \
             "8) 可选\033[33m组网IPV6地址\033[0m：	\033[33m$wg_ipv6\033[0m" \
             "" \
-            "0) 返回上级菜单"
-        read -r -p "请输入对应标号> " num
+            "0) $COMMON_BACK"
+        read -r -p "$COMMON_INPUT> " num
         case "$num" in
         "" | 0)
             break

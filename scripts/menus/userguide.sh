@@ -111,8 +111,8 @@ userguide() {
         comp_box "\033[0m$UG_IMPORT_CONFIG\033[0m" \
             "\033[32m$UG_CONFIG_TIP\033[0m" \
             "$UG_CONFIG_RES"
-        btm_box "1) 立即导入" \
-            "0) 暂不导入"
+        btm_box "1) $UG_IMPORT_NOW" \
+            "0) $UG_IMPORT_LATER"
         read -r -p "$COMMON_INPUT> " res
         [ "$res" = 1 ] && inuserguide=1 && {
             . "$CRASHDIR"/menus/6_core_config.sh && set_core_config

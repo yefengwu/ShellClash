@@ -1,8 +1,10 @@
 #! /bin/bash
 # Copyright (C) Juewuy
 
+load_lang ddns
+
 ddns_menu() {
-    top_box "\033[30;46m欢迎使用DDNS！\033[0m"
+    top_box "\033[30;46m$DDNS_WELCOME\033[0m"
     load_ddns
 }
 
@@ -28,36 +30,36 @@ config service '$service'
 EOF
     /usr/lib/ddns/dynamic_dns_updater.sh -S "$service" start >/dev/null 2>&1 &
     sleep 3
-    msg_alert "服务已经添加！"
+    msg_alert "$DDNS_ADD_DONE"
 }
 
 set_ddns() {
     while true; do
         line_break
-        read -r -p "请输入你的域名> " str
+        read -r -p "$DDNS_INPUT_DOMAIN> " str
         [ -z "$str" ] && domain="$domain" || domain="$str"
         echo ""
-        read -r -p "请输入用户名或邮箱> " str
+        read -r -p "$DDNS_INPUT_USER> " str
         [ -z "$str" ] && username="$username" || username="$str"
         echo ""
-        read -r -p "请输入密码或令牌秘钥> " str
+        read -r -p "$DDNS_INPUT_PASS> " str
         [ -z "$str" ] && password="$password" || password="$str"
         echo ""
-        read -r -p "请输入检测更新间隔(单位:分钟；默认为10)> " check_interval
+        read -r -p "$DDNS_INPUT_CHECK_INTERVAL> " check_interval
         [ -z "$check_interval" ] || [ "$check_interval" -lt 1 -o "$check_interval" -gt 1440 ] && check_interval=10
         echo ""
-        read -r -p "请输入强制更新间隔(单位:小时；默认为24)> " force_interval
+        read -r -p "$DDNS_INPUT_FORCE_INTERVAL> " force_interval
         [ -z "$force_interval" ] || [ "$force_interval" -lt 1 -o "$force_interval" -gt 240 ] && force_interval=24
 
-        comp_box "请核对如下信息：" \
+        comp_box "$DDNS_CONFIRM_INFO" \
             "" \
-            "服务商：		\033[32m$service\033[0m" \
-            "域名：			\033[32m$domain\033[0m" \
-            "用户名：		\033[32m$username\033[0m" \
-            "检测间隔：		\033[32m$check_interval\033[0m"
-        btm_box "是否确认添加："
-        btm_box "1) 是" \
-            "0) 否，重新輸入"
+            "$DDNS_FIELD_SERVICE		\033[32m$service\033[0m" \
+            "$DDNS_FIELD_DOMAIN		\033[32m$domain\033[0m" \
+            "$DDNS_FIELD_USER		\033[32m$username\033[0m" \
+            "$DDNS_FIELD_INTERVAL	\033[32m$check_interval\033[0m"
+        btm_box "$DDNS_CONFIRM_ADD"
+        btm_box "1) $DDNS_YES" \
+            "0) $DDNS_REINPUT"
         read -r -p "$COMMON_INPUT> " res
         if [ "$res" = 1 ]; then
             add_ddns
@@ -72,17 +74,17 @@ set_ddns_service() {
 		[ -s "$services_dir" ] || services_dir=/etc/ddns/services
         [ -s "$services_dir" ] || services_dir=/usr/share/ddns/list
 		[ -s "$services_dir" ] || {
-		    msg_alert "\033[33m未找到DDNS列表文件，尝试在线获取……\033[0m"
-		    ddns service update >/dev/null || msg_alert "\033[31m下载失败，请重试！\033[0m"
+		    msg_alert "\033[33m$DDNS_LIST_NOT_FOUND\033[0m"
+		    ddns service update >/dev/null || msg_alert "\033[31m$DDNS_DOWNLOAD_FAILED\033[0m"
 		}
-        comp_box "\033[32m请选择服务提供商：\033[0m"
+        comp_box "\033[32m$DDNS_SELECT_PROVIDER\033[0m"
 
         list=$(awk '/^#/ || !NF {next} {print $1}' "$services_dir")
         list_box "$list"
 
         nr=$(echo "$list" | wc -l)
         common_back
-        read -r -p "请输入对应数字> " num
+        read -r -p "$COMMON_INPUT> " num
         if [ -z "$num" ] || [ "$num" = 0 ]; then
             i=
             break
@@ -92,19 +94,19 @@ set_ddns_service() {
             set_ddns
             break
         else
-            msg_alert "\033[33m输入错误，请重新输入！\033[0m"
+            msg_alert "\033[33m$DDNS_INPUT_ERROR\033[0m"
         fi
     done
 }
 
 set_ddns_type() {
     while true; do
-        comp_box "\033[32m请选择网络模式：\033[0m"
-        btm_box "1) \033[36mIPV4\033[0m" \
-            "2) \033[36mIPV6\033[0m" \
+        comp_box "\033[32m$DDNS_SELECT_NETMODE\033[0m"
+        btm_box "1) \033[36m$DDNS_IPV4\033[0m" \
+            "2) \033[36m$DDNS_IPV6\033[0m" \
             "" \
             "0) $COMMON_BACK"
-        read -r -p "请输入对应数字> " num
+        read -r -p "$COMMON_INPUT> " num
         case "$num" in
         "" | 0)
             break
@@ -122,7 +124,7 @@ set_ddns_type() {
             break
             ;;
         *)
-            msg_alert "\033[33m输入错误，请重新输入！\033[0m"
+            msg_alert "\033[33m$DDNS_INPUT_ERROR\033[0m"
             ;;
         esac
     done
@@ -131,15 +133,15 @@ set_ddns_type() {
 rev_ddns_service() {
     while true; do
         enabled=$(uci get ddns."$service".enabled)
-        [ "$enabled" = 1 ] && enabled_b="停用" || enabled_b="启用"
-        comp_box "1) \033[32m立即更新\033[0m" \
-            "2) 编辑当前服务" \
-            "3) $enabled_b当前服务" \
-            "4) 移除当前服务" \
-            "5) 查看运行日志" \
+        [ "$enabled" = 1 ] && enabled_b="$DDNS_DISABLE" || enabled_b="$DDNS_ENABLE"
+        comp_box "1) \033[32m$DDNS_UPDATE_NOW\033[0m" \
+            "2) $DDNS_EDIT_CURRENT" \
+            "3) $enabled_b$DDNS_CURRENT_SERVICE" \
+            "4) $DDNS_REMOVE_CURRENT" \
+            "5) $DDNS_VIEW_LOG" \
             "" \
-            "0) 返回上级菜单"
-        read -r -p "请输入对应数字> " num
+            "0) $COMMON_BACK"
+        read -r -p "$COMMON_INPUT> " num
         case "$num" in
         "" | 0)
             break
@@ -176,7 +178,7 @@ rev_ddns_service() {
             break
             ;;
         *)
-            msg_alert "\033[33m输入错误，请重新输入！\033[0m"
+            msg_alert "\033[33m$DDNS_INPUT_ERROR\033[0m"
             ;;
         esac
     done
@@ -187,14 +189,14 @@ load_ddns() {
         ddns_dir=/etc/config/ddns
         tmp_dir="$TMPDIR"/ddns
         [ ! -f "$ddns_dir" ] && {
-            btm_box "\033[31m本脚本依赖OpenWrt内置的DDNS服务,当前设备无法运行,已退出！\033[0m"
+            btm_box "\033[31m$DDNS_NOT_SUPPORTED\033[0m"
             sleep 1
             return 1
         }
         nr=0
         cat "$ddns_dir" | grep 'config service' | awk '{print $3}' | sed "s/'//g" | sed 's/"//g' >"$tmp_dir"
         separator_line "="
-        content_line "    列表      域名       启用     IP地址"
+        content_line "$DDNS_LIST_HEADER"
         content_line ""
         [ -s "$tmp_dir" ] && for service in $(cat "$tmp_dir"); do
             # echo $service >>$tmp_dir
@@ -204,10 +206,10 @@ load_ddns() {
             local_ip=$(sed '1!G;h;$!d' /var/log/ddns/"$service".log 2>/dev/null | grep -E 'Registered IP' | tail -1 | awk -F "'" '{print $2}' | tr -d "'\"")
             content_line "$nr)   $domain  $enabled   $local_ip"
         done
-        content_line "$((nr + 1))) 添加DDNS服务"
-        content_line "0) 退出"
+        content_line "$((nr + 1))) $DDNS_ADD_SERVICE"
+        content_line "0) $DDNS_EXIT"
         separator_line "="
-        read -r -p "请输入对应序号> " num
+        read -r -p "$DDNS_INPUT_INDEX> " num
         if [ -z "$num" ] || [ "$num" = 0 ]; then
             i=
             rm -rf "$tmp_dir"
@@ -218,7 +220,7 @@ load_ddns() {
             service=$(cat "$tmp_dir" | sed -n "$num"p)
             rev_ddns_service
         else
-            msg_alert "\033[33m请输入正确数字！\033[0m"
+            msg_alert "\033[33m$DDNS_INPUT_NUM_ERROR\033[0m"
         fi
     done
 }

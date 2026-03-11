@@ -9,12 +9,15 @@
 . "$CRASHDIR"/libs/set_config.sh
 . "$CRASHDIR"/libs/web_get_bin.sh
 . "$CRASHDIR"/libs/logger.sh
+. "$CRASHDIR"/libs/i18n.sh
+
+load_lang task_cmd
 
 task_logger(){
 	[ "$task_push" = 1 ] && push= || push=off
 	[ -n "$2" -a "$2" != 0 ] && echo -e "\033[$2m$1\033[0m"
 	[ "$3" = 'off' ] && push=off
-	echo "$1" |grep -qE '(每隔|时每)([1-9]|[1-9][0-9])分钟' && {
+	echo "$1" |grep -qE "($TASK_CMD_EVERY|$TASK_CMD_HOURLY)([1-9]|[1-9][0-9])$TASK_CMD_MIN" && {
 		push=off
 		cover=on
 	}
@@ -32,22 +35,22 @@ update_core(){ #自动更新内核
 	check_update bin/version
 	crash_v_new=$(eval echo \$${crashcore}_v)
 	if [ -z "$crash_v_new" -o "$crash_v_new" = "$core_v" ];then
-		task_logger "任务【自动更新内核】中止-未检测到版本更新"
+		task_logger "$TASK_CMD_CORE_SKIP"
 		return 0
 	else
 		. "$CRASHDIR"/libs/core_tools.sh && core_webget #调用下载工具
 		case "$?" in
 		0)
-			task_logger "任务【自动更新内核】下载完成，正在重启服务！"
+			task_logger "$TASK_CMD_CORE_DONE"
 			"$CRASHDIR"/start.sh start
 			return 0
 		;;
 		1)
-			task_logger "任务【自动更新内核】出错-下载失败！"
+			task_logger "$TASK_CMD_CORE_DL_FAIL"
 			return 1
 		;;
 		*)
-			task_logger "任务【自动更新内核】出错-内核校验失败！"
+			task_logger "$TASK_CMD_CORE_VERIFY_FAIL"
 			"$CRASHDIR"/start.sh start
 			return 1
 		;;
@@ -58,13 +61,13 @@ update_scripts(){ #自动更新脚本
 	#检查版本
 	check_update version
 	if [ -z "$versionsh" -o "$versionsh" = "versionsh_l" ];then
-		task_logger "任务【自动更新脚本】中止-未检测到版本更新"
+		task_logger "$TASK_CMD_SCRIPT_SKIP"
 		return 0
 	else
 		get_bin "$TMPDIR"/ShellCrash.tar.gz "ShellCrash.tar.gz"
 		if [ "$?" != "0" ];then
 			rm -rf "$TMPDIR"/ShellCrash.tar.gz
-			task_logger "任务【自动更新内核】出错-下载失败！"
+			task_logger "$TASK_CMD_CORE_DL_FAIL"
 			return 1
 		else
 			#停止服务
@@ -73,7 +76,7 @@ update_scripts(){ #自动更新脚本
 			tar -zxf "$TMPDIR"/ShellCrash.tar.gz ${tar_para} -C "$CRASHDIR"/
 			if [ $? -ne 0 ];then
 				rm -rf "$TMPDIR"/ShellCrash.tar.gz
-				task_logger "任务【自动更新内核】出错-解压失败！"
+				task_logger "$TASK_CMD_SCRIPT_UNZIP_FAIL"
 				"$CRASHDIR"/start.sh start
 				return 1
 			else
@@ -92,17 +95,17 @@ update_mmdb(){ #自动更新数据库
 		geo_v_new=$GeoIP_v
 		geo_v_now=$(eval echo \$$geo_v)
 		if [ -z "$geo_v_new" -o "$geo_v_new" = "$geo_v_now" ];then
-			task_logger "任务【自动更新数据库文件】跳过-未检测到$2版本更新"
+			task_logger "$TASK_CMD_DB_SKIP_PREFIX$2$TASK_CMD_DB_SKIP_SUFFIX"
 		else
 			#更新文件
 			get_bin "$TMPDIR"/$1 "bin/geodata/$2"
 			if [ "$?" != "0" ];then
-				task_logger "任务【自动更新数据库文件】更新【$2】下载失败！"
+				task_logger "$TASK_CMD_DB_DL_FAIL_PREFIX$2$TASK_CMD_DB_DL_FAIL_SUFFIX"
 				rm -rf "$TMPDIR"/$1
 			else
 				mv -f "$TMPDIR"/$1 "$BINDIR"/$1
 				setconfig $geo_v $GeoIP_v
-				task_logger "任务【自动更新数据库文件】更新【$2】成功！"
+				task_logger "$TASK_CMD_DB_OK_PREFIX$2$TASK_CMD_DB_OK_SUFFIX"
 			fi
 		fi
 	}
@@ -140,8 +143,8 @@ case "$1" in
 		task_command=$(cat "$CRASHDIR"/task/task.list "$CRASHDIR"/task/task.user 2>/dev/null | grep "$1" | awk -F '#' '{print $2}')
 		task_name=$(cat "$CRASHDIR"/task/task.list "$CRASHDIR"/task/task.user 2>/dev/null | grep "$1" | awk -F '#' '{print $3}')
 		#task_logger "任务$task_name 开始执行"
-		eval $task_command && task_res=成功 || task_res=失败
-		task_logger "任务【$2】执行$task_res"
+		eval $task_command && task_res="$TASK_CMD_RES_OK" || task_res="$TASK_CMD_RES_FAIL"
+		task_logger "$TASK_CMD_EXEC_PREFIX$2$TASK_CMD_EXEC_MID$task_res"
 	;;
 	*)
 		"$1"
