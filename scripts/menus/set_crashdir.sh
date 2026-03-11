@@ -3,19 +3,26 @@
 
 [ -f /tmp/SC_tmp/libs/check_dir_avail.sh ] && . /tmp/SC_tmp/libs/check_dir_avail.sh
 
+if [ -n "$CRASHDIR" ] && [ -s "$CRASHDIR/libs/i18n.sh" ]; then
+    . "$CRASHDIR/libs/i18n.sh"
+    load_lang set_crashdir
+elif [ -n "$language" ] && [ -s "/tmp/SC_tmp/lang/$language/set_crashdir.lang" ]; then
+    . "/tmp/SC_tmp/lang/$language/set_crashdir.lang"
+fi
+
 set_usb_dir() {
     while true; do
-        comp_box "请选择安装目录："
+        comp_box "$SCD_SELECT_INSTALL_DIR"
         du -hL /mnt |
             awk '{print NR") "$2 " " $1}' |
             while IFS= read -r line; do
                 content_line "$line"
             done
         separator_line "="
-        read -r -p "请输入相应数字> " num
+        read -r -p "$SCD_INPUT_NUM> " num
         dir=$(du -hL /mnt | awk '{print $2}' | sed -n "$num"p)
         if [ -z "$dir" ]; then
-            msg_alert "\033[31m输入错误！请重新设置！\033[0m"
+            msg_alert "\033[31m$SCD_INPUT_ERROR\033[0m"
             continue
         fi
         break 1
@@ -23,15 +30,15 @@ set_usb_dir() {
 }
 
 set_xiaomi_dir() {
-    comp_box "\033[33m检测到当前设备为小米官方系统，请选择安装位置：\033[0m"
-    [ -d /data ] && content_line "1) /data目录，剩余空间：$(dir_avail /data -h) （支持软固化功能）"
-    [ -d /userdisk ] && content_line "2) /userdisk目录，剩余空间：$(dir_avail /userdisk -h) （支持软固化功能）"
-    [ -d /data/other_vol ] && content_line "3) /data/other_vol目录，剩余空间：$(dir_avail /data/other_vol -h) （支持软固化功能）"
-    content_line "4) 自定义目录（不推荐，不明勿用！）"
+    comp_box "\033[33m$SCD_XIAOMI_DETECTED\033[0m"
+    [ -d /data ] && content_line "1) /data$SCD_DIR_FREE$(dir_avail /data -h) $SCD_SOFT_SOLID"
+    [ -d /userdisk ] && content_line "2) /userdisk$SCD_DIR_FREE$(dir_avail /userdisk -h) $SCD_SOFT_SOLID"
+    [ -d /data/other_vol ] && content_line "3) /data/other_vol$SCD_DIR_FREE$(dir_avail /data/other_vol -h) $SCD_SOFT_SOLID"
+    content_line "4) $SCD_CUSTOM_DIR_WARN"
     content_line ""
-    content_line "0) 退出安装"
+    content_line "0) $SCD_EXIT_INSTALL"
     separator_line "="
-    read -r -p "请输入相应数字> " num
+    read -r -p "$SCD_INPUT_NUM> " num
     case "$num" in
     1)
         dir=/data
@@ -54,17 +61,17 @@ set_xiaomi_dir() {
 
 set_asus_usb() {
     while true; do
-        comp_box "请选择U盘目录："
+        comp_box "$SCD_SELECT_USB_DIR"
         du -hL /tmp/mnt |
             awk -F/ 'NF<=4 {print NR") "$2 " " $1}' |
             while IFS= read -r line; do
                 content_line "$line"
             done
         separator_line "="
-        read -r -p "请输入相应数字> " num
+        read -r -p "$SCD_INPUT_NUM> " num
         dir=$(du -hL /tmp/mnt | awk -F/ 'NF<=4' | awk '{print $2}' | sed -n "$num"p)
         if [ ! -f "$dir/asusware.arm/etc/init.d/S50downloadmaster" ]; then
-            msg_alert "\033[31m未找到下载大师自启文件：$dir/asusware.arm/etc/init.d/S50downloadmaster，请检查设置！\033[0m"
+            msg_alert "\033[31m$SCD_ASUS_DM_NOT_FOUND $dir/asusware.arm/etc/init.d/S50downloadmaster，$SCD_CHECK_SETTING\033[0m"
         else
             break
         fi
@@ -73,19 +80,19 @@ set_asus_usb() {
 
 set_asus_dir() {
     separator_line "="
-    btm_box "\033[33m检测到当前设备为华硕固件，请选择安装方式\033[0m" \
-        "1) 基于U盘+下载大师安装（支持所有固件，限ARM设备，须插入U盘或移动硬盘）" \
-        "2) 基于自启脚本安装（仅持部分梅林固件）" \
+    btm_box "\033[33m$SCD_ASUS_DETECTED\033[0m" \
+        "1) $SCD_ASUS_INSTALL_DM" \
+        "2) $SCD_ASUS_INSTALL_SCRIPT" \
         "" \
-        "0) 退出安装"
-    read -r -p "请输入相应数字> " num
+        "0) $SCD_EXIT_INSTALL"
+    read -r -p "$SCD_INPUT_NUM> " num
     case "$num" in
     1)
-        msg_alert -t 2 "请先在路由器网页后台安装下载大师并启用，之后选择外置存储所在目录！"
+        msg_alert -t 2 "$SCD_ASUS_DM_HINT"
         set_asus_usb
         ;;
     2)
-        msg_alert -t 2 "如开机无法正常自启，请重新使用U盘+下载大师安装！"
+        msg_alert -t 2 "$SCD_ASUS_REINSTALL_HINT"
         dir=/jffs
         ;;
     *)
@@ -97,9 +104,9 @@ set_asus_dir() {
 
 set_cust_dir() {
     while true; do
-        comp_box "路径是必须带 / 的格式，注意写入虚拟内存(/tmp,/opt,/sys...)的文件会在重启后消失！" \
+        comp_box "$SCD_PATH_FORMAT_HINT" \
             "" \
-            "可用路径 剩余空间："
+            "$SCD_PATH_FREE_SPACE"
         df -h |
             awk '{print $6, $4}' |
             sed '1d' |
@@ -107,9 +114,9 @@ set_cust_dir() {
                 content_line "$line"
             done
         separator_line "="
-        read -r -p "请输入自定义路径> " dir
+        read -r -p "$SCD_INPUT_CUSTOM_DIR> " dir
         if [ "$(dir_avail "$dir")" = 0 ] || [ -n "$(echo "$dir" | grep -Eq '^/(tmp|opt|sys)(/|$)')" ]; then
-            msg_alert "\033[31m路径错误！请重新设置！\033[0m"
+            msg_alert "\033[31m$SCD_PATH_ERROR\033[0m"
             continue
         fi
         break 1
@@ -118,7 +125,7 @@ set_cust_dir() {
 
 set_crashdir() {
     while true; do
-        top_box "\033[33m注意：安装ShellCrash至少需要预留约1MB的磁盘空间\033[0m"
+        top_box "\033[33m$SCD_INSTALL_SPACE_HINT\033[0m"
         case "$systype" in
         Padavan)
             dir=/etc/storage
@@ -134,14 +141,14 @@ set_crashdir() {
             ;;
         *)
             separator_line "="
-            btm_box "1) 在\033[32m/etc目录\033[0m下安装（适合root用户）" \
-                "2) 在\033[32m/usr/share目录\033[0m下安装（适合Linux系统）" \
-                "3) 在\033[32m当前用户目录\033[0m下安装（适合非root用户）" \
-                "4) 在\033[32m外置存储\033[0m中安装" \
-                "5) 手动设置安装目录" \
+            btm_box "1) $SCD_INSTALL_ETC" \
+                "2) $SCD_INSTALL_USR" \
+                "3) $SCD_INSTALL_HOME" \
+                "4) $SCD_INSTALL_USB" \
+                "5) $SCD_INSTALL_MANUAL" \
                 "" \
-                "0) 退出安装"
-            read -r -p "请输入相应数字> " num
+                "0) $SCD_EXIT_INSTALL"
+            read -r -p "$SCD_INPUT_NUM> " num
             # 设置目录
             case "$num" in
             1)
@@ -161,7 +168,7 @@ set_crashdir() {
                 set_cust_dir
                 ;;
             *)
-                msg_alert "安装已取消"
+                msg_alert "$SCD_INSTALL_CANCELED"
                 line_break
                 exit 1
                 ;;
@@ -170,14 +177,14 @@ set_crashdir() {
         esac
 
         if [ ! -w "$dir" ]; then
-            msg_alert "\033[31m没有$dir目录写入权限！请重新设置！\033[0m"
+            msg_alert "\033[31m$SCD_NO_WRITE_PREFIX$dir$SCD_NO_WRITE_SUFFIX\033[0m"
         else
-            comp_box "目标目录\033[32m$dir\033[0m空间剩余：$(dir_avail "$dir" -h)" \
+            comp_box "$SCD_TARGET_DIR_PREFIX\033[32m$dir\033[0m$SCD_TARGET_DIR_SPACE$(dir_avail "$dir" -h)" \
                 "" \
-                "是否确认安装？"
-            btm_box "1) 是" \
-                "0) 否"
-            read -r -p "请输入相应数字> " res
+                "$SCD_CONFIRM_INSTALL"
+            btm_box "1) $SCD_YES" \
+                "0) $SCD_NO"
+            read -r -p "$SCD_INPUT_NUM> " res
             if [ "$res" = "1" ]; then
                 CRASHDIR="$dir"/ShellCrash
                 break
