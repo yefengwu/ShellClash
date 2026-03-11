@@ -12,3 +12,6 @@ UG_IMPORT_CONFIG="Import configuration file? (Last step before running)"
 UG_CONFIG_TIP="You must have a configuration file to run the service!"
 UG_CONFIG_RES="Importing now? "
 UG_FINAL_TIP="Great! Now just start the service to enjoy!"
+
+UG_IMPORT_NOW="Import now"
+UG_IMPORT_LATER="Not now"

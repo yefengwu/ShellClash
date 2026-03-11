@@ -4,6 +4,8 @@
 [ -n "$__IS_MODULE_6_CORECONFIG_LOADED" ] && return
 __IS_MODULE_6_CORECONFIG_LOADED=1
 
+load_lang 6_core_config
+
 if echo "$crashcore" | grep -q 'singbox'; then
     CONFIG_PATH="$CRASHDIR"/jsons/config.json
     CORE_TYPE=singbox
@@ -27,18 +29,18 @@ set_core_config() {
         f2 = substr(f2, 1, 30) "..."
     printf "%-7s \t%-28s\n", f1, f2
 }')
-        comp_box "\033[30;47m配置文件管理\033[0m"
+        comp_box "\033[30;47m$CORECFG_TITLE\033[0m"
         [ -n "$list" ] && {
-            content_line "\033[36m输入数字可管理对应提供者\033[0m"
+            content_line "\033[36m$CORECFG_HINT_SELECT_PROVIDER\033[0m"
             content_line ""
             list_box "$list"
             separator_line "-"
         }
-        btm_box "a) \033[32m添加提供者\033[0m（支持订阅/分享链接及本地文件）" \
-            "b) \033[36m本地生成配置文件\033[0m" \
-            "c) \033[33m在线生成配置文件\033[0m" \
-            "d) \033[31m清空提供者列表\033[0m" \
-            "e) \033[36m自定义配置文件\033[0m" \
+        btm_box "a) $CORECFG_MENU_A" \
+            "b) $CORECFG_MENU_B" \
+            "c) $CORECFG_MENU_C" \
+            "d) $CORECFG_MENU_D" \
+            "e) $CORECFG_MENU_E" \
             "" \
             "0) $COMMON_BACK"
         read -r -p "$COMMON_INPUT_L> " num
@@ -59,10 +61,10 @@ set_core_config() {
                     . "$CRASHDIR"/menus/providers.sh
                     providers
                 else
-                    msg_alert "\033[33m仅限Mihomo／singboxr内核使用，请更换内核！\033[0m"
+                    msg_alert "\033[33m$CORECFG_CORE_ONLY\033[0m"
                 fi
             else
-                msg_alert "请先添加提供者！"
+                msg_alert "$CORECFG_ADD_PROVIDER_FIRST"
             fi
             ;;
         c)
@@ -70,15 +72,15 @@ set_core_config() {
                 . "$CRASHDIR"/menus/subconverter.sh
                 subconverter
             else
-                msg_alert "请先添加提供者！"
+                msg_alert "$CORECFG_ADD_PROVIDER_FIRST"
             fi
             ;;
         d)
-            comp_box "\033[33m警告：这将删除所有提供者且无法还原！\033[0m" \
+            comp_box "\033[33m$CORECFG_CLEAR_WARN\033[0m" \
                 "" \
-                "是否确认清空提供者列表："
-            btm_box "1) 是" \
-                "0) 否，返回上级菜单"
+                "$CORECFG_CLEAR_CONFIRM"
+            btm_box "1) $CORECFG_YES" \
+                "0) $CORECFG_NO_BACK"
             read -r -p "$COMMON_INPUT> " res
             [ "$res" = 1 ] && {
                 rm -f "$CRASHDIR"/configs/providers.cfg
@@ -130,38 +132,38 @@ setproviders() {
 
     while true; do
         link_info=$(echo "$link$link_uri" | cut -c 1-30)
-        comp_box "\033[36m支持添加订阅链接/分享链接/本地文件作为提供者\033[0m"
+        comp_box "\033[36m$CORECFG_PROVIDER_SUPPORT\033[0m"
 
-        content_line "1) 设置\033[36m名称或代号\033[0m	\033[32m$name\033[0m"
-        content_line "2) 设置\033[32m链接或路径\033[0m：	\033[36m$link_info\033[0m"
+        content_line "1) $CORECFG_SET_NAME	\033[32m$name\033[0m"
+        content_line "2) $CORECFG_SET_LINK	\033[36m$link_info\033[0m"
         [ -n "$link" ] &&
-            content_line "3) 设置\033[33m本地生成覆写\033[0m"
+            content_line "3) $CORECFG_SET_OVERRIDE"
         content_line ""
-        content_line "a) \033[36m保存此提供者\033[0m"
-        content_line "d) \033[31m删除此提供者\033[0m"
+        content_line "a) $CORECFG_SAVE_PROVIDER"
+        content_line "d) $CORECFG_DEL_PROVIDER"
         content_line ""
-        content_line "\033[36m以下方式的详细配置请前往对应功能页面进行设置！\033[0m"
+        content_line "\033[36m$CORECFG_MORE_CONFIG_HINT\033[0m"
         [ -n "$link" ] &&
-            content_line "b) \033[32m本地生成\033[0m仅包含此提供者的配置文件"
+            content_line "b) $CORECFG_GEN_LOCAL_ONE"
         echo "$link$link_uri" | grep -q '://' &&
-            content_line "c) \033[33m在线生成\033[0m仅包含此提供者的配置文件"
+            content_line "c) $CORECFG_GEN_ONLINE_ONE"
         echo "$link" | grep -q '^http' &&
-            content_line "e) 在线获取此配置文件（不使用订阅转换）"
+            content_line "e) $CORECFG_GET_ONLINE_DIRECT"
         echo "$link" | grep -q '^./providers' &&
-            content_line "e) 直接使用此文件作为配置文件（不使用本地生成）"
+            content_line "e) $CORECFG_USE_DIRECT"
         btm_box "" \
             "0) $COMMON_BACK"
-        read -r -p "请输入对应字母或数字> " input
+        read -r -p "$CORECFG_INPUT_ALNUM> " input
         case "$input" in
         "" | 0)
             break
             ;;
         1)
             while true; do
-                comp_box "\033[33m注意：\n名称或代号不可重复，不支持纯数字，且不要超过4个汉字！\033[0m"
-                btm_box "\033[36m请直接输入具体名称或代号\033[0m" \
-                    "或输入 0 返回上级菜单"
-                read -r -p "请输入> " text
+                comp_box "\033[33m$CORECFG_NAME_HINT\033[0m"
+                btm_box "\033[36m$CORECFG_INPUT_NAME\033[0m" \
+                    "$CORECFG_OR_BACK"
+                read -r -p "$CORECFG_INPUT> " text
                 text=$(printf "%.12s" "$text" | sed 's/ //g') # 截断12字符+去空格
                 if [ "$text" = 0 ]; then
                     break
@@ -176,13 +178,13 @@ setproviders() {
             ;;
         2)
             while true; do
-                comp_box "\033[33m订阅链接\033[0m：\nhttps/http开头的clash配置文件订阅链接" \
+                comp_box "$CORECFG_LINK_HINT1" \
                     "" \
-                    "\033[36m分享链接\033[0m：\n$URI_EXP" \
+                    "$CORECFG_LINK_HINT2\n$URI_EXP" \
                     "" \
-                    "\033[33m本地文件\033[0m：\n必须放在\033[32m$CRASHDIR/providers\033[0m目录下" \
+                    "$CORECFG_LINK_HINT3\033[32m$CRASHDIR/providers\033[0m$CORECFG_LINK_HINT4" \
                     "" \
-                    "\033[36mBase64 \033[0m：\n请直接写入本地文件"
+                    "$CORECFG_LINK_HINT5"
                 list=$(
                     for f in "$CRASHDIR"/providers/*; do
                         [ "$f" = "$CRASHDIR"/providers/uri_group ] && continue
@@ -193,12 +195,12 @@ setproviders() {
                 if [ -n "$list" ]; then
                     list_box "$list"
                     btm_box "" \
-                        "输入 0 返回上级菜单"
-                    read -r -p "请选择对应文件或输入具体链接> " text
+                        "$CORECFG_INPUT0_BACK"
+                    read -r -p "$CORECFG_SELECT_FILE_OR_LINK> " text
                 else
-                    btm_box "\033[36m请直接输入具体链接\033[0m" \
-                        "或输入 0 返回上级菜单"
-                    read -r -p "请输入> " text
+                    btm_box "\033[36m$CORECFG_INPUT_LINK\033[0m" \
+                        "$CORECFG_OR_BACK"
+                    read -r -p "$CORECFG_INPUT> " text
                 fi
                 text=$(echo "$text" | sed 's/ //g') # 去空格
                 case "$text" in
@@ -254,7 +256,7 @@ setproviders() {
                 . "$CRASHDIR/menus/providers_$CORE_TYPE.sh"
                 gen_providers "$name" "$link" "$interval" "$interval2" "$ua" "#$exclude_w" "#$include_w"
             else
-                msg_alert "\033[31m$请先完成必填选项！\033[0m"
+                msg_alert "\033[31m$CORECFG_FILL_REQUIRED\033[0m"
             fi
             ;;
         c)
@@ -268,7 +270,7 @@ setproviders() {
                 # 获取在线文件
                 jump_core_config
             else
-                msg_alert "\033[31m请先完成必填选项！\033[0m"
+                msg_alert "\033[31m$CORECFG_FILL_REQUIRED\033[0m"
             fi
             ;;
         d)
@@ -283,10 +285,10 @@ setproviders() {
             ;;
         e)
             if [ -n "$link" ]; then
-                comp_box "\033[31m注意：\n此功能不兼容“跳过证书验证”功能\033[0m" \
-                    "\033[31m请确认你完全理解自己在做什么\033[0m"
-                btm_box "1) 我确认遇到问题可以自行解决" \
-                    "0) 返回上级菜单"
+                comp_box "\033[31m$CORECFG_DANGER1\033[0m" \
+                    "\033[31m$CORECFG_DANGER2\033[0m"
+                btm_box "1) $CORECFG_DANGER_CONFIRM" \
+                    "0) $COMMON_BACK"
                 read -r -p "$COMMON_INPUT> " res
                 [ "$res" = "1" ] && {
                     file=$(echo "$CRASHDIR/$link" | sed 's|\./||')
@@ -305,11 +307,11 @@ setproviders() {
                         jump_core_config
                         break
                     else
-                        msg_alert "\033[31m请先完成必填选项！\033[0m"
+                        msg_alert "\033[31m$CORECFG_FILL_REQUIRED\033[0m"
                     fi
                 }
             else
-                msg_alert "\033[31m请先完成必填选项！\033[0m"
+                msg_alert "\033[31m$CORECFG_FILL_REQUIRED\033[0m"
             fi
             ;;
         *)
@@ -332,7 +334,7 @@ saveproviders() {
         echo "$name $link_uri" >>"$CRASHDIR"/configs/providers_uri.cfg
         return 0
     else
-        msg_alert "\033[31m请先完成必填选项！\033[0m"
+        msg_alert "\033[31m$CORECFG_FILL_REQUIRED\033[0m"
         return 1
     fi
 }
@@ -340,26 +342,26 @@ saveproviders() {
 # 本地生成覆写
 custproviders() {
     while true; do
-        top_box "1) 设置\033[33m健康检查间隔\033[0m：\t\033[47;30m$interval\033[0m 分钟" \
-            "2) 设置\033[36m自动更新间隔\033[0m：\t\033[47;30m$interval2\033[0m 小时"
+        top_box "1) $CORECFG_INTERVAL1\033[47;30m$interval\033[0m $CORECFG_MIN" \
+            "2) $CORECFG_INTERVAL2\033[47;30m$interval2\033[0m $CORECFG_HOUR"
         echo "$link" | grep -q '^http' &&
-            content_line "3) 设置\033[33m虚拟浏览器UA\033[0m：\t\033[47;30m$ua\033[0m"
-        btm_box "4) 设置\033[31m排除节点正则\033[0m：\t\033[47;30m$exclude_w\033[0m" \
-            "5) 设置\033[32m包含节点正则\033[0m：\t\033[47;30m$include_w\033[0m" \
+            content_line "3) $CORECFG_SET_UA\033[47;30m$ua\033[0m"
+        btm_box "4) $CORECFG_SET_EXCLUDE\033[47;30m$exclude_w\033[0m" \
+            "5) $CORECFG_SET_INCLUDE\033[47;30m$include_w\033[0m" \
             "" \
             "0) $COMMON_BACK"
-        read -r -p "请输入对应数字> " num
+        read -r -p "$COMMON_INPUT> " num
         case "$num" in
         "" | 0)
             break
             ;;
         1)
             while true; do
-                comp_box "当前健康检查间隔：$interval 分钟"
-                btm_box "\033[36m请直接健康检查间隔（单位：分钟）\033[0m" \
-                    "或输入 r 重置健康检查间隔为默认值（3 分钟）" \
-                    "或输入 0 返回上级菜单"
-                read -r -p "请输入> " num
+                comp_box "$CORECFG_CUR_INTERVAL$interval $CORECFG_MIN"
+                btm_box "\033[36m$CORECFG_INPUT_INTERVAL1\033[0m" \
+                    "$CORECFG_RESET_INTERVAL1" \
+                    "$CORECFG_OR_BACK"
+                read -r -p "$CORECFG_INPUT> " num
                 if [ "$num" = "r" ]; then
                     interval=3
                 elif [ -n "$num" ] && [ "$num" -eq "$num" ] 2>/dev/null; then
@@ -374,11 +376,11 @@ custproviders() {
             ;;
         2)
             while true; do
-                comp_box "当前健康检查间隔：$interval 分钟"
-                btm_box "\033[36m请直接输入自动更新间隔（单位：小时）\033[0m" \
-                    "或输入 r 重置自动更新间隔为默认值（12 小时）" \
-                    "或输入 0 返回上级菜单"
-                read -r -p "请输入> " num
+                comp_box "$CORECFG_CUR_INTERVAL$interval $CORECFG_MIN"
+                btm_box "\033[36m$CORECFG_INPUT_INTERVAL2\033[0m" \
+                    "$CORECFG_RESET_INTERVAL2" \
+                    "$CORECFG_OR_BACK"
+                read -r -p "$CORECFG_INPUT> " num
                 if [ "$num" = "r" ]; then
                     interval2=12
                 elif [ -n "$num" ] && [ "$num" -eq "$num" ] 2>/dev/null; then
@@ -393,14 +395,14 @@ custproviders() {
             ;;
         3)
             if [ -z "$ua" ]; then
-                comp_box "当前浏览器UA：无"
+                comp_box "$CORECFG_CUR_UA_NONE"
             else
-                comp_box "当前浏览器UA：$ua"
+                comp_box "$CORECFG_CUR_UA$ua"
             fi
-            btm_box "\033[36m请直接输入浏览器UA\033[0m" \
-                "或输入 r 重置浏览器UA为默认值（clash.meta）" \
-                "或输入 0 返回上级菜单"
-            read -r -p "请输入> " text
+            btm_box "\033[36m$CORECFG_INPUT_UA\033[0m" \
+                "$CORECFG_RESET_UA" \
+                "$CORECFG_OR_BACK"
+            read -r -p "$CORECFG_INPUT> " text
             case "$text" in
             0)
                 continue
@@ -416,15 +418,15 @@ custproviders() {
             ;;
         4)
             if [ -z "$exclude_w" ]; then
-                comp_box "当前排除规则：无"
+                comp_box "$CORECFG_CUR_EXCLUDE_NONE"
             else
-                comp_box "当前排除规则：$exclude_w"
+                comp_box "$CORECFG_CUR_EXCLUDE$exclude_w"
             fi
 
-            btm_box "\033[36m请直接输入需要排除的节点关键字（支持正则，不支持空格）\033[0m" \
-                "或输入 c 清空排除规则" \
-                "或输入 0 返回上级菜单"
-            read -r -p "请输入> " text
+            btm_box "\033[36m$CORECFG_INPUT_EXCLUDE\033[0m" \
+                "$CORECFG_CLEAR_EXCLUDE" \
+                "$CORECFG_OR_BACK"
+            read -r -p "$CORECFG_INPUT> " text
             text=$(echo "$text" | sed 's/ //g') # 去空格
             case "$text" in
             0)
@@ -441,14 +443,14 @@ custproviders() {
             ;;
         5)
             if [ -z "$include_w" ]; then
-                comp_box "当前包含规则：无"
+                comp_box "$CORECFG_CUR_INCLUDE_NONE"
             else
-                comp_box "当前包含规则：$include_w"
+                comp_box "$CORECFG_CUR_INCLUDE$include_w"
             fi
-            btm_box "\033[36m请直接输入需要包含的节点关键字（支持正则，不支持空格）\033[0m" \
-                "或输入 c 清空包含规则" \
-                "或输入 0 返回上级菜单"
-            read -r -p "请输入> " text
+            btm_box "\033[36m$CORECFG_INPUT_INCLUDE\033[0m" \
+                "$CORECFG_CLEAR_INCLUDE" \
+                "$CORECFG_OR_BACK"
+            read -r -p "$CORECFG_INPUT> " text
             text=$(echo "$text" | sed 's/ //g') # 去空格
             case "$text" in
             0)
@@ -475,9 +477,9 @@ jump_core_config() {
     . "$CRASHDIR"/starts/core_config.sh && get_core_config
     if [ "$?" = 0 ]; then
         if [ "$inuserguide" != 1 ]; then
-            comp_box "是否启动服务以使配置文件生效："
-            btm_box "1) 是" \
-                "0) 否"
+            comp_box "$CORECFG_START_APPLY"
+            btm_box "1) $CORECFG_YES" \
+                "0) $CORECFG_NO"
             read -r -p "$COMMON_INPUT> " res
             if [ "$res" = 1 ]; then
                 start_core

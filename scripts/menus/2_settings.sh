@@ -41,8 +41,8 @@ settings() {
         1)
             if [ "$USER" != root ] && [ "$USER" != admin ]; then
                 comp_box "$SET_WARN_NONROOT"
-                btm_box "1) 是" \
-                    "0) 否，返回上级菜单"
+                btm_box "1) $SET_YES" \
+                    "0) $SET_NO_BACK"
                 read -r -p "$COMMON_INPUT> " res
                 if [ "$res" = 1 ]; then
                     set_redir_mod
@@ -63,13 +63,13 @@ settings() {
             line_break
             separator_line "="
             if [ "$skip_cert" = "OFF" ]; then
-                content_line "当前\033[33m已禁用\033[0m跳过本地证书验证，是否确认启用？"
+                content_line "$SET_SKIP_CERT_NOW\033[33m$SET_DISABLED\033[0m$SET_SKIP_CERT_ENABLE_Q"
             else
-                content_line "当前\033[33m已启用\033[0m跳过本地证书验证，是否确认禁用？"
+                content_line "$SET_SKIP_CERT_NOW\033[33m$SET_ENABLED\033[0m$SET_SKIP_CERT_DISABLE_Q"
             fi
             separator_line "="
-            btm_box "1) 是" \
-                "0) 否，返回上级菜单"
+            btm_box "1) $SET_YES" \
+                "0) $SET_NO_BACK"
             read -r -p "$COMMON_INPUT> " num
             if [ "$num" = 1 ]; then
                 if [ "$skip_cert" = OFF ]; then
@@ -86,9 +86,9 @@ settings() {
             ;;
         5)
             if [ "$sniffer" = "OFF" ]; then
-                comp_box "当前\033[33m已禁用\033[0m域名嗅探，是否确认启用？"
-                btm_box "1) 是" \
-                    "0) 否，返回上级菜单"
+                comp_box "$SET_SNIFFER_NOW\033[33m$SET_DISABLED\033[0m$SET_SNIFFER_ENABLE_Q"
+                btm_box "1) $SET_YES" \
+                    "0) $SET_NO_BACK"
                 read -r -p "$COMMON_INPUT> " num
                 if [ "$num" = 1 ]; then
                     line_break
@@ -108,9 +108,9 @@ settings() {
                 msg_alert "\033[31m$SET_SNIFFER_LOCKED\033[0m"
                 continue
             else
-                comp_box "当前\033[33m已启用\033[0m域名嗅探，是否确认禁用？"
-                btm_box "1) 是" \
-                    "0) 否，返回上级菜单"
+                comp_box "$SET_SNIFFER_NOW\033[33m$SET_ENABLED\033[0m$SET_SNIFFER_DISABLE_Q"
+                btm_box "1) $SET_YES" \
+                    "0) $SET_NO_BACK"
                 read -r -p "$COMMON_INPUT> " num
                 if [ "$num" = 1 ]; then
                     sniffer=OFF
@@ -121,15 +121,15 @@ settings() {
                 fi
             fi
             setconfig sniffer "$sniffer"
-            btm_box "\033[32m操作成功\033[0m"
+            btm_box "\033[32m$COMMON_SUCCESS\033[0m"
             sleep 1
             ;;
         6)
             if pidof CrashCore >/dev/null; then
                 comp_box "\033[33m$SET_CORE_RUNNING\033[0m" \
                     "$SET_CORE_STOP_CONFIRM"
-                btm_box "1) 是" \
-                    "0) 否，返回上级菜单"
+                btm_box "1) $SET_YES" \
+                    "0) $SET_NO_BACK"
                 read -r -p "$COMMON_INPUT> " res
                 if [ "$res" = 1 ]; then
                     "$CRASHDIR/start.sh" stop && set_adv_config
@@ -203,8 +203,8 @@ settings() {
             exit 0
             ;;
         b)
-            comp_box "1) 简体中文" \
-                "2) English" \
+            comp_box "1) $SET_LANG_ZH" \
+                "2) $SET_LANG_EN" \
                 "" \
                 "0) $COMMON_BACK"
             read -r -p "$COMMON_INPUT> " num
@@ -214,7 +214,7 @@ settings() {
                 ;;
             1)
                 echo chs >"$CRASHDIR"/configs/i18n.cfg
-                msg_alert "\033[32m切换成功！请重新运行脚本！\033[0m"
+                msg_alert "\033[32m$SET_SWITCH_RERUN\033[0m"
                 ;;
             2)
                 echo en >"$CRASHDIR"/configs/i18n.cfg
@@ -243,7 +243,7 @@ settings() {
                 . "$CRASHDIR"/menus/tui_lite.sh
                 ;;
             esac
-            msg_alert "\033[32m切换成功！\033[0m"
+            msg_alert "\033[32m$SET_SWITCH_OK\033[0m"
             ;;
         *)
             errornum
@@ -255,7 +255,7 @@ settings() {
 set_redir_config() {
     setconfig redir_mod "$redir_mod"
     setconfig dns_mod "$dns_mod"
-    msg_alert "\033[36m$SET_REDIR_APPLIED $redir_mod 模式\033[0m"
+    msg_alert "\033[36m$SET_REDIR_APPLIED $redir_mod $SET_MODE_SUFFIX\033[0m"
 }
 
 # 路由模式设置
@@ -269,15 +269,15 @@ set_redir_mod() {
         comp_box "\033[33m$SET_REDIR_RESTART_HINT\033[0m" \
             "$SET_REDIR_CURRENT\033[47;30m$redir_mod$MENU_MOD\033[0m；  $SET_CORE_CURRENT\033[47;30m$crashcore\033[0m"
         [ "$firewall_area" -le 3 ] && {
-            content_line "1) 设为\033[32m$SET_REDIR_REDIR\033[0m：\t$SET_REDIR_REDIRDES"
-            content_line "2) 设为\033[36m$SET_REDIR_MIX\033[0m：\t$SET_REDIR_MIXDES"
-            content_line "3) 设为\033[32m$SET_REDIR_TPROXY\033[0m：\t$SET_REDIR_TPROXYDES"
-            content_line "4) 设为\033[33m$SET_REDIR_TUN\033[0m：\t$SET_REDIR_TUNDES"
+            content_line "1) $SET_SET_TO\033[32m$SET_REDIR_REDIR\033[0m：\t$SET_REDIR_REDIRDES"
+            content_line "2) $SET_SET_TO\033[36m$SET_REDIR_MIX\033[0m：\t$SET_REDIR_MIXDES"
+            content_line "3) $SET_SET_TO\033[32m$SET_REDIR_TPROXY\033[0m：\t$SET_REDIR_TPROXYDES"
+            content_line "4) $SET_SET_TO\033[33m$SET_REDIR_TUN\033[0m：\t$SET_REDIR_TUNDES"
             content_line ""
         }
         [ "$firewall_area" = 5 ] && {
-            content_line "5) \033[32mTCP旁路转发\033[0m：    仅转发TCP流量至旁路由"
-            content_line "6) \033[36mT&U旁路转发\033[0m：    转发TCP&UDP流量至旁路由"
+            content_line "5) \033[32m$SET_BYPASS_TCP\033[0m：    $SET_BYPASS_TCP_DESC"
+            content_line "6) \033[36m$SET_BYPASS_TU\033[0m：    $SET_BYPASS_TU_DESC"
             content_line ""
         }
         btm_box "7) $SET_FW_AREA：\t\033[47;30m$firewall_area_dsc\033[0m" \
@@ -338,11 +338,11 @@ set_redir_mod() {
             fi
             ;;
         5)
-            redir_mod='TCP旁路转发'
+            redir_mod='$SET_BYPASS_TCP'
             set_redir_config
             ;;
         6)
-            redir_mod='T&U旁路转发'
+            redir_mod='$SET_BYPASS_TU'
             set_redir_config
             ;;
         7)
@@ -541,7 +541,7 @@ set_firewall_area() {
         comp_box "\033[33m$FW_AREA_NOTE_1\033[0m" \
             "\033[33m$FW_AREA_NOTE_2\033[0m" \
             "" \
-            "当前路由劫持范围：$firewall_area_dsc"
+            "$SET_FW_AREA_CURRENT$firewall_area_dsc"
         btm_box "1) \033[32m$FW_AREA_LAN\033[0m" \
             "2) \033[36m$FW_AREA_LOCAL\033[0m" \
             "3) \033[32m$FW_AREA_BOTH\033[0m" \
@@ -573,19 +573,19 @@ set_firewall_area() {
             common_success
             ;;
         5)
-            comp_box "\033[31m注意：\033[0m" \
-                "此功能存在多种风险如无网络基础请勿尝试！" \
-                "如需代理UDP，请确保旁路由运行了支持UDP代理的模式！" \
-                "如使用systemd方式启动，内核依然会空载运行，建议使用保守模式！" \
-                "\033[33m说明：\033[0m" \
-                "此功能不启动内核仅配置防火墙转发，且子设备无需额外设置网关DNS" \
-                "支持防火墙分流及设备过滤，支持部分定时任务，但不支持ipv6"
-            read -r -p "请直接输入旁路由IPV4地址> " bypass_host
+            comp_box "\033[31m$SET_WARN\033[0m" \
+                "$SET_BYPASS_WARN_1" \
+                "$SET_BYPASS_WARN_2" \
+                "$SET_BYPASS_WARN_3" \
+                "\033[33m$SET_DESC\033[0m" \
+                "$SET_BYPASS_DESC_1" \
+                "$SET_BYPASS_DESC_2"
+            read -r -p "$SET_INPUT_BYPASS_IPV4> " bypass_host
             [ -n "$bypass_host" ] && {
                 firewall_area=$num
                 setconfig firewall_area "$firewall_area"
                 setconfig bypass_host "$bypass_host"
-                redir_mod=TCP旁路转发
+                redir_mod=$SET_BYPASS_TCP
                 setconfig redir_mod $redir_mod
             }
             ;;
@@ -619,7 +619,7 @@ set_firewall_vm() {
         comp_box "$VM_INPUT_DESC_1" \
             "$VM_INPUT_DESC_2 \033[32m10.88.0.0/16 172.17.0.0/16\033[0m" \
             "" \
-            "Tips：直接回车确认可返回上级菜单"
+            "$SET_TIPS_ENTER_BACK"
         read -r -p "$VM_INPUT_NET> " text
         [ -n "$text" ] && vm_ipv4="$text" && vm_redir=ON
         ;;

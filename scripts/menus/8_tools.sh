@@ -6,6 +6,7 @@ __IS_MODULE_8_TOOLS_LOADED=1
 
 . "$CRASHDIR"/libs/logger.sh
 . "$CRASHDIR"/libs/web_get_bin.sh
+load_lang 8_tools
 
 stop_iptables() {
     iptables -w -t nat -D PREROUTING -p tcp -m multiport --dports "$ssh_port" -j REDIRECT --to-ports 22 >/dev/null 2>&1
@@ -14,7 +15,7 @@ stop_iptables() {
 
 ssh_tools() {
     while true; do
-        [ -n "$(cat /etc/firewall.user 2>&1 | grep '启用外网访问SSH服务')" ] && ssh_ol=禁止 || ssh_ol=开启
+        [ -n "$(cat /etc/firewall.user 2>&1 | grep '启用外网访问SSH服务')" ] && ssh_ol=$TOOLS_SSH_DISABLE || ssh_ol=$TOOLS_SSH_ENABLE
         [ -z "$ssh_port" ] && ssh_port=10022
         comp_box "\033[33m此功能仅针对使用Openwrt系统的设备生效，且不依赖服务\033[0m" \
             "\033[31m本功能不支持红米AX6S等镜像化系统设备，请勿尝试！\033[0m"
@@ -23,7 +24,7 @@ ssh_tools() {
             "3) \033[33m$ssh_ol\033[0m外网访问SSH" \
             "" \
             "0) 返回上级菜单 \033[0m"
-        read -r -p "请输入对应标号> " num
+        read -r -p "$COMMON_INPUT> " num
         case "$num" in
         "" | 0)
             break
@@ -34,16 +35,16 @@ ssh_tools() {
             if [ -z "$num" ]; then
                 errornum
             elif [ "$num" -gt 65535 ] || [ "$num" -le 999 ]; then
-                msg_alert "\033[31m输入错误！请输入正确的数值(1000-65535)！\033[0m"
+                msg_alert "\033[31m$TOOLS_ERR_PORT\033[0m"
             elif [ -n "$(netstat -ntul | grep :$num)" ]; then
-                msg_alert "\033[31m当前端口已被其他进程占用，请重新输入！\033[0m"
+                msg_alert "\033[31m$TOOLS_ERR_PORT_OCCUPIED\033[0m"
             else
                 ssh_port=$num
                 setconfig ssh_port "$ssh_port"
                 sed -i "/启用外网访问SSH服务/d" /etc/firewall.user
                 stop_iptables
 
-                msg_alert "\033[32m设置成功，请重新开启外网访问SSH功能！"
+                msg_alert "\033[32m$TOOLS_SSH_SET_OK"
             fi
             ;;
         2)
@@ -56,11 +57,11 @@ ssh_tools() {
                 [ -n "$(ckcmd ip6tables)" ] && ip6tables -w -t nat -A PREROUTING -p tcp -m multiport --dports "$ssh_port" -j REDIRECT --to-ports 22
                 echo "iptables -w -t nat -A PREROUTING -p tcp -m multiport --dports $ssh_port -j REDIRECT --to-ports 22 #启用外网访问SSH服务" >>/etc/firewall.user
                 [ -n "$(ckcmd ip6tables)" ] && echo "ip6tables -w -t nat -A PREROUTING -p tcp -m multiport --dports $ssh_port -j REDIRECT --to-ports 22 #启用外网访问SSH服务" >>/etc/firewall.user
-                comp_box "已开启外网访问SSH功能！"
+                comp_box "$TOOLS_SSH_ENABLED"
             else
                 sed -i "/启用外网访问SSH服务/d" /etc/firewall.user
                 stop_iptables
-                comp_box "已禁止外网访问SSH！"
+                comp_box "$TOOLS_SSH_DISABLED"
             fi
             break
             ;;
@@ -75,10 +76,10 @@ ssh_tools() {
 tools() {
     while true; do
         # 获取设置默认显示
-        grep -qE "^\s*[^#].*otapredownload" /etc/crontabs/root >/dev/null 2>&1 && mi_update=禁用 || mi_update=启用
-        [ "$mi_mi_autoSSH" = "已配置" ] && mi_mi_autoSSH_type=32m已配置 || mi_mi_autoSSH_type=31m未配置
+        grep -qE "^\s*[^#].*otapredownload" /etc/crontabs/root >/dev/null 2>&1 && mi_update=$TOOLS_DISABLE || mi_update=$TOOLS_ENABLE
+        [ "$mi_mi_autoSSH" = "$TOOLS_CONFIGURED" ] && mi_mi_autoSSH_type=32m$TOOLS_CONFIGURED || mi_mi_autoSSH_type=31m$COMMON_UNSET
         [ -f "$CRASHDIR"/tools/tun.ko ] && mi_tunfix=32mON || mi_tunfix=31mOFF
-        comp_box "\033[30;47m工具与优化\033[0m" \
+        comp_box "\033[30;47m$TOOLS_TITLE\033[0m" \
             "" \
             "\033[33m本页工具可能无法兼容全部Linux设备，请酌情使用！\033[0m" \
             "磁盘占用/所在目录：" \
@@ -91,8 +92,8 @@ tools() {
         [ "$systype" = "mi_snapshot" ] && content_line "6) 小米设备软固化SSH ———— \033[$mi_mi_autoSSH_type \033[0m"
         [ "$systype" = "mi_snapshot" ] && content_line "8) 小米设备Tun模块修复 ———— \033[$mi_tunfix \033[0m"
         btm_box "" \
-            "0) 返回上级菜单"
-        read -r -p "请输入对应标号> " num
+            "0) $COMMON_BACK"
+        read -r -p "$COMMON_INPUT> " num
         case "$num" in
         "" | 0)
             break
@@ -164,7 +165,7 @@ tools() {
                 comp_box "\033[33m本功能需要修改系统文件，不保证没有任何风险！\033[0m" \
                     "\033[33m本功能采集的Tun模块并不一定适用于你的设备！\033[0m"
                 btm_box "1) 我已知晓，出现问题会自行承担！" \
-                    "0) 返回上级菜单"
+                    "0) $COMMON_BACK"
                 read -r -p "请输入对应标号> " res
                 if [ "$res" = 1 ]; then
                     line_break
@@ -199,7 +200,7 @@ mi_autoSSH() {
     btm_box "请输入需要还原的SSH密码（不影响当前密码）" \
         "（回车可跳过）"
     read -r -p "请输入> " mi_mi_autoSSH_pwd
-    mi_mi_autoSSH=已配置
+    mi_mi_autoSSH=$TOOLS_CONFIGURED
     cp -f /etc/dropbear/dropbear_rsa_host_key "$CRASHDIR"/configs/dropbear_rsa_host_key 2>/dev/null
     cp -f /etc/dropbear/authorized_keys "$CRASHDIR"/configs/authorized_keys 2>/dev/null
     ckcmd nvram && {
@@ -211,7 +212,7 @@ mi_autoSSH() {
     }
     setconfig mi_mi_autoSSH $mi_mi_autoSSH
     setconfig mi_mi_autoSSH_pwd "$mi_mi_autoSSH_pwd"
-    msg_alert "\033[32m设置成功！\033[0m"
+    msg_alert "\033[32m$COMMON_SUCCESS\033[0m"
 }
 
 # 日志菜单
@@ -239,8 +240,8 @@ log_pusher() {
             "c) 设置设备名称	——\033[$device_s\033[0m" \
             "d) 清空日志文件" \
             "" \
-            "0) 返回上级菜单"
-        read -r -p "请输入对应标号> " num
+            "0) $COMMON_BACK"
+        read -r -p "$COMMON_INPUT> " num
         case "$num" in
         "" | 0)
             break
@@ -266,8 +267,8 @@ log_pusher() {
                     comp_box "1) 使用公共机器人	——不依赖内核服务" \
                         "2) 使用私人机器人	——需要额外申请" \
                         "" \
-                        "0) 返回上级菜单"
-                    read -r -p "请输入对应标号> " num
+                        "0) $COMMON_BACK"
+                    read -r -p "$COMMON_INPUT> " num
                     case "$num" in
                     0)
                         return 0
@@ -378,7 +379,7 @@ log_pusher() {
                 elif [ -n "$key" ]; then
                     comp_box "\033[33m请检查注册邮箱，完成账户验证\033[0m"
                     btm_box "1) 我已经验证完成" \
-                        "0) 返回上级菜单"
+                        "0) $COMMON_BACK"
                     read -r -p "我已经验证完成(1/0)> " res
                     if [ "$res" = 1 ]; then
                         comp_box "请通过 \033[32;4mhttps://pushover.net/apps/build\033[0m 生成\033[36mAPI Token\033[0m"
@@ -542,8 +543,8 @@ testcommand() {
             "5) 查看内核配置文件前40行" \
             "6) 测试代理服务器连通性(google.tw)" \
             "" \
-            "0) 返回上级目录"
-        read -r -p "请输入对应数字> " num
+            "0) $COMMON_BACK"
+        read -r -p "$COMMON_INPUT> " num
         case "$num" in
         0)
             break
@@ -661,8 +662,8 @@ debug() {
     content_line "8) 后台运行完整启动流程,输出执行错误并查找上下文，之后关闭进程"
     [ -s "$TMPDIR"/jsons/inbounds.json ] && content_line "9) 将\033[32m$config_tmp\033[0m下json文件合并为$TMPDIR/debug.json"
     btm_box "" \
-        "0) 返回上级目录"
-    read -r -p "请输入对应标号> " num
+        "0) $COMMON_BACK"
+    read -r -p "$COMMON_INPUT> " num
     case "$num" in
     0) ;;
     1)

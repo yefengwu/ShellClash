@@ -7,10 +7,11 @@ __IS_MODULE_9_UPGRADE_LOADED=1
 . "$CRASHDIR"/libs/check_dir_avail.sh
 . "$CRASHDIR"/libs/check_cpucore.sh
 . "$CRASHDIR"/libs/web_get_bin.sh
+load_lang 9_upgrade
 
 error_down() {
-    btm_box "\033[33m请尝试切换至其他安装源后重新下载！\033[0m" \
-        "或者参考 \033[32;4mhttps://juewuy.github.io/bdaz\033[0m 进行本地安装！"
+    btm_box "\033[33m$UPG_ERR_TRY_OTHER_SOURCE\033[0m" \
+        "$UPG_ERR_LOCAL_INSTALL"
     sleep 1
 }
 
@@ -22,25 +23,25 @@ upgrade() {
         fi
         [ -z "$core_v" ] && core_v=$crashcore
         core_v_new=$(eval echo \$"$crashcore"_v)
-        top_box "\033[30;47m更新与支持\033[0m" \
+        top_box "\033[30;47m$UPG_TITLE\033[0m" \
             "" \
-            "当前目录(\033[32m$CRASHDIR\033[0m)剩余空间：\033[36m$(dir_avail "$CRASHDIR" -h)\033[0m"
+            "$UPG_CUR_DIR_SPACE(\033[32m$CRASHDIR\033[0m)：\033[36m$(dir_avail "$CRASHDIR" -h)\033[0m"
         [ "$(dir_avail "$CRASHDIR")" -le 5120 ] && [ "$CRASHDIR" = "$BINDIR" ] && {
-            content_line "\033[33m当前目录剩余空间较低，建议开启小闪存模式！\033[0m"
+            content_line "\033[33m$UPG_LOW_SPACE_HINT\033[0m"
         }
         separator_line "="
-        btm_box "1) 更新\033[36m管理脚本\t\033[33m$versionsh_l\033[0m > \033[32m$version_new \033[36m$release_type\033[0m" \
-            "2) 切换/更新\033[33m内核文件\t\033[33m$core_v\033[0m > \033[32m$core_v_new\033[0m" \
-            "3) 安装/更新本地\033[32m数据库文件\033[0m" \
-            "4) 安装/更新本地\033[35mDashboard面板\033[0m" \
-            "5) 安装/更新本地\033[33m根证书文件\033[0m" \
-            "6) \033[32mPAC\033[0m自动代理查看" \
-            "7) 切换\033[36m安装源及版本分支\033[0m" \
-            "8) \033[31m卸载ShellCrash\033[0m" \
-            "9) \033[36m感谢列表！\033[0m" \
+        btm_box "1) $UPG_MENU_SCRIPT\033[36m$UPG_MENU_SCRIPT_NAME\t\033[33m$versionsh_l\033[0m > \033[32m$version_new \033[36m$release_type\033[0m" \
+            "2) $UPG_MENU_CORE\033[33m$UPG_MENU_CORE_NAME\t\033[33m$core_v\033[0m > \033[32m$core_v_new\033[0m" \
+            "3) $UPG_MENU_GEO\033[32m$UPG_MENU_GEO_NAME\033[0m" \
+            "4) $UPG_MENU_DB\033[35m$UPG_MENU_DB_NAME\033[0m" \
+            "5) $UPG_MENU_CRT\033[33m$UPG_MENU_CRT_NAME\033[0m" \
+            "6) \033[32mPAC\033[0m$UPG_MENU_PAC" \
+            "7) $UPG_MENU_SOURCE\033[36m$UPG_MENU_SOURCE_NAME\033[0m" \
+            "8) \033[31m$UPG_MENU_UNINSTALL\033[0m" \
+            "9) \033[36m$UPG_MENU_THANKS\033[0m" \
             "" \
-            "0) 返回上级菜单"
-        read -r -p "请输入对应数字> " num
+            "0) $COMMON_BACK"
+        read -r -p "$COMMON_INPUT> " num
         case "$num" in
         "" | 0)
             break
@@ -61,8 +62,8 @@ upgrade() {
             setcrt
             ;;
         6)
-            msg_alert -t 2 "PAC配置链接为：\033[30;47m http://$host:$db_port/ui/pac \033[0m" \
-                "PAC的使用教程请参考：\033[4;32mhttps://juewuy.github.io/ehRUeewcv\033[0m"
+            msg_alert -t 2 "$UPG_PAC_LINK\033[30;47m http://$host:$db_port/ui/pac \033[0m" \
+                "$UPG_PAC_GUIDE\033[4;32mhttps://juewuy.github.io/ehRUeewcv\033[0m"
             ;;
         7)
             setserver
@@ -71,7 +72,7 @@ upgrade() {
             . "$CRASHDIR"/menus/uninstall.sh && uninstall
             ;;
         9)
-            comp_box "感谢以下项目及其开发者们的无私奉献！"
+            comp_box "$UPG_THANKS_TITLE"
             btm_box "\033[32mClash              \033[0m开发：\033[36mDreamacro\033[0m" \
                 "" \
                 "\033[32msing-box           \033[0m开发：\033[36mSagerNet\033[0m" \
@@ -95,7 +96,7 @@ upgrade() {
                 "\033[32mDustinWin          \033[0m开发：\033[36mDustinWin\033[0m" \
                 "开发者地址：\033[32mhttps://github.com/DustinWin\033[0m" \
                 ""
-            btm_box "特别感谢：\033[36m所有帮助及赞助过此项目的同仁们！\033[0m"
+            btm_box "$UPG_THANKS_SPECIAL"
             sleep 2
             ;;
         *)
@@ -109,18 +110,18 @@ upgrade() {
 checkupdate() {
     line_break
     separator_line "="
-    content_line "\033[32m正在检查更新......\033[0m"
+    content_line "\033[32m$UPG_CHECKING\033[0m"
     get_bin "$TMPDIR"/version_new version echooff
     [ "$?" = "0" ] && {
         version_new=$(cat "$TMPDIR"/version_new)
         get_bin "$TMPDIR"/version_new bin/version echooff
-        content_line "\033[32m检查更新成功\033[0m"
+        content_line "\033[32m$UPG_CHECK_OK\033[0m"
         separator_line "="
     }
     if [ "$?" = "0" ]; then
         . "$TMPDIR"/version_new 2>/dev/null
     else
-        content_line "\033[31m检查更新失败！请尝试切换其他安装源！\033[0m"
+        content_line "\033[31m$UPG_CHECK_FAIL\033[0m"
         separator_line "="
         setserver
         if [ "$checkupdate" != false ]; then
@@ -137,21 +138,21 @@ getscripts() {
     get_bin "$TMPDIR"/ShellCrash.tar.gz ShellCrash.tar.gz
 
     if [ "$?" != "0" ]; then
-        content_line "\033[33m文件下载失败！\033[0m"
+        content_line "\033[33m$UPG_DOWNLOAD_FAIL\033[0m"
         error_down
     else
         "$CRASHDIR"/start.sh stop 2>/dev/null
         # 解压
-        content_line "开始解压文件......"
+        content_line "$UPG_EXTRACTING"
         mkdir -p "$CRASHDIR" >/dev/null
         tar -zxf "$TMPDIR/ShellCrash.tar.gz" ${tar_para} -C "$CRASHDIR"/
         if [ $? -ne 0 ]; then
-            content_line "\033[33m文件解压失败！\033[0m"
+            content_line "\033[33m$UPG_EXTRACT_FAIL\033[0m"
             error_down
         else
             . "$CRASHDIR"/init.sh >/dev/null
             echo "$release_type" | grep -qE '^[0-9]' && setconfig userguide #回退时重新新手引导
-            content_line "\033[32m脚本更新成功！\033[0m"
+            content_line "\033[32m$UPG_SCRIPT_OK\033[0m"
             separator_line "="
         fi
     fi
@@ -161,13 +162,13 @@ getscripts() {
 
 setscripts() {
     while true; do
-        comp_box "\033[33m注意：更新时会停止服务！\033[0m" \
+        comp_box "\033[33m$UPG_SCRIPT_WARN\033[0m" \
             "" \
-            "当前脚本版本为：\033[36m$versionsh_l\033[0m" \
-            "最新脚本版本为：\033[32m$version_new\033[0m"
-        btm_box "1) 立即更新" \
-            "0) 返回上级菜单"
-        read -r -p "请输入对应标号> " res
+            "$UPG_SCRIPT_CUR_VER\033[36m$versionsh_l\033[0m" \
+            "$UPG_SCRIPT_NEW_VER\033[32m$version_new\033[0m"
+        btm_box "1) $UPG_UPDATE_NOW" \
+            "0) $COMMON_BACK"
+        read -r -p "$COMMON_INPUT> " res
         case "$res" in
         "" | 0)
             break
@@ -176,7 +177,7 @@ setscripts() {
             # 下载更新
             getscripts
             # 提示
-            msg_alert "\033[32m管理脚本更新成功!\033[0m"
+            msg_alert "\033[32m$UPG_SCRIPT_MGR_OK\033[0m"
             line_break
             exit 0
             ;;
@@ -192,10 +193,10 @@ setscripts() {
 setcpucore() {
     cpucore_list="armv5 armv7 arm64 386 amd64 mipsle-softfloat mipsle-hardfloat mips-softfloat"
 
-    comp_box "\033[31m仅适合脚本无法正确识别核心或核心无法正常运行时使用！\033[0m" \
-        "不知道如何获取核心版本？\033[0m" \
-        "请参考：\033[36;4mhttps://juewuy.github.io/bdaz\033[0m"
-    content_line "当前可供在线下载的处理器架构为："
+    comp_box "\033[31m$UPG_CPUCORE_HINT1\033[0m" \
+        "$UPG_CPUCORE_HINT2" \
+        "$UPG_CPUCORE_HINT3\033[36;4mhttps://juewuy.github.io/bdaz\033[0m"
+    content_line "$UPG_CPUCORE_LIST"
     separator_line "-"
 
     echo "$cpucore_list" |
@@ -205,11 +206,11 @@ setcpucore() {
         done
 
     separator_line "="
-    read -r -p "请输入对应标号> " num
+    read -r -p "$COMMON_INPUT> " num
     [ -n "$num" ] && setcpucore=$(echo "$cpucore_list" | awk '{print $"'"$num"'"}')
     if [ -z "$setcpucore" ]; then
         cpucore=""
-        msg_alert "\033[31m请输入正确的处理器架构！\033[0m"
+        msg_alert "\033[31m$UPG_CPUCORE_ERR\033[0m"
     else
         cpucore=$setcpucore
         setconfig cpucore "$cpucore"
@@ -220,14 +221,14 @@ setcpucore() {
 setcoretype() {
     while true; do
         echo "$crashcore" | grep -q 'singbox' && core_old=singbox || core_old=clash
-        comp_box "\033[33m请确认该自定义内核的类型：\033[0m"
+        comp_box "\033[33m$UPG_CORETYPE_CONFIRM\033[0m"
         btm_box "1) Mihomo(Meta)" \
             "2) Singbox-reF1nd" \
             "3) Singbox" \
             "4) Clash" \
             "" \
-            "0) 返回上级菜单"
-        read -r -p "请输入对应标号> " num
+            "0) $COMMON_BACK"
+        read -r -p "$COMMON_INPUT> " num
         case "$num" in
         "" | 0) ;;
         1)
@@ -258,12 +259,12 @@ switch_core() {
     [ "$core_new" != "$core_old" ] && {
         [ "$dns_mod" = "redir_host" ] && [ "$core_old" = "clash" ] && setconfig dns_mod mix                               #singbox自动切换dns
         [ "$dns_mod" = "mix" ] && [ "$crashcore" = 'clash' -o "$crashcore" = 'clashpre' ] && setconfig dns_mod redir_host #singbox自动切换dns
-        comp_box "\033[33m已从$core_old内核切换至$core_new内核\033[0m" \
-            "\033[33m二者Geo数据库及yaml/json配置文件不通用\033[0m" \
-            "是否保留相关数据库文件？"
-        btm_box "1) 保留" \
-            "0) 不保留"
-        read -r -p "请输入对应标号> " res
+        comp_box "\033[33m$UPG_CORE_SWITCH_PREFIX$core_old$UPG_CORE_SWITCH_MID$core_new$UPG_CORE_SWITCH_SUFFIX\033[0m" \
+            "\033[33m$UPG_CORE_SWITCH_WARN\033[0m" \
+            "$UPG_CORE_SWITCH_KEEP"
+        btm_box "1) $UPG_KEEP" \
+            "0) $UPG_NOT_KEEP"
+        read -r -p "$COMMON_INPUT> " res
         [ "$res" = '0' ] && {
             [ "$core_old" = "clash" ] && {
                 geodate='Country.mmdb GeoSite.dat ruleset/*.mrs ruleset/*.yaml ruleset/*.yml'
@@ -355,8 +356,8 @@ checkcustcore() {
                     content_line "$line"
                 done
             btm_box "" \
-                "0) 返回上级菜单"
-            read -r -p "请输入对应标号> " num
+                "0) $COMMON_BACK"
+            read -r -p "$COMMON_INPUT> " num
             case "$num" in
             0)
                 return 0
@@ -408,8 +409,8 @@ setcustcore() {
             "4) Premium-2023.08.17内核(已停止维护)" \
             "9) \033[33m自定义内核链接 \033[0m" \
             "" \
-            "0) 返回上级菜单"
-        read -r -p "请输入对应标号> " num
+            "0) $COMMON_BACK"
+        read -r -p "$COMMON_INPUT> " num
         case "$num" in
         "" | 0)
             break
@@ -469,7 +470,7 @@ setziptype() {
     sub_content_line "占用可能略高，稳定性自测"
     content_line "0) 返回上级菜单"
     separator_line "="
-    read -r -p "请输入对应标号> " num
+    read -r -p "$COMMON_INPUT> " num
     case "$num" in
     "" | 0) ;;
     1)
@@ -524,8 +525,8 @@ setcore() {
             "7) \033[32m更新当前内核\033[0m" \
             "9) 手动指定处理器架构" \
             "" \
-            "0) 返回上级菜单"
-        read -r -p "请输入对应标号> " num
+            "0) $COMMON_BACK"
+        read -r -p "$COMMON_INPUT> " num
         case "$num" in
         "" | 0)
             break
@@ -654,7 +655,7 @@ checkcustgeo() {
             content_line ""
             content_line "0) 返回上级菜单"
             separator_line "="
-            read -r -p "请输入对应标号> " num
+            read -r -p "$COMMON_INPUT> " num
             case "$num" in
             "" | 0)
                 break
@@ -712,7 +713,7 @@ setcustgeo() {
         content_line ""
         content_line "0) 返回上级菜单"
         separator_line "="
-        read -r -p "请输入对应标号> " num
+        read -r -p "$COMMON_INPUT> " num
         case "$num" in
         "" | 0)
             break
@@ -776,8 +777,8 @@ setgeo() {
             "8) \033[36m自定义数据库文件\033[0m" \
             "9) \033[31m清理数据库文件\033[0m" \
             "" \
-            "0) 返回上级菜单"
-        read -r -p "请输入对应标号> " num
+            "0) $COMMON_BACK"
+        read -r -p "$COMMON_INPUT> " num
         case "$num" in
         "" | 0)
             break
@@ -820,8 +821,8 @@ setgeo() {
                 comp_box "\033[33m这将清理$CRASHDIR目录及/ruleset目录下所有数据库文件！\033[0m" \
                     "清理后启动服务即可自动下载所需文件"
                 btm_box "1) 确认清理" \
-                    "0) 返回上级菜单"
-                read -r -p "请输入对应标号> " res
+                    "0) $COMMON_BACK"
+                read -r -p "$COMMON_INPUT> " res
                 case "$res" in
                 "" | 0)
                     break
@@ -898,8 +899,8 @@ dbdir() {
     if [ -f /www/clash/CNAME ] || [ -f "$CRASHDIR"/ui/CNAME ]; then
         comp_box "\033[33m检测到已经安装过本地面板\033[0m"
         btm_box "1) 升级/覆盖安装" \
-            "0) 返回上级菜单"
-        read -r -p "请输入对应标号> " res
+            "0) $COMMON_BACK"
+        read -r -p "$COMMON_INPUT> " res
         if [ "$res" = 1 ]; then
             rm -rf "$BINDIR"/ui
             [ -f /www/clash/CNAME ] && rm -rf /www/clash && dbdir=/www/clash
@@ -914,8 +915,8 @@ dbdir() {
         btm_box "1) 在${CRASHDIR}/ui目录安装" \
             "2) 在/www/clash目录安装" \
             "" \
-            "0) 返回上级菜单"
-        read -r -p "请输入对应标号> " num
+            "0) $COMMON_BACK"
+        read -r -p "$COMMON_INPUT> " num
         case "$num" in
         "" | 0)
             return 0
@@ -958,8 +959,8 @@ setdb() {
             "6) 安装\033[32mYacd面板\033[0m（约1.1mb）" \
             "9) \033[31m卸载本地面板\033[0m" \
             "" \
-            "0) 返回上级菜单"
-        read -r -p "请输入对应标号> " num
+            "0) $COMMON_BACK"
+        read -r -p "$COMMON_INPUT> " num
         case "$num" in
         "" | 0)
             break
@@ -994,8 +995,8 @@ setdb() {
             while true; do
                 comp_box "是否卸载本地面板？"
                 btm_box "1) 确认卸载" \
-                    "0) 返回上级菜单"
-                read -r -p "请输入对应标号> " res
+                    "0) $COMMON_BACK"
+                read -r -p "$COMMON_INPUT> " res
                 case "$res" in
                 "" | 0)
                     break
@@ -1074,7 +1075,7 @@ setcrt() {
             fi
             content_line "0) 返回上级菜单"
             separator_line "="
-            read -r -p "请输入对应标号> " res
+            read -r -p "$COMMON_INPUT> " res
             case "$res" in
             "" | 0)
                 break
@@ -1136,8 +1137,8 @@ setserver() {
             "d) 自定义源地址（用于本地源或自建源）" \
             "e) \033[31m版本回退\033[0m" \
             "" \
-            "0) 返回上级菜单"
-        read -r -p "请输入对应标号> " num
+            "0) $COMMON_BACK"
+        read -r -p "$COMMON_INPUT> " num
         case "$num" in
         "" | 0)
             checkupdate=false
@@ -1179,8 +1180,8 @@ setserver() {
                 content_line "是否依然切换到开发版？"
                 separator_line "-"
                 btm_box "1) 确认切换" \
-                    "0) 返回上级菜单"
-                read -r -p "请输入对应标号> " res
+                    "0) $COMMON_BACK"
+                read -r -p "$COMMON_INPUT> " res
                 case "$res" in
                 "" | 0)
                     break
@@ -1225,8 +1226,8 @@ setserver() {
                     content_line "\033[31m请选择想要回退至的具体版本：\033[0m"
                     list_box "$list"
                     btm_box "" \
-                        "0) 返回上级菜单"
-                    read -r -p "请输入对应标号> " num
+                        "0) $COMMON_BACK"
+                    read -r -p "$COMMON_INPUT> " num
                     if [ -z "$num" ] || [ "$num" = 0 ]; then
                         continue
                     elif [ "$num" -le $(echo "$list" | awk 'END{print NR}') ]; then
