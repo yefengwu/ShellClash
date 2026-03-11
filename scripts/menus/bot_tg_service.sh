@@ -1,6 +1,8 @@
 	
 . "$CRASHDIR"/libs/set_cron.sh
 
+load_lang bot_tg
+
 bot_tg_start(){
 	. "$CRASHDIR"/starts/start_legacy.sh
 	start_legacy "$CRASHDIR/menus/bot_tg.sh" 'bot_tg'
@@ -12,5 +14,5 @@ bot_tg_stop(){
 	rm -f "$TMPDIR/bot_tg.pid"
 }
 bot_tg_cron(){
-	cronset 'TG_BOT守护进程' "* * * * * /bin/sh $CRASHDIR/starts/start_legacy_wd.sh bot_tg #ShellCrash-TG_BOT守护进程"
+	cronset "$BOT_TG_CRON_NAME" "* * * * * /bin/sh $CRASHDIR/starts/start_legacy_wd.sh bot_tg #$BOT_TG_CRON_NAME"
 }

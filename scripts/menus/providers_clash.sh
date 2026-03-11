@@ -4,6 +4,8 @@
 [ -n "$__IS_PROVIDERS_CLASH" ] && return
 __IS_PROVIDERS_CLASH=1
 
+load_lang providers
+
 . "$CRASHDIR"/libs/web_get_bin.sh
 
 # 生成clash的providers配置文件
@@ -17,10 +19,10 @@ gen_providers() {
     if [ -s "$provider_temp_file" ]; then
         ln -sf "$provider_temp_file" "$TMPDIR"/provider_temp_file
     else
-        msg_alert "\033[33m正在获取在线模版......\033[0m"
+        msg_alert "\033[33m$PROVIDERS_FETCHING_TEMPLATE\033[0m"
         get_bin "$TMPDIR"/provider_temp_file "rules/${CORE_TYPE}_providers/$provider_temp_file"
         [ -z "$(grep -o 'rules' "$TMPDIR"/provider_temp_file)" ] && {
-            msg_alert "\033[31m下载失败，请尝试更换安装源！\033[0m"
+            msg_alert "\033[31m$PROVIDERS_DOWNLOAD_FAILED\033[0m"
             . "$CRASHDIR"/menus/9_upgrade.sh && setserver
             setproviders
         }
@@ -61,21 +63,21 @@ gen_providers() {
     # 调用内核测试
     . "$CRASHDIR"/starts/check_core.sh && check_core && "$TMPDIR"/CrashCore -t -d "$BINDIR" -f "$TMPDIR"/config.yaml
     if [ "$?" = 0 ]; then
-        msg_alert "\033[32m配置文件生成成功！\033[0m"
+        msg_alert "\033[32m$PROVIDERS_GEN_OK\033[0m"
         mkdir -p "$CRASHDIR"/yamls
         mv -f "$TMPDIR"/config.yaml "$CRASHDIR"/yamls/config.yaml
-        comp_box "是否立即启动/重启服务？"
-        btm_box "1) 是" \
-            "0) 否"
+        comp_box "$PROVIDERS_RESTART_ASK"
+        btm_box "1) $PROVIDERS_YES" \
+            "0) $PROVIDERS_NO"
         read -r -p "$COMMON_INPUT> " res
         [ "$res" = 1 ] && {
-            start_core && . "$CRASHDIR"/libs/set_cron.sh && cronset '更新订阅'
+            start_core && . "$CRASHDIR"/libs/set_cron.sh && cronset "$PROVIDERS_CRON_SUB_UPDATE"
             exit
         }
     else
         rm -rf "$TMPDIR"/CrashCore
         rm -rf "$TMPDIR"/config.yaml
-        msg_alert "\033[31m生成配置文件出错，请仔细检查输入！\033[0m"
+        msg_alert "\033[31m$PROVIDERS_GEN_FAILED\033[0m"
     fi
 }
 

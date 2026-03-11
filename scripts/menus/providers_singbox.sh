@@ -4,6 +4,8 @@
 [ -n "$__IS_PROVIDERS_SINGBOX" ] && return
 __IS_PROVIDERS_SINGBOX=1
 
+load_lang providers
+
 . "$CRASHDIR"/libs/web_get_bin.sh
 
 # 生成singbox的providers配置文件
@@ -16,10 +18,10 @@ gen_providers() {
     if [ -s "$provider_temp_file" ]; then
         ln -sf "$provider_temp_file" "$TMPDIR"/provider_temp_file
     else
-        msg_alert "\033[33m正在获取在线模版......\033[0m"
+        msg_alert "\033[33m$PROVIDERS_FETCHING_TEMPLATE\033[0m"
         get_bin "$TMPDIR"/provider_temp_file "rules/${CORE_TYPE}_providers/$provider_temp_file"
         [ -z "$(grep -o 'route' "$TMPDIR"/provider_temp_file)" ] && {
-            msg_alert "\033[31m下载失败，请尝试更换安装源！\033[0m"
+            msg_alert "\033[31m$PROVIDERS_DOWNLOAD_FAILED\033[0m"
             . "$CRASHDIR"/menus/9_upgrade.sh && setserver
             setproviders
         }
@@ -65,21 +67,21 @@ EOF
     # 调用内核测试
     . "$CRASHDIR"/starts/check_core.sh && check_core && "$TMPDIR"/CrashCore merge "$TMPDIR"/config.json -C "$TMPDIR"/providers
     if [ "$?" = 0 ]; then
-        msg_alert "\033[32m配置文件生成成功！如果启动超时建议更新里手动安装Singbox-srs数据库常用包！\033[0m"
+        msg_alert "\033[32m$PROVIDERS_GEN_OK_SINGBOX\033[0m"
         mkdir -p "$CRASHDIR"/jsons
         mv -f "$TMPDIR"/config.json "$CRASHDIR"/jsons/config.json
         rm -rf "$TMPDIR"/providerss
-        comp_box "是否立即启动/重启服务？"
-        btm_box "1) 是" \
-            "0) 否"
+        comp_box "$PROVIDERS_RESTART_ASK"
+        btm_box "1) $PROVIDERS_YES" \
+            "0) $PROVIDERS_NO"
         read -r -p "$COMMON_INPUT> " res
         [ "$res" = 1 ] && {
-            start_core && . "$CRASHDIR"/libs/set_cron.sh && cronset '更新订阅'
+            start_core && . "$CRASHDIR"/libs/set_cron.sh && cronset "$PROVIDERS_CRON_SUB_UPDATE"
             exit
         }
     else
         rm -rf "$TMPDIR"/CrashCore
-        msg_alert "\033[31m生成配置文件出错，请仔细检查输入！\033[0m"
+        msg_alert "\033[31m$PROVIDERS_GEN_FAILED\033[0m"
         # rm -rf "$TMPDIR"/providers
     fi
 }

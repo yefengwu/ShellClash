@@ -4,6 +4,8 @@
 [ -n "$__IS_MODULE_PROVIDERS" ] && return
 __IS_MODULE_PROVIDERS=1
 
+load_lang providers
+
 if [ "$crashcore" = singboxr ]; then
     CORE_TYPE=singbox
 else
@@ -21,12 +23,12 @@ providers() {
             [ -z "$provider_temp_des" ] && provider_temp_des=$provider_temp_file
         fi
 
-        comp_box "1) \033[32m生成\033[0m包含全部提供者的配置文件" \
-            "2) 选择\033[33m规则模版\033[0m     \033[32m$provider_temp_des\033[0m" \
-            "3) \033[33m清理\033[0mproviders目录文件" \
+        comp_box "1) \033[32m$PROVIDERS_MENU_GEN\033[0m" \
+            "2) $PROVIDERS_MENU_TEMPLATE     \033[32m$provider_temp_des\033[0m" \
+            "3) $PROVIDERS_MENU_CLEAN" \
             "" \
             "0) $COMMON_BACK"
-        read -r -p "请输入对应字母或数字> " num
+        read -r -p "$PROVIDERS_INPUT> " num
         case "$num" in
         "" | 0)
             break
@@ -36,25 +38,25 @@ providers() {
                 . "$CRASHDIR/menus/providers_$CORE_TYPE.sh"
                 gen_providers
             else
-                msg_alert "\033[31m你还未添加链接或本地配置文件，请先添加！\033[0m"
+                msg_alert "\033[31m$PROVIDERS_EMPTY_HINT\033[0m"
             fi
             ;;
         2)
             list=$(cat "$CRASHDIR/configs/${CORE_TYPE}_providers.list" | awk '{print $1}')
 
-            comp_box "当前规则模版为：\033[32m$provider_temp_des\033[0m" \
-                "\033[33m请选择在线模版：\033[0m"
+            comp_box "$PROVIDERS_TEMPLATE_CURRENT\033[32m$provider_temp_des\033[0m" \
+                "\033[33m$PROVIDERS_TEMPLATE_SELECT\033[0m"
             list_box "$list"
             btm_box "" \
-                "a) 使用\033[36m本地模版\033[0m" \
+                "a) $PROVIDERS_TEMPLATE_LOCAL" \
                 "" \
                 "0) $COMMON_BACK"
-            read -r -p "请输入对应字母或数字> " num
+            read -r -p "$PROVIDERS_INPUT> " num
             case "$num" in
             "" | 0) ;;
             a)
                 line_break
-                read -r -p "请输入模版的路径（绝对路径）> " dir
+                read -r -p "$PROVIDERS_TEMPLATE_PATH> " dir
                 if [ -s "$dir" ]; then
                     provider_temp_file=$dir
                     if setconfig provider_temp_"$CORE_TYPE" "$provider_temp_file"; then
@@ -63,7 +65,7 @@ providers() {
                         common_failed
                     fi
                 else
-                    msg_alert "\033[31m输入错误，找不到对应模版文件！\033[0m"
+                    msg_alert "\033[31m$PROVIDERS_TEMPLATE_NOT_FOUND\033[0m"
                 fi
                 ;;
             *)
@@ -81,11 +83,11 @@ providers() {
             esac
             ;;
         3)
-            comp_box "\033[33m将清空 $CRASHDIR/providers 目录下所有内容\033[0m" \
+            comp_box "\033[33m$PROVIDERS_CLEAN_WARN $CRASHDIR/providers $PROVIDERS_CLEAN_WARN_END\033[0m" \
                 "" \
-                "是否继续？"
-            btm_box "1) 是" \
-                "0) 否"
+                "$PROVIDERS_CLEAN_CONFIRM"
+            btm_box "1) $PROVIDERS_YES" \
+                "0) $PROVIDERS_NO"
             read -r -p "$COMMON_INPUT> " res
             if [ "$res" = "1" ]; then
                 if rm -rf "$CRASHDIR"/providers; then

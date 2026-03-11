@@ -4,9 +4,12 @@
 . "$CRASHDIR"/libs/web_json.sh
 . "$CRASHDIR"/libs/set_config.sh
 . "$CRASHDIR"/libs/web_get_lite.sh
+. "$CRASHDIR"/libs/i18n.sh
 . "$CRASHDIR"/menus/running_status.sh
 . "$CRASHDIR"/configs/gateway.cfg
 . "$CRASHDIR"/configs/ShellCrash.cfg
+
+load_lang bot_tg
 
 TMPDIR='/tmp/ShellCrash'
 API="https://api.telegram.org/bot$TG_TOKEN"
@@ -32,15 +35,15 @@ send_msg(){
 }
 send_help(){
     TEXT=$(cat <<EOF
-进群讨论：
+$BOT_TG_HELP_GROUP
 https://t.me/+6AElkMDzwPxmMmM1
-项目地址：
+$BOT_TG_HELP_PROJECT
 https://github.com/juewuy/ShellClash
-相关教程：
+$BOT_TG_HELP_GUIDE
 https://juewuy.github.io
-请喝咖啡：
+$BOT_TG_HELP_COFFEE
 https://juewuy.github.io/yOF4Yf06Q/
-友情机场： 
+$BOT_TG_HELP_AIRPORT
 https://dler.pro/auth/register?affid=89698
 https://pub.bigmeok.me?code=2PuWY9I7
 EOF
@@ -51,31 +54,31 @@ send_menu(){
 	#获取运行状态
 	PID=$(pidof CrashCore | awk '{print $NF}')
 	if [ -n "$PID" ]; then
-		run='🟢正在运行'
+		run="$BOT_TG_RUN_ON"
 		running_status
 	else
-		run='🟡未运行'
+		run="$BOT_TG_RUN_OFF"
 	fi
 	corename=$(echo $crashcore | sed 's/singboxr/SingBoxR/' | sed 's/singbox/SingBox/' | sed 's/clash/Clash/' | sed 's/meta/Mihomo/')
     TEXT=$(cat <<EOF
-*欢迎使用ShellCrash！*_${versionsh_l}_
-$corename服务$run
-【*$redir_mod*】内存占用：$VmRSS
-已运行：$day$time
-请选择操作：
+*$BOT_TG_WELCOME*_${versionsh_l}_
+$corename$BOT_TG_SERVICE$run
+【*$redir_mod*】$BOT_TG_MEM_USED$VmRSS
+$BOT_TG_RUNNING_TIME$day$time
+$BOT_TG_SELECT_ACTION
 EOF
 )
     MENU=$(cat <<EOF
 {
   "inline_keyboard":[
     [
-      {"text":"✈️ 启用劫持","callback_data":"start_redir"},
-      {"text":"💧 纯净模式","callback_data":"stop_redir"},
-      {"text":"🕹 重启服务","callback_data":"restart"}
+      {"text":"$BOT_TG_BTN_START","callback_data":"start_redir"},
+      {"text":"$BOT_TG_BTN_PURE","callback_data":"stop_redir"},
+      {"text":"$BOT_TG_BTN_RESTART","callback_data":"restart"}
     ],
     [
-      {"text":"📄 查看日志","callback_data":"readlog"},
-	  {"text":"🔃 文件传输","callback_data":"transport"}
+      {"text":"$BOT_TG_BTN_LOG","callback_data":"readlog"},
+	  {"text":"$BOT_TG_BTN_TRANSFER","callback_data":"transport"}
     ]
   ]
 }
@@ -85,7 +88,7 @@ web_json_post "$API/sendMessage" "{\"chat_id\":\"$TG_CHATID\",\"text\":\"$TEXT\"
 }
 ### --- 文件传输 --- ###
 send_transport_menu(){ 
-    TEXT='请选择需要上传或下载的具体文件：'
+    TEXT="$BOT_TG_SELECT_FILE"
 	if echo "$crashcore" | grep -q 'singbox';then
 		config_type=json
 	else
@@ -95,23 +98,23 @@ send_transport_menu(){
 	if curl -h >/dev/null 2>&1;then
 		CURL_KB=$(cat <<EOF
 	[
-      {"text":"📥 下载日志","callback_data":"ts_get_log"},
-      {"text":"💾 备份设置","callback_data":"ts_get_bak"},
-      {"text":"⬇️ 下载配置","callback_data":"ts_get_ccf"}
+      {"text":"$BOT_TG_BTN_GET_LOG","callback_data":"ts_get_log"},
+      {"text":"$BOT_TG_BTN_GET_BAK","callback_data":"ts_get_bak"},
+      {"text":"$BOT_TG_BTN_GET_CFG","callback_data":"ts_get_ccf"}
     ],
 EOF
 )
 	else
-		CURL_KB='[{"text":"⚠️ 因当前设备缺少curl应用，仅支持上传功能！","callback_data":"noop"}],'
+		CURL_KB='[{"text":"$BOT_TG_NO_CURL","callback_data":"noop"}],'
 	fi
     MENU=$(cat <<EOF
 {
   "inline_keyboard":[
 	$CURL_KB
     [
-      {"text":"🪐 上传内核","callback_data":"ts_up_core"},
-	  {"text":"🔄 还原设置","callback_data":"ts_up_bak"},
-      {"text":"⬆️ 上传配置","callback_data":"ts_up_ccf"}
+      {"text":"$BOT_TG_BTN_UP_CORE","callback_data":"ts_up_core"},
+	  {"text":"$BOT_TG_BTN_UP_BAK","callback_data":"ts_up_bak"},
+      {"text":"$BOT_TG_BTN_UP_CFG","callback_data":"ts_up_ccf"}
     ]
   ]
 }
@@ -125,17 +128,17 @@ process_file(){
 	case "$FILE_TYPE" in
 		1)
 			. "$CRASHDIR"/libs/core_tools.sh
-			core_check "$TMPDIR/$FILE_NAME" && res='成功!即将重启服务！' || res='失败,请仔细检查文件或重试！'
-			send_msg "内核更新$res"
+			core_check "$TMPDIR/$FILE_NAME" && res="$BOT_TG_UPLOAD_OK" || res="$BOT_TG_UPLOAD_FAIL"
+			send_msg "$BOT_TG_CORE_UPDATE$res"
 			sleep 2
 			"$CRASHDIR"/start.sh start
 		;;
 		2)
-			tar -zxf "$TMPDIR/$FILE_NAME" -C "$CRASHDIR"/configs && res='配置文件已还原，请手动重启服务！' || res='解压还原失败,请仔细检查文件或重试！'
+			tar -zxf "$TMPDIR/$FILE_NAME" -C "$CRASHDIR"/configs && res="$BOT_TG_CFG_RESTORED" || res="$BOT_TG_RESTORE_FAIL"
 			send_msg "$res"
 		;;
 		3)
-			mv -f "$TMPDIR/$FILE_NAME" "$CRASHDIR/${config_type}s/" && res='配置文件已上传，请手动重启服务！' || res='上传失败,请仔细检查文件或重试！'
+			mv -f "$TMPDIR/$FILE_NAME" "$CRASHDIR/${config_type}s/" && res="$BOT_TG_CFG_UPLOADED" || res="$BOT_TG_UPLOAD_FAIL2"
 			send_msg "$res"
 		;;
 	esac
@@ -151,10 +154,10 @@ download_file(){
 		if [ "$?" = 0 ];then
 			process_file
 		else
-			send_msg "网络错误，上传失败！请重试！"
+			send_msg "$BOT_TG_NET_UPLOAD_FAIL"
 		fi
 	else
-		send_msg "文件格式不匹配，上传失败！"
+		send_msg "$BOT_TG_FILE_FORMAT_FAIL"
 	fi
 }
 ### --- 具体操作函数 --- ###
@@ -163,22 +166,22 @@ do_start_fw(){
 	redir_mod=$redir_mod_bf
 	setconfig redir_mod $redir_mod
 	"$CRASHDIR"/start.sh start_firewall
-    echo "ShellCrash 透明路由*$redir_mod_bf*已启用！" > "$LOGFILE"
+    echo "$BOT_TG_FW_ENABLED*$redir_mod_bf*$BOT_TG_FW_ENABLED_SUFFIX" > "$LOGFILE"
 }
 do_stop_fw(){
 	redir_mod_bf=$redir_mod
 	firewall_area=4
 	setconfig firewall_area 4
 	"$CRASHDIR"/start.sh stop_firewall
-    echo "ShellCrash 已切换到纯净模式！" > "$LOGFILE"
+    echo "$BOT_TG_SWITCH_PURE" > "$LOGFILE"
 }
 do_restart(){
     "$CRASHDIR"/start.sh restart
-    echo "ShellCrash 服务已重启！" > "$LOGFILE"
+    echo "$BOT_TG_SERVICE_RESTARTED" > "$LOGFILE"
 }
 do_set_sub(){
     #echo "$1" "$2" >> "$CRASHDIR"/configs/providers.cfg
-    echo "错误，还未完成的功能！" > "$LOGFILE"
+    echo "$BOT_TG_UNFINISHED" > "$LOGFILE"
 
 }
 transport(){ #文件传输
@@ -204,15 +207,15 @@ transport(){ #文件传输
 		;;
 		"ts_up_core")
 			FILE_TYPE=1
-			send_msg  "请发送需要上传的内核，必须是以tar.gz,.gz或.upx结尾的【${corename}】内核！"
+			send_msg  "$BOT_TG_SEND_CORE ${corename} $BOT_TG_SEND_CORE_SUFFIX"
 		;;
 		"ts_up_bak")
 			FILE_TYPE=2
-			send_msg  "请发送需要还原的备份文件，必须是【.tar.gz】格式！"
+			send_msg  "$BOT_TG_SEND_BAK"
 		;;
 		"ts_up_ccf")
 			FILE_TYPE=3
-			send_msg  "请发送需要上传的配置文件，必须是【.${config_type}】格式，支持自定义配置文件"
+			send_msg  "$BOT_TG_SEND_CFG .${config_type} $BOT_TG_SEND_CFG_SUFFIX"
 		;;
 	esac
 }
@@ -246,9 +249,9 @@ polling(){
 			"start_redir")
 				if [ "$firewall_area" = 4 ];then
 					do_start_fw
-					send_msg  "已切换到$redir_mod_bf！"
+					send_msg  "$BOT_TG_SWITCH_TO$redir_mod_bf！"
 				else
-					send_msg  "当前已经是$redir_mod！"
+					send_msg  "$BOT_TG_ALREADY$redir_mod！"
 				fi
 				send_menu 
 				continue
@@ -256,22 +259,22 @@ polling(){
 			"stop_redir")
 				if [ "$firewall_area" != 4 ];then
 					do_stop_fw
-					send_msg  "已切换到纯净模式"
+					send_msg  "$BOT_TG_SWITCH_PURE"
 				else
-					send_msg  "当前已经是纯净模式！"
+					send_msg  "$BOT_TG_ALREADY_PURE"
 				fi
 				send_menu 
 				continue
 			;;
 			"restart")
 				do_restart
-				send_msg  "🔄 服务已重启"
+				send_msg  "$BOT_TG_SERVICE_RESTARTED_SHORT"
 				sleep 10
 				send_menu 
 				continue
 			;;
 			"readlog")
-				send_msg  "📄 日志内容如下(已过滤任务日志)：\n\`\`\`$(grep -v '任务' $TMPDIR/ShellCrash.log |tail -n 20)\`\`\`"
+				send_msg  "$BOT_TG_LOG_CONTENT\n\`\`\`$(grep -v "$BOT_TG_TASK_WORD" $TMPDIR/ShellCrash.log |tail -n 20)\`\`\`"
 				sleep 3
 				send_menu 
 				continue
@@ -282,7 +285,7 @@ polling(){
 			;;
 			"set_sub")
 				echo "await_sub" > "$STATE_FILE"
-				send_msg  "✏ 请输入新的订阅链接："
+				send_msg  "$BOT_TG_INPUT_SUB"
 				continue
 			;;
 			ts_*)
@@ -298,7 +301,7 @@ polling(){
 		if [ "$(cat "$STATE_FILE" 2>/dev/null)" = "await_sub" ]; then
 			echo "" > "$STATE_FILE"
 			do_set_sub "$TEXT"
-			send_msg  "订阅更新完成：\n$(cat "$LOGFILE")"
+			send_msg  "$BOT_TG_SUB_UPDATED\n$(cat "$LOGFILE")"
 			send_menu 
 			continue
 		fi
