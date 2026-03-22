@@ -17,13 +17,13 @@ ssh_tools() {
     while true; do
         [ -n "$(cat /etc/firewall.user 2>&1 | grep '启用外网访问SSH服务')" ] && ssh_ol=$TOOLS_SSH_DISABLE || ssh_ol=$TOOLS_SSH_ENABLE
         [ -z "$ssh_port" ] && ssh_port=10022
-        comp_box "\033[33m此功能仅针对使用Openwrt系统的设备生效，且不依赖服务\033[0m" \
-            "\033[31m本功能不支持红米AX6S等镜像化系统设备，请勿尝试！\033[0m"
-        btm_box "1) \033[32m修改\033[0m外网访问端口：\033[36m$ssh_port\033[0m" \
-            "2) \033[32m修改\033[0mSSH访问密码(请连续输入2次后回车)" \
-            "3) \033[33m$ssh_ol\033[0m外网访问SSH" \
+        comp_box "\033[33m$TOOLS_SSH_ONLY_OPENWRT\033[0m" \
+            "\033[31m$TOOLS_SSH_UNSUPPORTED_SYSTEM\033[0m"
+        btm_box "$TOOLS_SSH_PORT_ITEM" \
+            "$TOOLS_SSH_PASS_ITEM" \
+            "$TOOLS_SSH_TOGGLE_ITEM" \
             "" \
-            "0) 返回上级菜单 \033[0m"
+            "0) $COMMON_BACK \033[0m"
         read -r -p "$COMMON_INPUT> " num
         case "$num" in
         "" | 0)
@@ -31,7 +31,7 @@ ssh_tools() {
             ;;
         1)
             line_break
-            read -r -p "请输入端口号(1000-65535)> " num
+            read -r -p "$TOOLS_PROMPT_PORT" num
             if [ -z "$num" ]; then
                 errornum
             elif [ "$num" -gt 65535 ] || [ "$num" -le 999 ]; then
@@ -52,7 +52,7 @@ ssh_tools() {
             sleep 1
             ;;
         3)
-            if [ "$ssh_ol" = "开启" ]; then
+            if [ "$ssh_ol" = "$TOOLS_SSH_ENABLE" ]; then
                 iptables -w -t nat -A PREROUTING -p tcp -m multiport --dports "$ssh_port" -j REDIRECT --to-ports 22
                 [ -n "$(ckcmd ip6tables)" ] && ip6tables -w -t nat -A PREROUTING -p tcp -m multiport --dports "$ssh_port" -j REDIRECT --to-ports 22
                 echo "iptables -w -t nat -A PREROUTING -p tcp -m multiport --dports $ssh_port -j REDIRECT --to-ports 22 #启用外网访问SSH服务" >>/etc/firewall.user
@@ -81,16 +81,16 @@ tools() {
         [ -f "$CRASHDIR"/tools/tun.ko ] && mi_tunfix=32mON || mi_tunfix=31mOFF
         comp_box "\033[30;47m$TOOLS_TITLE\033[0m" \
             "" \
-            "\033[33m本页工具可能无法兼容全部Linux设备，请酌情使用！\033[0m" \
-            "磁盘占用/所在目录：" \
+            "\033[33m$TOOLS_WARN_COMPAT\033[0m" \
+            "$TOOLS_DISK_USAGE" \
             "$(du -sh "$CRASHDIR")"
-        content_line "1) ShellCrash\033[33m测试菜单\033[0m"
-        content_line "2) ShellCrash\033[32m新手引导\033[0m"
-        content_line "3) \033[36m日志及推送工具\033[0m"
-        [ -f /etc/firewall.user ] && content_line "4) \033[32m配置\033[0m外网访问SSH"
-        [ -x /usr/sbin/otapredownload ] && content_line "5) \033[33m$mi_update\033[0m小米系统自动更新"
-        [ "$systype" = "mi_snapshot" ] && content_line "6) 小米设备软固化SSH ———— \033[$mi_mi_autoSSH_type \033[0m"
-        [ "$systype" = "mi_snapshot" ] && content_line "8) 小米设备Tun模块修复 ———— \033[$mi_tunfix \033[0m"
+        content_line "$TOOLS_MENU_TEST_ITEM"
+        content_line "$TOOLS_MENU_GUIDE_ITEM"
+        content_line "$TOOLS_MENU_LOG_ITEM"
+        [ -f /etc/firewall.user ] && content_line "$TOOLS_MENU_SSH_ITEM"
+        [ -x /usr/sbin/otapredownload ] && content_line "$TOOLS_MENU_MI_UPDATE_ITEM"
+        [ "$systype" = "mi_snapshot" ] && content_line "$TOOLS_MENU_MI_AUTO_SSH_ITEM"
+        [ "$systype" = "mi_snapshot" ] && content_line "$TOOLS_MENU_MI_TUN_FIX_ITEM"
         btm_box "" \
             "0) $COMMON_BACK"
         read -r -p "$COMMON_INPUT> " num
@@ -114,7 +114,7 @@ tools() {
             ;;
         5)
             if [ -x /usr/sbin/otapredownload ]; then
-                if [ "$mi_update" = "禁用" ]; then
+                if [ "$mi_update" = "$TOOLS_DISABLE" ]; then
                     grep -q "otapredownload" /etc/crontabs/root &&
                         sed -i "/^[^\#]*otapredownload/ s/^/#/" /etc/crontabs/root ||
                         echo "#15 3,4,5 * * * /usr/sbin/otapredownload >/dev/null 2>&1" >>/etc/crontabs/root
@@ -123,27 +123,27 @@ tools() {
                         sed -i "/^\s*#.*otapredownload/ s/^\s*#//" /etc/crontabs/root ||
                         echo "15 3,4,5 * * * /usr/sbin/otapredownload >/dev/null 2>&1" >>/etc/crontabs/root
                 fi
-                msg_alert "已\033[33m$mi_update\033[0m小米路由器的自动更新，如未生效，请在官方APP中同步设置！"
+                    msg_alert "\033[32m$TOOLS_MI_UPDATE_MSG"
             fi
             ;;
         6)
             if [ "$systype" = "mi_snapshot" ]; then
                 mi_autoSSH
             else
-                msg_alert "不支持的设备！"
+                msg_alert "\033[31m$TOOLS_UNSUPPORTED_DEVICE"
             fi
             ;;
         7)
             line_break
             separator_line "="
             if [ ! -f "$CRASHDIR"/tools/ShellDDNS.sh ]; then
-                content_line "正在获取在线脚本......"
+                content_line "$TOOLS_FETCHING_SCRIPT"
                 get_bin "$TMPDIR"/ShellDDNS.sh tools/ShellDDNS.sh
                 if [ "$?" = "0" ]; then
                     mv -f "$TMPDIR"/ShellDDNS.sh "$CRASHDIR"/tools/ShellDDNS.sh
                     . "$CRASHDIR"/tools/ShellDDNS.sh
                 else
-                    content_line "\033[31m文件下载失败！\033[0m"
+                    content_line "\033[31m$TOOLS_DOWNLOAD_FAIL\033[0m"
                     separator_line "="
                 fi
             else
@@ -153,38 +153,38 @@ tools() {
             ;;
         8)
             if [ -f "$CRASHDIR"/tools/tun.ko ]; then
-                comp_box "是否禁用此功能并移除相关补丁？"
-                btm_box "1) 是" \
-                    "0) 否，返回上级菜单"
-                read -r -p "请输入对应标号> " res
+                comp_box "$TOOLS_DISABLE_FIX_CONFIRM"
+                btm_box "$TOOLS_YES" \
+                    "$TOOLS_NO_BACK"
+                read -r -p "$TOOLS_SELECT_PROMPT" res
                 [ "$res" = 1 ] && {
                     rm -rf "$CRASHDIR"/tools/tun.ko
-                    msg_alert "\033[33m补丁文件已移除，请立即重启设备以防止出错！\033[0m"
+                    msg_alert "\033[33m$TOOLS_PATCH_REMOVED\033[0m"
                 }
             elif ckcmd modinfo && [ -z "$(modinfo tun)" ]; then
-                comp_box "\033[33m本功能需要修改系统文件，不保证没有任何风险！\033[0m" \
-                    "\033[33m本功能采集的Tun模块并不一定适用于你的设备！\033[0m"
-                btm_box "1) 我已知晓，出现问题会自行承担！" \
+                comp_box "\033[33m$TOOLS_TUN_WARN1\033[0m" \
+                    "\033[33m$TOOLS_TUN_WARN2\033[0m"
+                btm_box "$TOOLS_ACCEPT_RISK" \
                     "0) $COMMON_BACK"
-                read -r -p "请输入对应标号> " res
+                read -r -p "$TOOLS_SELECT_PROMPT" res
                 if [ "$res" = 1 ]; then
                     line_break
                     separator_line "="
-                    content_line "正在连接服务器获取Tun模块补丁文件......"
+                    content_line "$TOOLS_TUN_CONNECTING"
                     get_bin "$TMPDIR"/tun.ko bin/fix/tun.ko
                     if [ "$?" = "0" ]; then
                         mv -f "$TMPDIR"/tun.ko "$CRASHDIR"/tools/tun.ko &&
                             /data/shellcrash_init.sh tunfix &&
-                            content_line "\033[32m设置成功！请重启服务！\033[0m"
+                            content_line "\033[32m$TOOLS_TUN_OK\033[0m"
                     else
-                        content_line "\033[31m文件下载失败，请重试！\033[0m"
+                        content_line "\033[31m$TOOLS_TUN_FAIL\033[0m"
                     fi
                     separator_line "="
                 else
                     continue
                 fi
             else
-                msg_alert "\033[31m当前设备无需设置，请勿尝试！\033[0m"
+                msg_alert "\033[31m$TOOLS_DEVICE_NOT_NEED\033[0m"
             fi
             ;;
         *)
@@ -195,11 +195,11 @@ tools() {
 }
 
 mi_autoSSH() {
-    comp_box "\033[33m本功能使用软件命令进行固化不保证100%成功！\033[0m" \
-        "\033[33m如有问题请加群反馈：\033[36;4mhttps://t.me/ShellClash\033[0m"
-    btm_box "请输入需要还原的SSH密码（不影响当前密码）" \
-        "（回车可跳过）"
-    read -r -p "请输入> " mi_mi_autoSSH_pwd
+    comp_box "\033[33m$TOOLS_AUTO_SSH_WARN1\033[0m" \
+        "\033[33m$TOOLS_AUTO_SSH_WARN2\033[36;4mhttps://t.me/ShellClash\033[0m"
+    btm_box "$TOOLS_AUTO_SSH_PWD_HINT1" \
+        "$TOOLS_AUTO_SSH_PWD_HINT2"
+    read -r -p "$TOOLS_AUTO_SSH_INPUT" mi_mi_autoSSH_pwd
     mi_mi_autoSSH=$TOOLS_CONFIGURED
     cp -f /etc/dropbear/dropbear_rsa_host_key "$CRASHDIR"/configs/dropbear_rsa_host_key 2>/dev/null
     cp -f /etc/dropbear/authorized_keys "$CRASHDIR"/configs/authorized_keys 2>/dev/null
@@ -226,19 +226,19 @@ log_pusher() {
         [ -n "$push_SynoChat" ] && stat_SynoChat=32mON || stat_SynoChat=33mOFF
         [ -n "$push_Gotify" ] && stat_Gotify=32mON || stat_Gotify=33mOFF
         [ "$task_push" = 1 ] && stat_task=32mON || stat_task=33mOFF
-        [ -n "$device_name" ] && device_s=32m$device_name || device_s=33m未设置
-        comp_box "1) Telegram推送	——\033[$stat_TG\033[0m" \
-            "2) PushDeer推送	——\033[$stat_Deer\033[0m" \
-            "3) Bark推送-IOS	——\033[$stat_bark\033[0m" \
-            "4) Passover推送	——\033[$stat_Po\033[0m" \
-            "5) PushPlus推送	——\033[$stat_PP\033[0m" \
-            "6) SynoChat推送	——\033[$stat_SynoChat\033[0m" \
-            "7) Gotify推送	        ——\033[$stat_Gotify\033[0m" \
+        [ -n "$device_name" ] && device_s=32m$device_name || device_s=33m$COMMON_UNSET
+        comp_box "$TOOLS_LOG_TG" \
+            "$TOOLS_LOG_DEER" \
+            "$TOOLS_LOG_BARK" \
+            "$TOOLS_LOG_PO" \
+            "$TOOLS_LOG_PP" \
+            "$TOOLS_LOG_SYNO" \
+            "$TOOLS_LOG_GOTIFY" \
             "" \
-            "a) 查看\033[36m运行日志\033[0m" \
-            "b) 推送任务日志	——\033[$stat_task\033[0m" \
-            "c) 设置设备名称	——\033[$device_s\033[0m" \
-            "d) 清空日志文件" \
+            "$TOOLS_LOG_VIEW" \
+            "$TOOLS_LOG_TASK" \
+            "$TOOLS_LOG_DEVICE" \
+            "$TOOLS_LOG_CLEAR" \
             "" \
             "0) $COMMON_BACK"
         read -r -p "$COMMON_INPUT> " num
@@ -248,10 +248,10 @@ log_pusher() {
             ;;
         1)
             if [ -n "$push_TG" ]; then
-                comp_box "是否确认关闭TG日志推送？"
-                btm_box "1) 是" \
-                    "0) 否，返回上级菜单"
-                read -r -p "请输入对应标号> " res
+                comp_box "$TOOLS_CONFIRM_CLOSE_TG"
+                btm_box "$TOOLS_YES" \
+                    "$TOOLS_NO_BACK"
+                read -r -p "$TOOLS_SELECT_PROMPT" res
                 if [ "$res" = 1 ]; then
                     push_TG=
                     chat_ID=
@@ -264,8 +264,8 @@ log_pusher() {
                 # echo -e "\033[33m详细设置指南请参考 https://juewuy.github.io/ \033[0m"
                 . "$CRASHDIR"/menus/bot_tg_bind.sh
                 chose_bot() {
-                    comp_box "1) 使用公共机器人	——不依赖内核服务" \
-                        "2) 使用私人机器人	——需要额外申请" \
+                    comp_box "$TOOLS_BOT_PUBLIC" \
+                        "$TOOLS_BOT_PRIVATE" \
                         "" \
                         "0) $COMMON_BACK"
                     read -r -p "$COMMON_INPUT> " num
@@ -291,10 +291,10 @@ log_pusher() {
             ;;
         2)
             if [ -n "$push_Deer" ]; then
-                comp_box "是否确认关闭PushDeer日志推送？"
-                btm_box "1) 是" \
-                    "0) 否，返回上级菜单"
-                read -r -p "请输入对应标号> " res
+                comp_box "$TOOLS_CONFIRM_CLOSE_DEER"
+                btm_box "$TOOLS_YES" \
+                    "$TOOLS_NO_BACK"
+                read -r -p "$TOOLS_SELECT_PROMPT" res
                 if [ "$res" = 1 ]; then
                     push_Deer=
                     push_Deer_url=
@@ -305,26 +305,26 @@ log_pusher() {
                 fi
             else
                 # echo -e "\033[33m详细设置指南请参考 https://juewuy.github.io/ \033[0m"
-                comp_box "请选择PushDeer服务器类型：" \
-                    "1) 官方服务器（api2.pushdeer.com）" \
-                    "2) 自建服务器" \
+                comp_box "$TOOLS_PUSHDEER_SELECT_SERVER" \
+                    "$TOOLS_PUSHDEER_OFFICIAL" \
+                    "$TOOLS_PUSHDEER_CUSTOM" \
                     "" \
-                    "0) 返回上级菜单"
-                read -r -p "请输入对应标号> " num
+                    "0) $COMMON_BACK"
+                read -r -p "$TOOLS_SELECT_PROMPT" num
                 case "$num" in
                 0)
                     continue
                     ;;
                 2)
-                    comp_box "请输入自建PushDeer服务器地址（不含/message/push）" \
-                        "例如：\033[36mhttps://push.example.com\033[0m"
-                    btm_box "\033[36m请直接输入服务器地址\033[0m" \
-                        "或输入 0 返回上级菜单"
-                    read -r -p "请输入> " url
+                    comp_box "$TOOLS_PUSHDEER_CUSTOM_URL_HINT" \
+                        "$TOOLS_PUSHDEER_CUSTOM_URL_EXAMPLE"
+                    btm_box "\033[36m$TOOLS_PUSHDEER_CUSTOM_URL_INPUT\033[0m" \
+                        "$TOOLS_OR_BACK"
+                    read -r -p "$TOOLS_AUTO_SSH_INPUT" url
                     if [ "$url" = 0 ]; then
                         continue
                     elif [ -z "$url" ]; then
-                        msg_alert "\033[31m输入错误，请重新输入！\033[0m"
+                        msg_alert "\033[31m$COMMON_ERR_INPUT\033[0m"
                         continue
                     fi
                     push_Deer_url=${url%/}
@@ -339,30 +339,30 @@ log_pusher() {
                     continue
                     ;;
                 esac
-                comp_box "1. 请先前往 \033[32;4mhttp://www.pushdeer.com/official.html\033[0m 扫码安装快应用或下载APP" \
-                    "2. 打开快应用/APP，并完成登陆" \
-                    "3. \033[33m切换到「设备」标签页，点击右上角的加号，注册当前设备\033[0m" \
-                    "4. \033[36m切换到「秘钥」标签页，点击右上角的加号，创建一个秘钥，并复制\033[0m"
-                btm_box "\033[36m请直接输入你复制的秘钥\033[0m" \
-                    "或输入 0 返回上级菜单"
-                read -r -p "请输入> " url
+                comp_box "$TOOLS_PUSHDEER_INSTALL1" \
+                    "$TOOLS_PUSHDEER_INSTALL2" \
+                    "$TOOLS_PUSHDEER_INSTALL3" \
+                    "$TOOLS_PUSHDEER_INSTALL4"
+                btm_box "\033[36m$TOOLS_PUSHDEER_SECRET_HINT\033[0m" \
+                    "$TOOLS_OR_BACK"
+                read -r -p "$TOOLS_AUTO_SSH_INPUT" url
                 if [ "$url" = 0 ]; then
                     continue
                 elif [ -n "$url" ]; then
                     push_Deer=$url
                     setconfig push_Deer "$url"
-                    logger "已完成PushDeer日志推送设置！" 32
+                    logger "$TOOLS_PUSHDEER_OK" 32
                 else
-                    msg_alert "\033[31m输入错误，请重新输入！\033[0m"
+                    msg_alert "\033[31m$COMMON_ERR_INPUT\033[0m"
                 fi
             fi
             ;;
         3)
             if [ -n "$push_bark" ]; then
-                comp_box "是否确认关闭Bark日志推送？"
-                btm_box "1) 是" \
-                    "0) 否，返回上级菜单"
-                read -r -p "请输入对应标号> " res
+                comp_box "$TOOLS_CONFIRM_CLOSE_BARK"
+                btm_box "$TOOLS_YES" \
+                    "$TOOLS_NO_BACK"
+                read -r -p "$TOOLS_SELECT_PROMPT" res
                 if [ "$res" = 1 ]; then
                     push_bark=
                     bark_param=
@@ -373,28 +373,28 @@ log_pusher() {
                 fi
             else
                 # echo -e "\033[33m详细设置指南请参考 https://juewuy.github.io/ \033[0m"
-                comp_box "\033[33mBark推送仅支持IOS系统，其他平台请使用其他推送方式！\033[0m" \
-                    "\033[32m请安装Bark-IOS客户端，并在客户端中找到专属推送链接\033[0m"
-                btm_box "\033[36m请直接输入你的Bark推送链接\033[0m" \
-                    "或输入 0 返回上级菜单"
-                read -r -p "请输入> " url
+                comp_box "\033[33m$TOOLS_BARK_WARN\033[0m" \
+                    "\033[32m$TOOLS_BARK_INSTALL\033[0m"
+                btm_box "\033[36m$TOOLS_BARK_URL_HINT\033[0m" \
+                    "$TOOLS_OR_BACK"
+                read -r -p "$TOOLS_AUTO_SSH_INPUT" url
                 if [ "$url" = 0 ]; then
                     continue
                 elif [ -n "$url" ]; then
                     push_bark=$url
                     setconfig push_bark "$url"
-                    logger "已完成Bark日志推送设置！" 32
+                    logger "$TOOLS_BARK_OK" 32
                 else
-                    msg_alert "\033[31m输入错误，请重新输入！\033[0m"
+                    msg_alert "\033[31m$COMMON_ERR_INPUT\033[0m"
                 fi
             fi
             ;;
         4)
             if [ -n "$push_Po" ]; then
-                comp_box "是否确认关闭Pushover日志推送？"
-                btm_box "1) 是" \
-                    "0) 否，返回上级菜单"
-                read -r -p "请输入对应标号> " res
+                comp_box "$TOOLS_CONFIRM_CLOSE_PO"
+                btm_box "$TOOLS_YES" \
+                    "$TOOLS_NO_BACK"
+                read -r -p "$TOOLS_SELECT_PROMPT" res
                 if [ "$res" = 1 ]; then
                     push_Po=
                     push_Po_key=
@@ -405,44 +405,44 @@ log_pusher() {
                 fi
             else
                 # echo -e "\033[33m详细设置指南请参考 https://juewuy.github.io/ \033[0m"
-                comp_box "请先通过 \033[32;4mhttps://pushover.net/\033[0m 注册账号并获取\033[36mUser Key\033[0m" \
+                comp_box "$TOOLS_PUSHOVER_REG" \
                     "" \
-                    "\033[36m请直接请输入你的User Key\033[0m" \
-                    "或输入 0 返回上级菜单"
-                read -r -p "请输入> " key
+                    "\033[36m$TOOLS_PUSHOVER_USERKEY_HINT\033[0m" \
+                    "$TOOLS_OR_BACK"
+                read -r -p "$TOOLS_AUTO_SSH_INPUT" key
                 if [ "$key" = 0 ]; then
                     continue
                 elif [ -n "$key" ]; then
-                    comp_box "\033[33m请检查注册邮箱，完成账户验证\033[0m"
-                    btm_box "1) 我已经验证完成" \
+                    comp_box "\033[33m$TOOLS_PUSHOVER_VERIFY\033[0m"
+                    btm_box "$TOOLS_PUSHOVER_VERIFIED" \
                         "0) $COMMON_BACK"
-                    read -r -p "我已经验证完成(1/0)> " res
+                    read -r -p "$TOOLS_PUSHOVER_VERIFY_PROMPT" res
                     if [ "$res" = 1 ]; then
-                        comp_box "请通过 \033[32;4mhttps://pushover.net/apps/build\033[0m 生成\033[36mAPI Token\033[0m"
-                        read -r -p "请输入你的API Token> " Token
+                        comp_box "$TOOLS_PUSHOVER_TOKEN_BUILD"
+                        read -r -p "$TOOLS_PUSHOVER_TOKEN_HINT> " Token
                         if [ -n "$Token" ]; then
                             push_Po=$Token
                             push_Po_key=$key
                             setconfig push_Po "$Token"
                             setconfig push_Po_key "$key"
-                            logger "已完成Passover日志推送设置！" 32
+                            logger "$TOOLS_PUSHOVER_OK" 32
                         else
-                            msg_alert "\033[31m输入错误，请重新输入！\033[0m"
+                            msg_alert "\033[31m$COMMON_ERR_INPUT\033[0m"
                         fi
                     else
                         continue
                     fi
                 else
-                    msg_alert "\033[31m输入错误，请重新输入！\033[0m"
+                    msg_alert "\033[31m$COMMON_ERR_INPUT\033[0m"
                 fi
             fi
             ;;
         5)
             if [ -n "$push_PP" ]; then
-                comp_box "是否确认关闭PushPlus日志推送？"
-                btm_box "1) 是" \
-                    "0) 否，返回上级菜单"
-                read -r -p "请输入对应标号> " res
+                comp_box "$TOOLS_CONFIRM_CLOSE_PP"
+                btm_box "$TOOLS_YES" \
+                    "$TOOLS_NO_BACK"
+                read -r -p "$TOOLS_SELECT_PROMPT" res
                 if [ "$res" = 1 ]; then
                     push_PP=
                     setconfig push_PP
@@ -451,27 +451,27 @@ log_pusher() {
                 fi
             else
                 # echo -e "\033[33m详细设置指南请参考 https://juewuy.github.io/ \033[0m"
-                comp_box "请先通过 \033[32;4mhttps://www.pushplus.plus/push1.html\033[0m 注册账号并获取\033[36mtoken\033[0m"
-                btm_box "\033[36m请直接输入你的token\033[0m" \
-                    "或输入 0 返回上级菜单"
-                read -r -p "请输入> " Token
+                comp_box "$TOOLS_PUSHPLUS_REG"
+                btm_box "\033[36m$TOOLS_PUSHPLUS_TOKEN_HINT\033[0m" \
+                    "$TOOLS_OR_BACK"
+                read -r -p "$TOOLS_AUTO_SSH_INPUT" Token
                 if [ "$Token" = 0 ]; then
                     continue
                 elif [ -n "$Token" ]; then
                     push_PP=$Token
                     setconfig push_PP "$Token"
-                    logger "已完成PushPlus日志推送设置！" 32
+                    logger "$TOOLS_PUSHPLUS_OK" 32
                 else
-                    msg_alert "\033[31m输入错误，请重新输入！\033[0m"
+                    msg_alert "\033[31m$COMMON_ERR_INPUT\033[0m"
                 fi
             fi
             ;;
         6)
             if [ -n "$push_SynoChat" ]; then
-                comp_box "是否确认关闭SynoChat日志推送？"
-                btm_box "1) 是" \
-                    "0) 否，返回上级菜单"
-                read -r -p "请输入对应标号> " res
+                comp_box "$TOOLS_CONFIRM_CLOSE_SYNO"
+                btm_box "$TOOLS_YES" \
+                    "$TOOLS_NO_BACK"
+                read -r -p "$TOOLS_SELECT_PROMPT" res
                 if [ "$res" = 1 ]; then
                     push_SynoChat=
                     setconfig push_SynoChat
@@ -480,17 +480,17 @@ log_pusher() {
                 fi
             else
                 line_break
-                read -r -p "请输入你的Synology DSM主页地址> " URL
-                read -r -p "请输入你的Synology Chat Token> " TOKEN
-                comp_box '请通过"你的群晖地址/webapi/entry.cgi?api=SYNO.Chat.External&method=user_list&version=2&token=你的TOKEN"获取user_id'
-                read -r -p "请输入你的user_id> " USERID
+                read -r -p "$TOOLS_SYNOCHAT_URL_HINT> " URL
+                read -r -p "$TOOLS_SYNOCHAT_TOKEN_HINT> " TOKEN
+                comp_box "$TOOLS_SYNOCHAT_USERID_HINT"
+                read -r -p "$TOOLS_SYNOCHAT_USERID_INPUT" USERID
                 if [ -n "$URL" ]; then
                     push_SynoChat=$USERID
                     setconfig push_SynoChat "$USERID"
                     setconfig push_ChatURL "$URL"
                     setconfig push_ChatTOKEN "$TOKEN"
                     setconfig push_ChatUSERID "$USERID"
-                    logger "已完成SynoChat日志推送设置！" 32
+                    logger "$TOOLS_SYNOCHAT_OK" 32
                 else
                     setconfig push_ChatURL
                     setconfig push_ChatTOKEN
@@ -498,17 +498,17 @@ log_pusher() {
                     push_SynoChat=
                     setconfig push_SynoChat
 
-                    msg_alert "\033[31m输入错误，请重新输入！\033[0m"
+                    msg_alert "\033[31m$COMMON_ERR_INPUT\033[0m"
                 fi
             fi
             ;;
         # 在menu.sh的case $num in代码块中添加
         7)
             if [ -n "$push_Gotify" ]; then
-                comp_box "是否确认关闭Gotify日志推送？"
-                btm_box "1) 是" \
-                    "0) 否，返回上级菜单"
-                read -r -p "请输入对应标号> " res
+                comp_box "$TOOLS_CONFIRM_CLOSE_GOTIFY"
+                btm_box "$TOOLS_YES" \
+                    "$TOOLS_NO_BACK"
+                read -r -p "$TOOLS_SELECT_PROMPT" res
                 if [ "$res" = 1 ]; then
                     push_Gotify=
                     setconfig push_Gotify
@@ -516,19 +516,19 @@ log_pusher() {
                     continue
                 fi
             else
-                comp_box "请先通过Gotify服务器获取推送URL" \
-                    "格式示例: https://gotify.example.com/message?token=你的应用令牌"
-                btm_box "\033[36m请直接你的Gotify推送URL\033[0m" \
-                    "或输入 0 返回上级菜单"
-                read -r -p "请输入> " url
+                comp_box "$TOOLS_GOTIFY_REG" \
+                    "$TOOLS_GOTIFY_FORMAT"
+                btm_box "\033[36m$TOOLS_GOTIFY_URL_HINT\033[0m" \
+                    "$TOOLS_OR_BACK"
+                read -r -p "$TOOLS_AUTO_SSH_INPUT" url
                 if [ "$url" = 0 ]; then
                     continue
                 elif [ -n "$url" ]; then
                     push_Gotify=$url
                     setconfig push_Gotify "$url"
-                    logger "已完成Gotify日志推送设置！" 32
+                    logger "$TOOLS_GOTIFY_OK" 32
                 else
-                    msg_alert "\033[31m输入错误，请重新输入！\033[0m"
+                    msg_alert "\033[31m$COMMON_ERR_INPUT\033[0m"
                 fi
             fi
             ;;
@@ -540,7 +540,7 @@ log_pusher() {
                 echo "==========================================================="
                 exit
             else
-                msg_alert "\033[31m未找到相关日志！\033[0m"
+                msg_alert "\033[31m$TOOLS_LOG_NOT_FOUND\033[0m"
             fi
             ;;
         b)
@@ -549,16 +549,16 @@ log_pusher() {
             sleep 1
             ;;
         c)
-            comp_box "请直接输入本设备自定义推送名称" \
-                "或直接回车确认返回上级菜单"
-            read -r -p "请输入> " device_name
+            comp_box "$TOOLS_DEVICE_NAME_HINT" \
+                "$TOOLS_DEVICE_NAME_BACK"
+            read -r -p "$TOOLS_AUTO_SSH_INPUT" device_name
             if [ -n "$device_name" ]; then
                 setconfig device_name "$device_name"
             fi
             ;;
         d)
             rm -rf "$TMPDIR"/ShellCrash.log
-            msg_alert "\033[33m运行日志及任务日志均已清空！\033[0m"
+            msg_alert "\033[33m$TOOLS_LOG_CLEARED\033[0m"
             ;;
         *)
             errornum
@@ -570,14 +570,14 @@ log_pusher() {
 # 测试菜单
 testcommand() {
     while true; do
-        comp_box "\033[30;47m这里是测试命令菜单\033[0m" \
-            "\033[33m如遇问题尽量运行相应命令后截图提交issue或TG讨论组\033[0m"
-        btm_box "1) Debug模式运行内核" \
-            "2) 查看系统DNS端口(:53)占用 " \
-            "3) 测试ssl加密(aes-128-gcm)跑分" \
-            "4) 查看ShellCrash相关路由规则" \
-            "5) 查看内核配置文件前40行" \
-            "6) 测试代理服务器连通性(google.tw)" \
+        comp_box "\033[30;47m$TOOLS_TEST_MENU_TITLE\033[0m" \
+            "\033[33m$TOOLS_TEST_MENU_HINT\033[0m"
+        btm_box "$TOOLS_TEST_ITEM_1" \
+            "$TOOLS_TEST_ITEM_2" \
+            "$TOOLS_TEST_ITEM_3" \
+            "$TOOLS_TEST_ITEM_4" \
+            "$TOOLS_TEST_ITEM_5" \
+            "$TOOLS_TEST_ITEM_6" \
             "" \
             "0) $COMMON_BACK"
         read -r -p "$COMMON_INPUT> " num
@@ -593,7 +593,7 @@ testcommand() {
             echo "==========================================================="
             netstat -ntulp | grep 53
             echo
-            echo -e "可以使用\033[44m netstat -ntulp |grep xxx \033[0m来查询任意(xxx)端口"
+            echo -e "$TOOLS_NETSTAT_HINT"
             echo "==========================================================="
             ;;
         3)
@@ -647,7 +647,7 @@ testcommand() {
                     iptables -t nat -L shellcrash_vm --line-numbers
                     iptables -t nat -L shellcrash_vm_dns --line-numbers
                 }
-                echo "----------------本机防火墙---------------------"
+                echo "$TOOLS_FW_TITLE"
                 iptables -L INPUT --line-numbers
             fi
             ;;
@@ -657,7 +657,7 @@ testcommand() {
             sed -n '1,40p' "$config_path"
             ;;
         6)
-            comp_box "\033[33m注意：依赖curl（不支持wget），且测试结果不保证一定准确！\033[0m"
+            comp_box "\033[33m$TOOLS_PROXY_NOTE\033[0m"
             delay=$(
                 curl -kx ${authentication}@127.0.0.1:$mix_port -o /dev/null -s -w '%{time_starttransfer}' 'https://google.tw' &
                 {
@@ -669,9 +669,9 @@ testcommand() {
             line_break
             separator_line "="
             if [ $(echo ${#delay}) -gt 1 ]; then
-                content_line "\033[32m连接成功！响应时间为："$delay" ms\033[0m"
+                content_line "\033[32m$TOOLS_PROXY_OK$delay ms\033[0m"
             else
-                content_line "\033[31m连接超时！请重试或检查节点配置！\033[0m"
+                content_line "\033[31m$TOOLS_PROXY_TIMEOUT\033[0m"
             fi
             separator_line "="
             ;;
@@ -684,19 +684,19 @@ testcommand() {
 
 debug() {
     echo "$crashcore" | grep -q 'singbox' && config_tmp="$TMPDIR"/jsons || config_tmp="$TMPDIR"/config.yaml
-    comp_box "\033[36m注意：Debug运行均会停止原本的内核服务\033[0m" \
-        "后台运行日志地址：\033[32m$TMPDIR/debug.log\033[0m" \
-        "如长时间运行后台监测，日志等级推荐error！防止文件过大！" \
-        "你亦可通过：\033[33mcrash -s debug 'warning'\033[0m命令使用其他日志等级"
-    content_line "1) 仅测试\033[32m$config_tmp\033[0m配置文件可用性"
-    content_line "2) 前台运行\033[32m$config_tmp\033[0m配置文件，不配置防火墙劫持(\033[33m使用Ctrl+C手动停止\033[0m)"
-    content_line "3) 后台运行完整启动流程并配置防火墙劫持，日志等级：\033[31merror\033[0m"
-    content_line "4) 后台运行完整启动流程并配置防火墙劫持，日志等级：\033[32minfo\033[0m"
-    content_line "5) 后台运行完整启动流程并配置防火墙劫持，日志等级：\033[33mdebug\033[0m"
-    content_line "6) 后台运行完整启动流程并配置防火墙劫持，且将错误日志打印到闪存：\033[32m$CRASHDIR/debug.log\033[0m"
+    comp_box "\033[36m$TOOLS_DEBUG_WARN1\033[0m" \
+        "$TOOLS_DEBUG_WARN2" \
+        "$TOOLS_DEBUG_WARN3" \
+        "$TOOLS_DEBUG_WARN4"
+    content_line "$TOOLS_DEBUG_ITEM_1"
+    content_line "$TOOLS_DEBUG_ITEM_2"
+    content_line "$TOOLS_DEBUG_ITEM_3"
+    content_line "$TOOLS_DEBUG_ITEM_4"
+    content_line "$TOOLS_DEBUG_ITEM_5"
+    content_line "$TOOLS_DEBUG_ITEM_6"
     content_line ""
-    content_line "8) 后台运行完整启动流程,输出执行错误并查找上下文，之后关闭进程"
-    [ -s "$TMPDIR"/jsons/inbounds.json ] && content_line "9) 将\033[32m$config_tmp\033[0m下json文件合并为$TMPDIR/debug.json"
+    content_line "$TOOLS_DEBUG_ITEM_8"
+    [ -s "$TMPDIR"/jsons/inbounds.json ] && content_line "$TOOLS_DEBUG_ITEM_9"
     btm_box "" \
         "0) $COMMON_BACK"
     read -r -p "$COMMON_INPUT> " num
@@ -740,11 +740,11 @@ debug() {
         main_menu
         ;;
     6)
-        comp_box "频繁写入闪存会导致闪存寿命降低，如非遇到会导致设备死机或重启的bug，请勿使用此功能！" \
-            "是否确认启用此功能？"
-        btm_box "1) 是" \
-            "0) 否"
-        read -r -p "请输入对应标号> " res
+        comp_box "\033[33m$TOOLS_FLASH_WARN\033[0m" \
+            "$TOOLS_FLASH_CONFIRM"
+        btm_box "$TOOLS_YES" \
+            "$TOOLS_NO"
+        read -r -p "$TOOLS_SELECT_PROMPT" res
         if [ "$res" = 1 ]; then
             "$CRASHDIR"/start.sh debug debug flash
         fi
@@ -756,7 +756,7 @@ debug() {
         ;;
     9)
         . "$CRASHDIR"/libs/core_webget.sh && core_find && "$TMPDIR"/CrashCore merge "$TMPDIR"/debug.json -C "$TMPDIR"/jsons && line_break
-        comp_box "\033[32m合并成功！\033[0m"
+        comp_box "\033[32m$TOOLS_MERGE_OK\033[0m"
         [ "$TMPDIR" = "$BINDIR" ] && rm -rf "$TMPDIR"/CrashCore
         main_menu
         ;;
@@ -765,3 +765,4 @@ debug() {
         ;;
     esac
 }
+
