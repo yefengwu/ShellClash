@@ -20,19 +20,6 @@ check_port() {
 		return 1
 	fi
 
-	local current_port_name=""
-	case "$port" in
-	"$mix_port") current_port_name="mix_port" ;;
-	"$redir_port") current_port_name="redir_port" ;;
-	"$dns_port") current_port_name="dns_port" ;;
-	"$db_port") current_port_name="db_port" ;;
-	esac
-
-	if [ -z "$current_port_name" ] && echo "|$mix_port|$redir_port|$dns_port|$db_port|" | grep -q "|$port|"; then
-		msg_alert "\033[31m$CHECK_PORT_DUP_ERR\033[0m"
-		return 1
-	fi
-
 	local check_cmd
 	check_cmd=$(_get_netstat_cmd "$protocol")
 

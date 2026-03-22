@@ -393,14 +393,26 @@ inputport() {
 	line_break
 	read -r -p "$INPUT_PORT（1～65535）> " portx
 	. "$CRASHDIR"/menus/check_port.sh
-	if check_port "$portx" "$protocol"; then
-		setconfig "$xport" "$portx"
-		msg_alert "\033[32m$COMMON_SUCCESS\033[0m"
-		return 0
-	else
+
+	if ! check_port "$portx" "$protocol"; then
 		msg_alert "\033[31m$COMMON_FAILED\033[0m"
 		return 1
 	fi
+
+	local ports_to_check=""
+	[ "$xport" != "mix_port" ] && ports_to_check="$ports_to_check|$mix_port"
+	[ "$xport" != "redir_port" ] && ports_to_check="$ports_to_check|$redir_port"
+	[ "$xport" != "dns_port" ] && ports_to_check="$ports_to_check|$dns_port"
+	[ "$xport" != "db_port" ] && ports_to_check="$ports_to_check|$db_port"
+
+	if echo "$ports_to_check|" | grep -q "|$portx|"; then
+		msg_alert "\033[31m$CHECK_PORT_DUP_ERR\033[0m"
+		return 1
+	fi
+
+	setconfig "$xport" "$portx"
+	msg_alert "\033[32m$COMMON_SUCCESS\033[0m"
+	return 0
 }
 
 # 端口设置
