@@ -73,28 +73,28 @@ upgrade() {
             ;;
         9)
             comp_box "$UPG_THANKS_TITLE"
-            btm_box "\033[32mClash              \033[0m开发：\033[36mDreamacro\033[0m" \
+            btm_box "\033[32m$UPG_THANKS_ITEM_CLASH\033[0m" \
                 "" \
-                "\033[32msing-box           \033[0m开发：\033[36mSagerNet\033[0m" \
-                "项目地址：\033[32mhttps://github.com/SagerNet/sing-box\033[0m" \
+                "\033[32m$UPG_THANKS_ITEM_SINGBOX\033[0m" \
+                "$UPG_THANKS_ITEM_SINGBOX_URL" \
                 "" \
-                "\033[32mMetaCubeX          \033[0m开发：\033[36mMetaCubeX\033[0m" \
-                "项目地址：\033[32mhttps://github.com/MetaCubeX\033[0m" \
+                "\033[32m$UPG_THANKS_ITEM_METACUBE\033[0m" \
+                "$UPG_THANKS_ITEM_METACUBE_URL" \
                 "" \
-                "\033[32mYACD面板           \033[0m开发：\033[36mhaishanh\033[0m" \
-                "项目地址：\033[32mhttps://github.com/haishanh/yacd\033[0m" \
+                "\033[32m$UPG_THANKS_ITEM_YACD\033[0m" \
+                "$UPG_THANKS_ITEM_YACD_URL" \
                 "" \
-                "\033[32mZashboard          \033[0m开发：\033[36mZephyruso\033[0m" \
-                "项目地址：\033[32mhttps://github.com/Zephyruso/zashboard\033[0m" \
+                "\033[32m$UPG_THANKS_ITEM_ZASH\033[0m" \
+                "$UPG_THANKS_ITEM_ZASH_URL" \
                 "" \
-                "\033[32mSubconverter       \033[0m开发：\033[36mtindy2013\033[0m" \
-                "项目地址：\033[32mhttps://github.com/tindy2013/subconverter\033[0m" \
+                "\033[32m$UPG_THANKS_ITEM_SUB\033[0m" \
+                "$UPG_THANKS_ITEM_SUB_URL" \
                 "" \
-                "\033[32msing-box-reF1nd    \033[0m开发：\033[36mreF1nd\033[0m" \
-                "项目地址：\033[32mhttps://github.com/reF1nd/sing-box\033[0m" \
+                "\033[32m$UPG_THANKS_ITEM_REF1ND\033[0m" \
+                "$UPG_THANKS_ITEM_REF1ND_URL" \
                 "" \
-                "\033[32mDustinWin          \033[0m开发：\033[36mDustinWin\033[0m" \
-                "开发者地址：\033[32mhttps://github.com/DustinWin\033[0m" \
+                "\033[32m$UPG_THANKS_ITEM_DUSTIN\033[0m" \
+                "$UPG_THANKS_ITEM_DUSTIN_URL" \
                 ""
             btm_box "$UPG_THANKS_SPECIAL"
             sleep 2
@@ -300,23 +300,23 @@ getcore() {
     # 获取在线内核文件
     line_break
     separator_line "="
-    content_line "正在在线获取$crashcore核心文件......"
+    content_line "$UPG_GETTING_CORE_TEXT"
     core_webget
     case "$?" in
     0)
-        content_line "\033[32m$crashcore核心下载成功！\033[0m"
+        content_line "\033[32m$UPG_CORE_DOWNLOAD_OK_TEXT\033[0m"
         separator_line "="
         sleep 1
         switch_core
         ;;
     1)
-        content_line "\033[31m核心文件下载失败！\033[0m"
+        content_line "\033[31m$UPG_CORE_DOWNLOAD_FAIL_TEXT\033[0m"
         separator_line "="
         [ -z "$custcorelink" ] && error_down
         ;;
     *)
-        content_line "\033[31m核心文件下载成功但校验失败\033[0m"
-        content_line "\033[31m请尝试手动指定CPU版本\033[0m"
+        content_line "\033[31m$UPG_CORE_DOWNLOAD_VERIFY_FAIL_TEXT\033[0m"
+        content_line "\033[31m$UPG_CORE_DOWNLOAD_VERIFY_HINT_TEXT\033[0m"
         separator_line "="
         sleep 1
         rm -rf "${TMPDIR}"/core_new
@@ -331,7 +331,7 @@ checkcustcore() {
     # 通过githubapi获取内核信息
     line_break
     separator_line "="
-    content_line "\033[32m正在获取内核文件链接......\033[0m"
+    content_line "\033[32m$UPG_CORE_GET_LINK_TITLE\033[0m"
     webget "$TMPDIR"/github_api https://api.github.com/repos/"${project}"/releases/"${api_url}"
     if [ "$?" = 0 ]; then
         release_tag=$(cat "$TMPDIR"/github_api | grep '"tag_name":' | awk -F '"' '{print $4}')
@@ -344,10 +344,10 @@ checkcustcore() {
         if [ -s "$TMPDIR"/core.list ]; then
             separator_line "="
 
-            comp_box "内核版本：\033[36m$release_tag\033[0m" \
-                "发布时间：\033[33m$release_date\033[0m" \
-                "更新时间：\033[32m$update_date\033[0m"
-            content_line "\033[33m请确认内核信息并选择：\033[0m"
+            comp_box "$UPG_CORE_INFO_TITLE\033[36m$release_tag\033[0m" \
+                "$UPG_CORE_INFO_TIME1\033[33m$release_date\033[0m" \
+                "$UPG_CORE_INFO_TIME2\033[32m$update_date\033[0m"
+            content_line "\033[33m$UPG_CORE_INFO_SELECT\033[0m"
             separator_line "-"
             grep -oE "$release_tag.*" "$TMPDIR/core.list" |
                 sed 's|.*/||' |
@@ -375,12 +375,12 @@ checkcustcore() {
                 ;;
             esac
         else
-            content_line "\033[31m找不到可用内核，可能是开发者没有编译相关CPU架构版本的内核文件！\033[0m"
+            content_line "\033[31m$UPG_CORE_NOT_FOUND\033[0m"
             separator_line "="
             sleep 1
         fi
     else
-        content_line "\033[31m查找失败，请尽量在服务启动后再使用本功能！\033[0m"
+        content_line "\033[31m$UPG_CORE_CHECK_FAIL_HINT\033[0m"
         separator_line "="
         sleep 1
     fi
@@ -393,21 +393,21 @@ setcustcore() {
         [ -z "$cpucore" ] && check_cpucore
         line_break
         separator_line "="
-        content_line "\033[36m此处内核通常源自互联网采集，此处致谢各位开发者！\033[0m"
-        content_line "\033[33m自定义内核未经过完整适配，使用出现问题请自行解决！\033[0m"
-        content_line "\033[31m自定义内核已适配定时任务，但不支持小闪存模式！\033[0m"
-        content_line "\033[32m如遇到网络错误请先启动ShellCrash服务！\033[0m"
+        content_line "\033[36m$UPG_CUSTOM_CORE_SOURCE\033[0m"
+        content_line "\033[33m$UPG_CUSTOM_CORE_WARN\033[0m"
+        content_line "\033[31m$UPG_CUSTOM_CORE_TASK_WARN\033[0m"
+        content_line "\033[32m$UPG_CUSTOM_CORE_NET_WARN\033[0m"
         [ -n "$custcore" ] && {
-            content_line "当前内核为：\033[36m$custcore\033[0m"
+            content_line "$UPG_CUSTOM_CORE_CURRENT_TEXT\033[36m$custcore\033[0m"
         }
         separator_line "="
-        content_line "请选择需要使用的核心："
+        content_line "$UPG_CUSTOM_CORE_SELECT"
         separator_line "-"
-        btm_box "1) \033[36mMetaCubeX/mihomo\033[32m@release\033[0m版本官方内核" \
-            "2) \033[36mvernesong/mihomo\033[32m@alpha\033[0m版本内核(支持Smart策略)" \
-            "3) \033[36mSagerNet/sing-box\033[32m@release\033[0m版本官方内核" \
-            "4) Premium-2023.08.17内核(已停止维护)" \
-            "9) \033[33m自定义内核链接 \033[0m" \
+        btm_box "$UPG_CORE_MENU_1" \
+            "$UPG_CORE_MENU_2" \
+            "$UPG_CORE_MENU_3" \
+            "$UPG_CORE_MENU_4" \
+            "$UPG_CORE_MENU_9" \
             "" \
             "0) $COMMON_BACK"
         read -r -p "$COMMON_INPUT> " num
@@ -440,11 +440,11 @@ setcustcore() {
             checkcustcore
             ;;
         9)
-            comp_box "请输入自定义内核的链接地址" \
-                "（必须是以.tar.gz、.upx或.gz结尾的压缩文件）" \
+            comp_box "$UPG_CUSTOM_CORE_LINK_HINT" \
+                "$UPG_CUSTOM_CORE_LINK_HINT2" \
                 "" \
-                "或者输入 0 返回上级菜单"
-            read -r -p "请输入> " link
+                "$UPG_CUSTOM_CORE_LINK_HINT3"
+            read -r -p "$UPG_SOURCE_CUSTOM_INPUT" link
             if [ "$link" = 0 ]; then
                 continue
             elif [ -n "$link" ]; then
@@ -461,14 +461,14 @@ setcustcore() {
 }
 
 setziptype() {
-    comp_box "请选择内核内核分支及压缩方式：\033[0m"
-    content_line "1) \033[36m最简编译release版本，upx压缩\033[0m"
-    sub_content_line "不支持Gvisor、Tailscale、Wireguard、NaiveProxy"
-    content_line "2) \033[32m标准编译release版本，tar.gz压缩\033[0m"
-    sub_content_line "完整支持脚本全部内置功能"
-    content_line "3) \033[33m完整编译alpha版本，gz压缩\033[0m"
-    sub_content_line "占用可能略高，稳定性自测"
-    content_line "0) 返回上级菜单"
+    comp_box "\033[0m$UPG_ZIPTYPE_TITLE"
+    content_line "$UPG_ZIPTYPE_1"
+    sub_content_line "$UPG_CUSTOM_CORE_NOTE1"
+    content_line "$UPG_ZIPTYPE_2"
+    sub_content_line "$UPG_ZIPTYPE_2_HINT"
+    content_line "$UPG_ZIPTYPE_3"
+    sub_content_line "$UPG_ZIPTYPE_3_HINT"
+    content_line "0) $COMMON_BACK"
     separator_line "="
     read -r -p "$COMMON_INPUT> " num
     case "$num" in
@@ -500,30 +500,30 @@ setcore() {
 
         [ -z "$cpucore" ] && check_cpucore
 
-        comp_box "当前内核：\033[42;30m$crashcore\033[47;30m $core_v\033[0m" \
-            "当前系统处理器架构：\033[32m$cpucore\033[0m" \
-            "\033[36m如需本地上传，请将.upx .gz .tar.gz文件上传至 /tmp 目录后重新运行crash命令\033[0m" \
+        comp_box "$UPG_CORE_MENU_CURRENT\033[42;30m$crashcore\033[47;30m $core_v\033[0m" \
+            "$UPG_CORE_MENU_SYS\033[32m$cpucore\033[0m" \
+            "\033[36m$UPG_CORE_MENU_LOCAL_HINT\033[0m" \
             "" \
-            "\033[33m请选择需要使用的核心版本：\033[0m"
+            "\033[33m$UPG_CORE_MENU_SELECT\033[0m"
 
-        content_line "1) \033[43;30mMihomo\033[0m：\033[32m$meta_v \033[32m（原meta内核）支持全面\033[0m \033[33m占用略高\033[0m"
-        sub_content_line "说明文档：\033[36;4mhttps://wiki.metacubex.one\033[0m"
+        content_line "$UPG_CORE_V1"
+        sub_content_line "$UPG_CORE_V1_DOC"
 
-        content_line "2) \033[43;30mSingBoxR\033[0m：\033[32m$singboxr_v \033[32m支持全面\033[0m \033[33m使用reF1nd增强分支\033[0m"
-        sub_content_line "说明文档：\033[36;4mhttps://sing-boxr.dustinwin.us.kg\033[0m"
+        content_line "$UPG_CORE_V2"
+        sub_content_line "$UPG_CORE_V2_DOC"
 
         [ "$zip_type" = 'upx' ] && {
-            content_line "3) \033[43;30mSingBox\033[0m：\033[32m$singbox_v \033[32m占用较低\033[0m \033[33m不支持providers\033[0m"
-            sub_content_line "说明文档：\033[36;4mhttps://sing-box.sagernet.org\033[0m"
+            content_line "$UPG_CORE_V3"
+            sub_content_line "$UPG_CORE_V3_DOC"
         }
         [ "$zip_type" = 'upx' ] && {
-            content_line "4) \033[43;30mClash\033[0m：\033[32m$clash_v \033[32m占用低\033[0m \033[33m不安全,已停止维护\033[0m"
-            sub_content_line "说明文档：\033[36;4mhttps://lancellc.gitbook.io\033[0m"
+            content_line "$UPG_CORE_V4"
+            sub_content_line "$UPG_CORE_V4_DOC"
         }
-        btm_box "5) 切换版本分支及压缩方式：\033[32m$zip_type\033[0m" \
-            "6) \033[36m使用自定义内核\033[0m $custcore" \
-            "7) \033[32m更新当前内核\033[0m" \
-            "9) 手动指定处理器架构" \
+        btm_box "$UPG_CORE_MENU_5" \
+            "$UPG_CORE_MENU_6" \
+            "$UPG_CORE_MENU_7" \
+            "$UPG_CORE_MENU_9" \
             "" \
             "0) $COMMON_BACK"
         read -r -p "$COMMON_INPUT> " num
@@ -533,7 +533,7 @@ setcore() {
             ;;
         1)
             [ -d "/jffs" ] && {
-                msg_alert -t 2 "\033[31mMeta内核使用的GeoSite.dat数据库在华硕设备存在被系统误删的问题，可能无法使用!\033[0m"
+                msg_alert -t 2 "\033[31m$UPG_CORE_ASUS_WARN\033[0m"
             }
             crashcore=meta
             custcorelink=''
@@ -585,10 +585,10 @@ getgeo() {
     # 生成链接
     line_break
     separator_line "="
-    content_line "正在从服务器获取数据库文件......"
+    content_line "$UPG_GEO_GETTING"
     get_bin "$TMPDIR"/"${geoname}" bin/geodata/"$geotype"
     if [ "$?" = "1" ]; then
-        content_line "\033[31m文件下载失败！\033[0m"
+        content_line "\033[31m$UPG_GEO_FAIL\033[0m"
         error_down
     else
         echo "$geoname" | grep -Eq '.mrs|.srs|.tar.gz' && {
@@ -598,7 +598,7 @@ getgeo() {
         if echo "$geoname" | grep -Eq '.tar.gz'; then
             tar -zxf "$TMPDIR"/"${geoname}" ${tar_para} -C "$BINDIR"/"${geofile}" >/dev/null
             if [ $? -ne 0 ]; then
-                content_line "文件解压失败！"
+                content_line "$UPG_GEO_EXTRACT_FAIL"
                 separator_line "="
                 sleep 1
                 line_break
@@ -609,7 +609,7 @@ getgeo() {
         else
             mv -f "$TMPDIR"/"${geoname}" "$BINDIR"/"${geofile}""${geoname}"
         fi
-        content_line "\033[32m$geotype数据库文件下载成功！\033[0m"
+        content_line "\033[32m$UPG_GEO_OK\033[0m"
         geo_v="$(echo "$geotype" | awk -F "." '{print $1}')_v"
         setconfig "$geo_v" "$GeoIP_v"
     fi
@@ -619,10 +619,10 @@ getgeo() {
 getcustgeo() {
     line_break
     separator_line "="
-    content_line "正在获取数据库文件......"
+    content_line "$UPG_GEO_LINKING"
     webget "$TMPDIR"/"$geoname" "$custgeolink"
     if [ "$?" = "1" ]; then
-        content_line "\033[31m文件下载失败！\033[0m"
+        content_line "\033[31m$UPG_GEO_FAIL\033[0m"
         error_down
     else
         echo "$geoname" | grep -Eq '.mrs|.srs' && {
@@ -630,7 +630,7 @@ getcustgeo() {
             [ ! -d "$BINDIR"/ruleset ] && mkdir -p "$BINDIR"/ruleset
         }
         mv -f "$TMPDIR"/"${geoname}" "$BINDIR"/"${geofile}""${geoname}"
-        content_line "\033[32m$geotype数据库文件下载成功！\033[0m"
+        content_line "\033[32m$UPG_GEO_OK\033[0m"
         separator_line "="
     fi
     sleep 1
@@ -640,20 +640,20 @@ checkcustgeo() {
     while true; do
         [ "$api_tag" = "latest" ] && api_url=latest || api_url="tags/$api_tag"
         [ ! -s "$TMPDIR"/geo.list ] && {
-            comp_box "\033[32m正在查找可更新的数据库文件......\033[0m"
+            comp_box "\033[32m$UPG_GEO_FIND_TITLE\033[0m"
             webget "$TMPDIR"/github_api https://api.github.com/repos/${project}/releases/${api_url}
             release_tag=$(cat "$TMPDIR"/github_api | grep '"tag_name":' | awk -F '"' '{print $4}')
             cat "$TMPDIR"/github_api | grep "browser_download_url" | grep -oE 'releases/download.*' | grep -oiE 'geosite.*\.dat"$|country.*\.mmdb"$|.*.mrs|.*.srs' | sed 's|.*/||' | sed 's/"//' >"$TMPDIR"/geo.list
             rm -rf "$TMPDIR"/github_api
         }
         if [ -s "$TMPDIR"/geo.list ]; then
-            comp_box "请选择需要更新的数据库文件："
+            comp_box "$UPG_GEO_SELECT"
             awk '{print NR") "$1}' "$TMPDIR/geo.list" |
                 while IFS= read -r line; do
                     content_line "$line"
                 done
             content_line ""
-            content_line "0) 返回上级菜单"
+            content_line "0) $COMMON_BACK"
             separator_line "="
             read -r -p "$COMMON_INPUT> " num
             case "$num" in
@@ -678,7 +678,7 @@ checkcustgeo() {
                 ;;
             esac
         else
-            msg_alert "\033[31m查找失败，请尽量在服务启动后再使用本功能！\033[0m"
+            msg_alert "\033[31m$UPG_CORE_CHECK_FAIL_HINT\033[0m"
         fi
     done
 }
@@ -687,31 +687,31 @@ checkcustgeo() {
 setcustgeo() {
     while true; do
         rm -rf "$TMPDIR"/geo.list
-        comp_box "\033[36m此处数据库均源自互联网采集，此处致谢各位开发者！\033[0m" \
-            "\033[32m请点击或复制链接前往项目页面查看具体说明！\033[0m" \
-            "\033[31m自定义数据库不支持定时任务及小闪存模式！\033[0m" \
-            "\033[33m如遇到网络错误请先启动ShellCrash服务！\033[0m"
+        comp_box "\033[36m$UPG_GEO_CUSTOM_HINT\033[0m" \
+            "\033[32m$UPG_GEO_CUSTOM_HINT2\033[0m" \
+            "\033[31m$UPG_GEO_CUSTOM_HINT3\033[0m" \
+            "\033[33m$UPG_GEO_CUSTOM_HINT4\033[0m"
 
-        content_line "\033[0m请选择需要更新的数据库项目来源：\033[0m"
+        content_line "\033[0m$UPG_GEO_SOURCE_TITLE\033[0m"
         separator_line "-"
         content_line "1) \033[36;4mhttps://github.com/MetaCubeX/meta-rules-dat\033[0m"
-        sub_content_line "（仅限Clash/Mihomo）"
+        sub_content_line "$UPG_GEO_LOCAL_ONLY1"
 
         content_line "2) \033[36;4mhttps://github.com/DustinWin/ruleset_geodata\033[0m"
-        sub_content_line "（仅限Clash/Mihomo）"
+        sub_content_line "$UPG_GEO_LOCAL_ONLY1"
 
         content_line "3) \033[36;4mhttps://github.com/DustinWin/ruleset_geodata\033[0m"
-        sub_content_line "（仅限SingBox-srs）"
+        sub_content_line "$UPG_GEO_LOCAL_ONLY2"
 
         content_line "4) \033[36;4mhttps://github.com/DustinWin/ruleset_geodata\033[0m"
-        sub_content_line "（仅限Mihomo-mrs）"
+        sub_content_line "$UPG_GEO_LOCAL_ONLY3"
 
         content_line "5) \033[36;4mhttps://github.com/Loyalsoldier/geoip\033[0m"
-        sub_content_line "（仅限Clash-GeoIP）"
+        sub_content_line "$UPG_GEO_LOCAL_ONLY4"
 
-        content_line "9) \033[33m自定义数据库链接 \033[0m"
+        content_line "$UPG_GEO_CUSTOM_LINK"
         content_line ""
-        content_line "0) 返回上级菜单"
+        content_line "0) $COMMON_BACK"
         separator_line "="
         read -r -p "$COMMON_INPUT> " num
         case "$num" in
@@ -745,7 +745,7 @@ setcustgeo() {
             ;;
         9)
             line_break
-            read -r -p "请输入自定义数据库的链接地址> " link
+            read -r -p "$UPG_GEO_LINK_HINT" link
             [ -n "$link" ] && custgeolink="$link"
             getgeo
             ;;
@@ -759,23 +759,23 @@ setcustgeo() {
 setgeo() {
     while true; do
         . $CFG_PATH >/dev/null
-        [ -n "$cn_mini_v" ] && geo_type_des=精简版 || geo_type_des=全球版
-        comp_box "\033[33m注意：Mihomo内核和SingBox内核的数据库文件不通用\033[0m" \
-            "在线数据库最新版本（每日同步上游）：\033[32m$GeoIP_v\033[0m" \
+        [ -n "$cn_mini_v" ] && geo_type_des=$UPG_GEO_TYPE_LITE || geo_type_des=$UPG_GEO_TYPE_FULL
+        comp_box "\033[33m$UPG_GEO_CHOOSE_HINT\033[0m" \
+            "$UPG_GEO_LATEST\033[32m$GeoIP_v\033[0m" \
             "" \
-            "请选择需要更新的Geo数据库文件："
+            "$UPG_GEO_CHOOSE"
 
-        btm_box "1) CN-IP绕过文件（约0.1mb）	\033[33m$china_ip_list_v\033[0m" \
-            "2) CN-IPV6绕过文件（约30kb）	\033[33m$china_ipv6_list_v\033[0m" \
+        btm_box "$UPG_GEO_ITEM1	\033[33m$china_ip_list_v\033[0m" \
+            "$UPG_GEO_ITEM2	\033[33m$china_ipv6_list_v\033[0m" \
             "" \
-            "3) Mihomo精简版GeoIP_cn数据库（约0.1mb）	\033[33m$cn_mini_v\033[0m" \
-            "4) Mihomo完整版GeoSite数据库（约5mb）	\033[33m$geosite_v\033[0m" \
+            "$UPG_GEO_ITEM3	\033[33m$cn_mini_v\033[0m" \
+            "$UPG_GEO_ITEM4	\033[33m$geosite_v\033[0m" \
             "" \
-            "5) Mihomo-mrs数据库常用包（约1mb,非必要勿用）" \
-            "6) Singbox-srs数据库常用包（约0.8mb,非必要勿用）" \
+            "$UPG_GEO_ITEM5" \
+            "$UPG_GEO_ITEM6" \
             "" \
-            "8) \033[36m自定义数据库文件\033[0m" \
-            "9) \033[31m清理数据库文件\033[0m" \
+            "$UPG_GEO_ITEM8" \
+            "$UPG_GEO_ITEM9" \
             "" \
             "0) $COMMON_BACK"
         read -r -p "$COMMON_INPUT> " num
@@ -818,9 +818,9 @@ setgeo() {
             ;;
         9)
             while true; do
-                comp_box "\033[33m这将清理$CRASHDIR目录及/ruleset目录下所有数据库文件！\033[0m" \
-                    "清理后启动服务即可自动下载所需文件"
-                btm_box "1) 确认清理" \
+                comp_box "\033[33m$UPG_GEO_CLEAN_HINT1\033[0m" \
+                    "$UPG_GEO_CLEAN_HINT2"
+                btm_box "$UPG_GEO_CLEAN_CONFIRM" \
                     "0) $COMMON_BACK"
                 read -r -p "$COMMON_INPUT> " res
                 case "$res" in
@@ -835,7 +835,7 @@ setgeo() {
                         setconfig $var
                     done
                     rm -rf "$CRASHDIR"/ruleset/*
-                    msg_alert "\033[33m所有数据库文件均已清理！\033[0m"
+                    msg_alert "\033[33m$UPG_GEO_CLEAN_OK\033[0m"
                     break
                     ;;
                 *)
@@ -856,18 +856,18 @@ getdb() {
     dblink="${update_url}/"
     line_break
     separator_line "="
-    content_line "正在连接服务器获取安装文件......"
+    content_line "$UPG_DB_GETTING"
     get_bin "$TMPDIR"/clashdb.tar.gz bin/dashboard/${db_type}.tar.gz
     if [ "$?" = "1" ]; then
-        content_line "\033[31m文件下载失败！\033[0m"
+        content_line "\033[31m$UPG_GEO_FAIL\033[0m"
         error_down
         return 1
     else
-        content_line "\033[33m下载成功，正在解压文件......\033[0m"
+        content_line "\033[33m$UPG_DB_DOWNLOAD_OK\033[0m"
         mkdir -p "$dbdir" >/dev/null
         tar -zxf "$TMPDIR/clashdb.tar.gz" ${tar_para} -C "$dbdir" >/dev/null
         if [ $? -ne 0 ]; then
-            content_line "文件解压失败！"
+            content_line "$UPG_GEO_EXTRACT_FAIL"
             separator_line "="
             line_break
             sleep 1
@@ -886,8 +886,8 @@ getdb() {
         fi
         #写入配置文件
         setconfig hostdir "'$hostdir'"
-        content_line "\033[32m面板安装成功！\033[0m"
-        content_line "\033[36m如未生效，请使用【Ctrl+F5】强制刷新浏览器！\033[0m"
+        content_line "\033[32m$UPG_DB_OK\033[0m"
+        content_line "\033[36m$UPG_DB_REFRESH_HINT\033[0m"
         separator_line "="
         sleep 1
         rm -rf "$TMPDIR"/clashdb.tar.gz
@@ -897,8 +897,8 @@ getdb() {
 
 dbdir() {
     if [ -f /www/clash/CNAME ] || [ -f "$CRASHDIR"/ui/CNAME ]; then
-        comp_box "\033[33m检测到已经安装过本地面板\033[0m"
-        btm_box "1) 升级/覆盖安装" \
+        comp_box "\033[33m$UPG_DB_INSTALLED\033[0m"
+        btm_box "$UPG_DB_UPGRADE" \
             "0) $COMMON_BACK"
         read -r -p "$COMMON_INPUT> " res
         if [ "$res" = 1 ]; then
@@ -907,13 +907,13 @@ dbdir() {
             [ -f "$CRASHDIR"/ui/CNAME ] && rm -rf "$CRASHDIR"/ui && dbdir="$CRASHDIR"/ui
             getdb
         else
-            msg_alert "\033[33m安装已取消\033[0m"
+            msg_alert "\033[33m$UPG_DB_CANCEL\033[0m"
             return 1
         fi
     elif [ -w /www ] && [ -n "$(pidof nginx)" ]; then
-        comp_box "请选择面板\033[33m安装目录：\033[0m"
-        btm_box "1) 在${CRASHDIR}/ui目录安装" \
-            "2) 在/www/clash目录安装" \
+        comp_box "$UPG_DB_DIR_SELECT"
+        btm_box "$UPG_DB_DIR_1" \
+            "$UPG_DB_DIR_2" \
             "" \
             "0) $COMMON_BACK"
         read -r -p "$COMMON_INPUT> " num
@@ -945,19 +945,19 @@ dbdir() {
 
 setdb() {
     while true; do
-        comp_box "\033[36m安装 dashboard 管理面板到本地\033[0m" \
-            "\033[32m打开管理面板的速度更快且更稳定\033[0m" \
+        comp_box "\033[36m$UPG_DB_TITLE\033[0m" \
+            "\033[32m$UPG_DB_TITLE2\033[0m" \
             "" \
-            "请选择面板安装类型："
-        btm_box "   - - - - - - -维护中- - - - - - -" \
-            "1) 安装\033[32mzashboard面板\033[0m（约2.2mb）" \
-            "2) 安装\033[32mMetaXD面板\033[0m（约1.5mb）" \
-            "3) 安装\033[32mYacd-Meta魔改面板\033[0m（约1.7mb）" \
-            "   - - - - - -已停止维护- - - - - -" \
-            "4) 安装\033[32m基础面板\033[0m（约500kb）" \
-            "5) 安装\033[32mMeta基础面板\033[0m（约800kb）" \
-            "6) 安装\033[32mYacd面板\033[0m（约1.1mb）" \
-            "9) \033[31m卸载本地面板\033[0m" \
+            "$UPG_DB_SELECT"
+        btm_box "$UPG_DB_WIP" \
+            "$UPG_DB_INSTALL_1" \
+            "$UPG_DB_INSTALL_2" \
+            "$UPG_DB_INSTALL_3" \
+            "$UPG_DB_OLD" \
+            "$UPG_DB_INSTALL_4" \
+            "$UPG_DB_INSTALL_5" \
+            "$UPG_DB_INSTALL_6" \
+            "$UPG_DB_UNINSTALL" \
             "" \
             "0) $COMMON_BACK"
         read -r -p "$COMMON_INPUT> " num
@@ -993,8 +993,8 @@ setdb() {
             ;;
         9)
             while true; do
-                comp_box "是否卸载本地面板？"
-                btm_box "1) 确认卸载" \
+                comp_box "$UPG_DB_UNINSTALL_CONFIRM"
+                btm_box "$UPG_DB_UNINSTALL_YES" \
                     "0) $COMMON_BACK"
                 read -r -p "$COMMON_INPUT> " res
                 case "$res" in
@@ -1005,7 +1005,7 @@ setdb() {
                     rm -rf /www/clash
                     rm -rf "$CRASHDIR"/ui
                     rm -rf "$BINDIR"/ui
-                    msg_alert "\033[31m面板已经卸载！\033[0m"
+                    msg_alert "\033[31m$UPG_DB_UNINSTALL_OK\033[0m"
                     break
                     ;;
                 *)
@@ -1025,10 +1025,10 @@ setdb() {
 getcrt() {
     line_break
     separator_line "="
-    content_line "正在连接服务器获取安装文件......"
+    content_line "$UPG_DB_GETTING"
     get_bin "$TMPDIR"/ca-certificates.crt bin/fix/ca-certificates.crt echooff
     if [ "$?" = "1" ]; then
-        content_line "\033[31m文件下载失败！\033[0m"
+        content_line "\033[31m$UPG_GEO_FAIL\033[0m"
         error_down
     else
         [ "$systype" = 'mi_snapshot' ] && cp -f "$TMPDIR"/ca-certificates.crt "$CRASHDIR"/tools #镜像化设备特殊处理
@@ -1040,7 +1040,7 @@ getcrt() {
             export CURL_CA_BUNDLE="$crtdir"
             echo "export CURL_CA_BUNDLE=$crtdir" >>/etc/profile
         fi
-        content_line "\033[32m证书安装成功！\033[0m"
+        content_line "\033[32m$UPG_CRT_DB_OK\033[0m"
         separator_line "="
         sleep 1
     fi
@@ -1058,22 +1058,22 @@ setcrt() {
         if [ -n "$openssldir" ]; then
             line_break
             separator_line "="
-            content_line "安装/更新本地根证书文件（ca-certificates.crt）"
-            content_line "\033[33m用于解决证书校验错误，x509报错等问题\033[0m"
-            content_line "\033[31m无上述问题的设备请勿使用！\033[0m"
+            content_line "$UPG_CRT_TITLE1"
+            content_line "\033[33m$UPG_CRT_TITLE2\033[0m"
+            content_line "\033[31m$UPG_CRT_TITLE3\033[0m"
             if [ -f "$crtdir" ]; then
                 content_line ""
-                content_line "\033[33m检测到系统已经存在根证书文件：\033[0m"
+                content_line "\033[33m$UPG_CRT_EXISTS\033[0m"
                 content_line "\033[33m（$crtdir）\033[0m"
             fi
             separator_line "="
 
             if [ -f "$crtdir" ]; then
-                content_line "1) 覆盖更新"
+                content_line "$UPG_CRT_UPDATE"
             else
-                content_line "1) 立即安装"
+                content_line "$UPG_CRT_INSTALL"
             fi
-            content_line "0) 返回上级菜单"
+            content_line "0) $COMMON_BACK"
             separator_line "="
             read -r -p "$COMMON_INPUT> " res
             case "$res" in
@@ -1091,7 +1091,7 @@ setcrt() {
             esac
 
         else
-            msg_alert "\033[33m设备可能尚未安装openssl，无法安装证书文件！\033[0m"
+            msg_alert "\033[33m$UPG_CRT_WARN\033[0m"
             break
         fi
 
@@ -1104,24 +1104,24 @@ saveserver() {
     setconfig url_id "$url_id"
     setconfig release_type "$release_type"
     version_new=''
-    msg_alert -t 0 "\033[32m源地址切换成功！\033[0m"
+    msg_alert -t 0 "\033[32m$UPG_SOURCE_SWITCH_OK\033[0m"
 }
 
 # 安装源
 setserver() {
     while true; do
         line_break
-        [ -z "$release_type" ] && release_name=未指定
-        [ -n "$release_type" ] && release_name="$release_type(回退)"
-        [ "$release_type" = stable ] && release_name=稳定版
-        [ "$release_type" = master ] && release_name=公测版
-        [ "$release_type" = dev ] && release_name=开发版
+        [ -z "$release_type" ] && release_name=$UPG_SOURCE_UNSET
+        [ -n "$release_type" ] && release_name="$release_type$UPG_SOURCE_ROLLBACK_TAG"
+        [ "$release_type" = stable ] && release_name=$UPG_SOURCE_STABLE_TEXT
+        [ "$release_type" = master ] && release_name=$UPG_SOURCE_MASTER_TEXT
+        [ "$release_type" = dev ] && release_name=$UPG_SOURCE_DEV_TEXT
         [ -n "$url_id" ] && url_name=$(grep "$url_id" "$CRASHDIR"/configs/servers.list 2>/dev/null | awk '{print $2}') || url_name="$update_url"
 
-        comp_box "\033[30;47m切换ShellCrash版本及更新源地址\033[0m" \
+        comp_box "\033[30;47m$UPG_SOURCE_TITLE\033[0m" \
             "" \
-            "当前版本：\033[4;33m$release_name\033[0m" \
-            "当前源：\n\033[4;32m$url_name\033[0m"
+            "$UPG_SOURCE_CUR_VER\033[4;33m$release_name\033[0m" \
+            "$UPG_SOURCE_CUR_URL\n\033[4;32m$url_name\033[0m"
 
         grep -E "^1|$release_name" "$CRASHDIR"/configs/servers.list |
             awk '{print NR") "$2}' |
@@ -1130,12 +1130,12 @@ setserver() {
             done
 
         btm_box "" \
-            "a) 切换至\033[32m稳定版-stable\033[0m" \
-            "b) 切换至\033[36m公测版-master\033[0m" \
-            "c) 切换至\033[33m开发版-dev\033[0m" \
+            "$UPG_SOURCE_SWITCH_STABLE" \
+            "$UPG_SOURCE_SWITCH_MASTER" \
+            "$UPG_SOURCE_SWITCH_DEV" \
             "" \
-            "d) 自定义源地址（用于本地源或自建源）" \
-            "e) \033[31m版本回退\033[0m" \
+            "$UPG_SOURCE_CUSTOM" \
+            "$UPG_SOURCE_ROLLBACK" \
             "" \
             "0) $COMMON_BACK"
         read -r -p "$COMMON_INPUT> " num
@@ -1174,12 +1174,12 @@ setserver() {
             ;;
         c)
             while true; do
-                comp_box "\033[33m开发版未经过妥善测试，可能依然存在大量bug！！！\033[0m" \
-                    "\033[33m如果你没有足够的耐心或者测试经验，切勿使用此版本！\033[0m" \
-                    "请务必加入我们的讨论组：\033[36;4mhttps://t.me/ShellClash\033[0m"
-                content_line "是否依然切换到开发版？"
+                comp_box "\033[33m$UPG_SOURCE_DEV_WARN1\033[0m" \
+                    "\033[33m$UPG_SOURCE_DEV_WARN2\033[0m" \
+                    "$UPG_SOURCE_DEV_WARN3"
+                content_line "$UPG_SOURCE_DEV_CONFIRM"
                 separator_line "-"
-                btm_box "1) 确认切换" \
+                btm_box "$UPG_SOURCE_DEV_YES" \
                     "0) $COMMON_BACK"
                 read -r -p "$COMMON_INPUT> " res
                 case "$res" in
@@ -1199,9 +1199,9 @@ setserver() {
             done
             ;;
         d)
-            comp_box "\033[36m请直接输入个人源路径\033[0m" \
-                "或者输入 0 返回上级菜单"
-            read -r -p "请输入个人源路径> " update_url
+            comp_box "\033[36m$UPG_SOURCE_CUSTOM_HINT\033[0m" \
+                "$UPG_CUSTOM_CORE_LINK_HINT3"
+            read -r -p "$UPG_SOURCE_CUSTOM_INPUT" update_url
             if [ "$update_url" = 0 ]; then
                 continue
             elif [ ! -z "$update_url" ]; then
@@ -1214,16 +1214,16 @@ setserver() {
             if [ -n "$url_id" ] && [ "$url_id" -lt 200 ]; then
                 line_break
                 separator_line "="
-                content_line "\033[32m正在获取版本信息......\033[0m"
+                content_line "\033[32m$UPG_SOURCE_VER_GETTING\033[0m"
                 . "$CRASHDIR"/libs/web_get_lite.sh
                 list=$(web_get_lite https://api.github.com/repos/juewuy/ShellCrash/tags | grep -E '"name": "[0-9]' | cut -d '"' -f4)
                 if [ "$?" = "0" ]; then
-                    content_line "\033[32m获取版本信息成功\033[0m"
+                    content_line "\033[32m$UPG_SOURCE_VER_OK\033[0m"
                     separator_line "="
 
                     line_break
                     separator_line "="
-                    content_line "\033[31m请选择想要回退至的具体版本：\033[0m"
+                    content_line "\033[31m$UPG_SOURCE_ROLLBACK_SELECT\033[0m"
                     list_box "$list"
                     btm_box "" \
                         "0) $COMMON_BACK"
@@ -1239,15 +1239,15 @@ setserver() {
                         continue
                     fi
                 else
-                    content_line "\033[31m版本回退信息获取失败，请尝试更换其他安装源！\033[0m"
+                    content_line "\033[31m$UPG_SOURCE_ROLLBACK_FAIL\033[0m"
                     separator_line "="
                     sleep 1
                     continue
                 fi
                 rm -rf "$TMPDIR"/tags
             else
-                msg_alert "\033[31m当前源不支持版本回退\033[0m" \
-                    "\033[31m请尝试更换其他安装源！\033[0m"
+                msg_alert "\033[31m$UPG_SOURCE_ROLLBACK_NOTSUP\033[0m" \
+                    "\033[31m$UPG_SOURCE_ROLLBACK_HINT\033[0m"
                 continue
             fi
             ;;
@@ -1257,3 +1257,7 @@ setserver() {
         esac
     done
 }
+
+
+
+
