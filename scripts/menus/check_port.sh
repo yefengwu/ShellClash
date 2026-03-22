@@ -3,17 +3,60 @@
 
 load_lang check_port
 
+_get_netstat_cmd() {
+	case "$1" in
+	tcp) echo "netstat -ntl" ;;
+	udp) echo "netstat -nul" ;;
+	*) echo "netstat -ntul" ;;
+	esac
+}
+
 check_port() {
-    if [ "$1" -gt 65535 ] || [ "$1" -le 1 ]; then
-        msg_alert "\033[31m$CHECK_PORT_RANGE_ERR\033[0m"
-        return 1
-    elif echo "|$mix_port|$redir_port|$dns_port|$db_port|" | grep -q "|$1|"; then
-        msg_alert "\033[31m$CHECK_PORT_DUP_ERR\033[0m"
-        return 1
-    elif netstat -ntul | grep -q ":$1[[:space:]]"; then
-        msg_alert "\033[31m$CHECK_PORT_OCCUPIED_ERR\033[0m"
-        return 1
-    else
-        return 0
-    fi
+	local port="$1"
+	local protocol="${2:-all}"
+
+	if [ "$port" -gt 65535 ] || [ "$port" -le 1 ]; then
+		msg_alert "\033[31m$CHECK_PORT_RANGE_ERR\033[0m"
+		return 1
+	fi
+
+	local current_port_name=""
+	case "$port" in
+	"$mix_port") current_port_name="mix_port" ;;
+	"$redir_port") current_port_name="redir_port" ;;
+	"$dns_port") current_port_name="dns_port" ;;
+	"$db_port") current_port_name="db_port" ;;
+	esac
+
+	if [ -z "$current_port_name" ] && echo "|$mix_port|$redir_port|$dns_port|$db_port|" | grep -q "|$port|"; then
+		msg_alert "\033[31m$CHECK_PORT_DUP_ERR\033[0m"
+		return 1
+	fi
+
+	local check_cmd
+	check_cmd=$(_get_netstat_cmd "$protocol")
+
+	if $check_cmd 2>/dev/null | grep -q ":${port}[[:space:]]"; then
+		msg_alert "\033[31m$CHECK_PORT_OCCUPIED_ERR\033[0m"
+		return 1
+	fi
+
+	return 0
+}
+
+check_port_with_info() {
+	local port="$1"
+	local protocol="${2:-all}"
+	local check_cmd
+	check_cmd=$(_get_netstat_cmd "$protocol")
+
+	local conflict_line
+	conflict_line=$($check_cmd 2>/dev/null | grep ":${port}[[:space:]]" | head -n 1)
+
+	if [ -n "$conflict_line" ]; then
+		echo "$conflict_line"
+		return 1
+	fi
+
+	return 0
 }

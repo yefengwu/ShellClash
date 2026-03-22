@@ -43,36 +43,47 @@ checkrestart() {
 
 # 检查端口冲突
 checkport() {
+	. "$CRASHDIR"/menus/check_port.sh
+
 	while true; do
-		# Before each round of checks begins, execute netstat only once and cache the results
-		# Avoid calling the system command once for each port
-		current_listening=$(netstat -ntul 2>&1)
+		local conflict_found=0
+		local conflict_port=""
+		local conflict_info=""
 
-		conflict_found=0
+		conflict_info=$(check_port_with_info "$mix_port" tcp)
+		if [ $? -ne 0 ]; then
+			conflict_found=1
+			conflict_port="$mix_port"
+		fi
 
-		for portx in $dns_port $mix_port $redir_port $((redir_port + 1)) $db_port; do
-			# Use `grep` to search within the cached variables instead of re-running `netstat`
-			conflict_line=$(echo "$current_listening" | grep ":$portx ")
-
-			if [ -n "$conflict_line" ]; then
-
-				comp_box "【$portx】：$MENU_PORT_CONFLICT_TITLE" \
-					"\033[0m$(echo "$conflict_line" | head -n 1)\033[0m" \
-					"\033[36m$MENU_PORT_CONFLICT_HINT\033[0m"
-
-				. "$CRASHDIR"/menus/2_settings.sh && set_adv_config
-				. "$CRASHDIR"/libs/get_config.sh
-
-				# Mark conflict and exit the for loop, triggering the while loop to restart the check
-				# This replaces the original recursive call to `checkport`
-				conflict_found=1
-				break
-			fi
-		done
-
-		# If no conflicts are found after the entire for loop completes,
-		# the while loop exits and the function terminates.
 		if [ "$conflict_found" -eq 0 ]; then
+			conflict_info=$(check_port_with_info "$redir_port" tcp)
+			[ $? -ne 0 ] && conflict_found=1 && conflict_port="$redir_port"
+		fi
+
+		if [ "$conflict_found" -eq 0 ]; then
+			conflict_info=$(check_port_with_info "$((redir_port + 1))" tcp)
+			[ $? -ne 0 ] && conflict_found=1 && conflict_port="$((redir_port + 1))"
+		fi
+
+		if [ "$conflict_found" -eq 0 ]; then
+			conflict_info=$(check_port_with_info "$dns_port" all)
+			[ $? -ne 0 ] && conflict_found=1 && conflict_port="$dns_port"
+		fi
+
+		if [ "$conflict_found" -eq 0 ]; then
+			conflict_info=$(check_port_with_info "$db_port" tcp)
+			[ $? -ne 0 ] && conflict_found=1 && conflict_port="$db_port"
+		fi
+
+		if [ "$conflict_found" -eq 1 ]; then
+			comp_box "【$conflict_port】：$MENU_PORT_CONFLICT_TITLE" \
+				"\033[0m$conflict_info\033[0m" \
+				"\033[36m$MENU_PORT_CONFLICT_HINT\033[0m"
+
+			. "$CRASHDIR"/menus/2_settings.sh && set_adv_config
+			. "$CRASHDIR"/libs/get_config.sh
+		else
 			break
 		fi
 	done
@@ -195,17 +206,17 @@ main_menu() {
 	while true; do
 		ckstatus
 
-		btm_box "1) \033[32m$MENU_MAIN_1\033[0m"\
-		"2) \033[36m$MENU_MAIN_2\033[0m"\
-		"3) \033[31m$MENU_MAIN_3\033[0m"\
-		"4) \033[33m$MENU_MAIN_4\033[0m"\
-		"5) \033[32m$MENU_MAIN_5\033[0m"\
-		"6) \033[36m$MENU_MAIN_6\033[0m"\
-		"7) \033[33m$MENU_MAIN_7\033[0m"\
-		"8) $MENU_MAIN_8"\
-		"9) \033[32m$MENU_MAIN_9\033[0m"\
-		""\
-		"0) $MENU_MAIN_0"
+		btm_box "1) \033[32m$MENU_MAIN_1\033[0m" \
+			"2) \033[36m$MENU_MAIN_2\033[0m" \
+			"3) \033[31m$MENU_MAIN_3\033[0m" \
+			"4) \033[33m$MENU_MAIN_4\033[0m" \
+			"5) \033[32m$MENU_MAIN_5\033[0m" \
+			"6) \033[36m$MENU_MAIN_6\033[0m" \
+			"7) \033[33m$MENU_MAIN_7\033[0m" \
+			"8) $MENU_MAIN_8" \
+			"9) \033[32m$MENU_MAIN_9\033[0m" \
+			"" \
+			"0) $MENU_MAIN_0"
 		read -r -p "$MENU_MAIN_PROMPT" num
 
 		case "$num" in
