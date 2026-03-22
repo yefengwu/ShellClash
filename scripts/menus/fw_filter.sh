@@ -3,6 +3,7 @@
 
 [ -n "$__IS_MODULE_FW_FILTER_LOADED" ] && return
 __IS_MODULE_FW_FILTER_LOADED=1
+load_lang fw_filter
 
 # 流量过滤
 set_fw_filter() {
@@ -12,14 +13,14 @@ set_fw_filter() {
         [ -z "$cn_ip_route" ] && cn_ip_route=OFF
         touch "$CRASHDIR"/configs/mac "$CRASHDIR"/configs/ip_filter
         [ -z "$(cat "$CRASHDIR"/configs/mac "$CRASHDIR"/configs/ip_filter 2>/dev/null)" ] && mac_return=OFF || mac_return=ON
-        comp_box "1) 过滤非常用端口： 	\033[36m$common_ports\033[0m	———用于过滤P2P流量" \
-            "2) 过滤局域网设备：	\033[36m$mac_return\033[0m	———使用黑/白名单进行过滤" \
-            "3) 过滤QUIC协议：	\033[36m$quic_rj\033[0m	———优化视频性能" \
-            "4) 过滤CN_IP(4&6)列表：\033[36m$cn_ip_route\033[0m	———优化性能" \
-            "5) 自定义透明路由ipv4网段：适合vlan等复杂网络环境" \
-            "6) 自定义保留地址ipv4网段：需要以保留地址为访问目标的环境" \
+        comp_box "$FWF_ITEM_1" \
+            "$FWF_ITEM_2" \
+            "$FWF_ITEM_3" \
+            "$FWF_ITEM_4" \
+            "$FWF_ITEM_5" \
+            "$FWF_ITEM_6" \
             "" \
-            "0) $COMMON_BACK"
+            "$FWF_BACK"
         read -r -p "$COMMON_INPUT> " num
         case "$num" in
         "" | 0)
@@ -27,9 +28,9 @@ set_fw_filter() {
             ;;
         1)
             if [ -n "$(pidof CrashCore)" ] && [ "$firewall_mod" = 'iptables' ]; then
-                comp_box "切换时将停止服务，是否继续："
-                btm_box "1) 是" \
-                    "0) 否，返回上级菜单"
+                comp_box "$FWF_SWITCH_STOP"
+                btm_box "$FWF_YES" \
+                    "$FWF_NO_BACK"
                 read -r -p "$COMMON_INPUT> " res
                 [ "$res" = 1 ] && "$CRASHDIR"/start.sh stop && set_common_ports
             else
@@ -47,10 +48,10 @@ set_fw_filter() {
         3)
             if [ "$quic_rj" = "OFF" ]; then
                 quic_rj=ON
-                msg_alert "\033[33m已禁止QUIC流量通过ShellCrash内核！\033[0m"
+                msg_alert "\033[33m$FWF_QUIC_OFF\033[0m"
             else
                 quic_rj=OFF
-                msg_alert "\033[33m已取消禁止QUIC协议流量！\033[0m"
+                msg_alert "\033[33m$FWF_QUIC_ON\033[0m"
             fi
             setconfig quic_rj $quic_rj
             ;;
@@ -58,15 +59,15 @@ set_fw_filter() {
             if [ -n "$(ipset -v 2>/dev/null)" ] || [ "$firewall_mod" = 'nftables' ]; then
                 if [ "$cn_ip_route" = "OFF" ]; then
                     cn_ip_route=ON
-                    msg_alert -t 2 "\033[32m已开启CN_IP绕过内核功能！\033[0m" \
-                        "\033[31m注意：此功能会导致全局模式及一切CN相关规则失效！\033[0m"
+                    msg_alert -t 2 "\033[32m$FWF_CNIP_ON\033[0m" \
+                        "\033[31m$FWF_CNIP_WARN\033[0m"
                 else
                     cn_ip_route=OFF
-                    msg_alert "\033[33m已禁用CN_IP绕过内核功能！\033[0m"
+                    msg_alert "\033[33m$FWF_CNIP_OFF\033[0m"
                 fi
                 setconfig cn_ip_route $cn_ip_route
             else
-                msg_alert "\033[31m当前设备缺少ipset模块或未使用nftables模式，无法启用绕过功能！\033[0m"
+                msg_alert "\033[31m$FWF_NO_IPSET\033[0m"
             fi
             ;;
         5)
@@ -87,19 +88,19 @@ set_common_ports() {
         [ -z "$multiport" ] && multiport='22,80,443,8080,8443'
         line_break
         separator_line "="
-        content_line "\033[31m注意：\n\033[0mMIX模式下，所有fake-ip来源的非常用端口流量不会被过滤"
+        content_line "\033[31m$FWF_COMMON_NOTE\033[0m$FWF_MIX_NOTE"
         if [ -n "$common_ports" ]; then
             content_line ""
-            content_line "当前已放行端口：\033[36m$multiport\033[0m"
+            content_line "$FWF_ALLOWED_PORTS\033[36m$multiport\033[0m"
         fi
         separator_line "="
-        btm_box "1) 启用/关闭端口过滤:	\033[36m$common_ports\033[0m" \
-            "2) 添加放行端口" \
-            "3) 移除指定放行端口" \
-            "4) 重置默认放行端口" \
-            "5) 重置为旧版放行端口" \
+        btm_box "$FWF_PORT_MENU_1" \
+            "$FWF_PORT_MENU_2" \
+            "$FWF_PORT_MENU_3" \
+            "$FWF_PORT_MENU_4" \
+            "$FWF_PORT_MENU_5" \
             "" \
-            "0) $COMMON_BACK"
+            "$FWF_BACK"
         read -r -p "$COMMON_INPUT> " num
         case "$num" in
         "" | 0)
@@ -122,18 +123,18 @@ set_common_ports() {
             while true; do
                 port_count=$(echo "$multiport" | awk -F',' '{print NF}')
                 if [ "$port_count" -ge 15 ]; then
-                    comp_box "\033[31m最多支持设置放行15个端口，请先减少一些！\033[0m"
+                    comp_box "\033[31m$FWF_MAX_PORT\033[0m"
                 else
-                    comp_box "当前已放行端口：\033[36m$multiport\033[0m"
-                    btm_box "\033[36m请直接输入要放行的端口号\033[0m\n（每次只能输入一个端口号，切勿一次添加多个端口号）" \
-                        "或输入 0 返回上级菜单"
-                    read -r -p "请输入> " port
+                    comp_box "$FWF_ALLOWED_PORTS\033[36m$multiport\033[0m"
+                    btm_box "\033[36m$FWF_INPUT_ADD_HINT\033[0m\n$FWF_INPUT_ADD_HINT2" \
+                        "$FWF_OR_BACK"
+                    read -r -p "$FWF_INPUT_PORT" port
                     if [ "$port" = 0 ]; then
                         break
                     elif echo ",$multiport," | grep -q ",$port,"; then
-                        msg_alert "\033[31m输入错误！请勿重复添加！\033[0m"
+                        msg_alert "\033[31m$FWF_ERR_DUP\033[0m"
                     elif [ "$port" -lt 1 ] || [ "$port" -gt 65535 ]; then
-                        msg_alert "\033[31m输入错误！请输入正确的数值（1～65535）！\033[0m"
+                        msg_alert "\033[31m$FWF_ERR_RANGE\033[0m"
                     else
                         multiport=$(echo "$multiport,$port" | sed "s/^,//")
 
@@ -148,15 +149,15 @@ set_common_ports() {
             ;;
         3)
             while true; do
-                comp_box "当前已放行端口：\033[36m$multiport\033[0m"
-                btm_box "\033[36m请直接输入要移除的端口号\033[0m\n（每次只能输入一个端口号，切勿一次添加多个端口号）" \
-                    "或输入 0 返回上级菜单"
-                read -r -p "请输入> " port
+                comp_box "$FWF_ALLOWED_PORTS\033[36m$multiport\033[0m"
+                btm_box "\033[36m$FWF_INPUT_REMOVE_HINT\033[0m\n$FWF_INPUT_ADD_HINT2" \
+                    "$FWF_OR_BACK"
+                read -r -p "$FWF_INPUT_PORT" port
                 if [ "$port" = 0 ]; then
                     break
                 elif echo ",$multiport," | grep -q ",$port,"; then
                     if [ "$port" -lt 1 ] || [ "$port" -gt 65535 ]; then
-                        msg_alert "\033[31m输入错误！请输入正确的数值（1～65535）！\033[0m"
+                        msg_alert "\033[31m$FWF_ERR_RANGE\033[0m"
                     else
                         multiport=$(echo ",$multiport," | sed "s/,$port//; s/^,//; s/,$//")
                         if setconfig multiport "$multiport"; then
@@ -166,7 +167,7 @@ set_common_ports() {
                         fi
                     fi
                 else
-                    msg_alert "\033[31m输入错误！请输入已添加过的端口！\033[0m"
+                    msg_alert "\033[31m$FWF_ERR_DUP\033[0m"
                 fi
             done
             ;;
@@ -198,13 +199,13 @@ set_cust_host_ipv4() {
     while true; do
         [ -z "$replace_default_host_ipv4" ] && replace_default_host_ipv4="OFF"
         . "$CRASHDIR"/starts/fw_getlanip.sh && getlanip
-        comp_box "当前默认透明路由的网段为：\033[32m$host_ipv4\033[0m" \
-            "当前已添加的自定义网段为：\033[36m$cust_host_ipv4\033[0m"
-        btm_box "1) 移除所有自定义网段" \
-            "2) 使用自定义网段覆盖默认网段	\033[36m$replace_default_host_ipv4\033[0m" \
+        comp_box "$FWF_CUST_HOST_TITLE\033[32m$host_ipv4\033[0m" \
+            "$FWF_CUST_HOST_TITLE2\033[36m$cust_host_ipv4\033[0m"
+        btm_box "$FWF_CUST_HOST_MENU_1" \
+            "$FWF_CUST_HOST_MENU_2	\033[36m$replace_default_host_ipv4\033[0m" \
             "" \
-            "0) $COMMON_BACK"
-        read -r -p "请输入对应的序号或需要额外添加的网段> " text
+            "$FWF_BACK"
+        read -r -p "$FWF_CUST_HOST_HINT" text
         case "$text" in
         "" | 0)
             break
@@ -239,7 +240,7 @@ set_cust_host_ipv4() {
                     msg_alert "\033[31m$COMMON_FAILED\033[0m"
                 fi
             else
-                msg_alert "\033[31m请输入正确的网段地址！\033[0m"
+                msg_alert "\033[31m$FWF_NET_ERR\033[0m"
             fi
             ;;
         esac
@@ -249,14 +250,14 @@ set_cust_host_ipv4() {
 set_reserve_ipv4() {
     while true; do
         [ -z "$reserve_ipv4" ] && reserve_ipv4="0.0.0.0/8 10.0.0.0/8 127.0.0.0/8 100.64.0.0/10 169.254.0.0/16 172.16.0.0/12 192.168.0.0/16 224.0.0.0/4 240.0.0.0/4"
-        comp_box "\033[33m注意：地址必须是空格分隔，错误的设置可能导致网络回环或启动报错，请务必谨慎！\033[0m" \
+        comp_box "\033[33m$FWF_RESERVE_NOTE\033[0m" \
             "" \
-            "当前网段：" \
+            "$FWF_RESERVE_NOW" \
             "\033[36m$reserve_ipv4\033[0m"
-        btm_box "\033[36m请直接输入自定义保留地址ipv4网段\033[0m" \
-            "或输入 1 重置默认网段" \
-            "或输入 0 返回上级菜单"
-        read -r -p "请输入> " text
+        btm_box "\033[36m$FWF_RESERVE_INPUT_HINT\033[0m" \
+            "$FWF_RESERVE_INPUT_HINT2" \
+            "$FWF_RESERVE_INPUT_HINT3"
+        read -r -p "$FWF_RESERVE_PROMPT" text
         case "$text" in
         "" | 0)
             break
@@ -273,12 +274,12 @@ set_reserve_ipv4() {
             if echo "$text" | grep -Eq "(((25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])\.){3}(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])/(3[0-2]|[1-2]?[0-9]))( +|$)+"; then
                 reserve_ipv4="$text"
                 if setconfig reserve_ipv4 "'$reserve_ipv4'"; then
-                    msg_alert "已将保留地址网段设为：\033[32m$reserve_ipv4\033[0m"
+                    msg_alert "\033[32m$FWF_RESERVE_SET$reserve_ipv4\033[0m"
                 else
                     msg_alert "\033[31m$COMMON_FAILED\033[0m"
                 fi
             else
-                msg_alert "\033[31m输入有误，请重新输入！\033[0m"
+                msg_alert "\033[31m$FWF_RESERVE_ERR\033[0m"
             fi
             ;;
         esac
@@ -290,33 +291,33 @@ fw_filter_lan() {
     get_devinfo() {
         dev_ip=$(cat "$dhcpdir" | grep " $dev " | awk '{print $3}') && [ -z "$dev_ip" ] && dev_ip=$dev
         dev_mac=$(cat "$dhcpdir" | grep " $dev " | awk '{print $2}') && [ -z "$dev_mac" ] && dev_mac=$dev
-        dev_name=$(cat "$dhcpdir" | grep " $dev " | awk '{print $4}') && [ -z "$dev_name" ] && dev_name='未知设备'
+        dev_name=$(cat "$dhcpdir" | grep " $dev " | awk '{print $4}') && [ -z "$dev_name" ] && dev_name="$FWF_LAN_NO_DEVICE"
     }
     add_mac() {
         while true; do
-            comp_box "手动输入mac地址时仅支持\033[32mxx:xx:xx:xx:xx:xx\033[0m的形式"
-            content_line "已添加的mac地址："
+            comp_box "$FWF_MAC_HINT"
+            content_line "$FWF_MAC_EXISTED"
             content_line ""
             if [ -s "$CRASHDIR/configs/mac" ]; then
                 while IFS= read -r line; do
                     content_line "$line"
                 done <"$CRASHDIR/configs/mac"
             else
-                content_line "暫未添加任何mac地址"
+                content_line "$FWF_NONE_MAC"
             fi
             separator_line "="
-            content_line "序号   \033[33m设备IP       设备mac地址       设备名称\033[0m"
+            content_line "$FWF_MAC_HEADER"
             if [ -s "$dhcpdir" ]; then
                 awk '{print NR") "$3,$2,$4}' "$dhcpdir" |
                     while IFS= read -r line; do
                         content_line "$line"
                     done
             else
-                content_line "无纪录"
+                content_line "$FWF_MAC_NONE"
             fi
             btm_box "" \
-                "0) $COMMON_BACK"
-            read -r -p "请输入对应序号或直接输入mac地址> " num
+                "$FWF_BACK"
+            read -r -p "$FWF_MAC_INPUT_HINT" num
             if [ -z "$num" ] || [ "$num" = 0 ]; then
                 i=
                 break
@@ -324,48 +325,48 @@ fw_filter_lan() {
                 if [ -z "$(cat "$CRASHDIR"/configs/mac | grep -E "$num")" ]; then
                     echo "$num" | grep -oE '^([0-9A-Fa-f]{2}[:]){5}([0-9A-Fa-f]{2})$' >>"$CRASHDIR"/configs/mac
                 else
-                    msg_alert "\033[31m已添加的设备，请勿重复添加！\033[0m"
+                    msg_alert "\033[31m$FWF_MAC_DUP\033[0m"
                 fi
             elif [ "$num" -le $(cat $dhcpdir 2>/dev/null | awk 'END{print NR}') ]; then
                 macadd=$(cat "$dhcpdir" | awk '{print $2}' | sed -n "$num"p)
                 if [ -z "$(cat "$CRASHDIR"/configs/mac | grep -E "$macadd")" ]; then
                     echo "$macadd" >>"$CRASHDIR"/configs/mac
                 else
-                    msg_alert "\033[31m已添加的设备，请勿重复添加！\033[0m"
+                    msg_alert "\033[31m$FWF_MAC_DUP\033[0m"
                 fi
             else
-                msg_alert "\033[31m输入有误，请重新输入！\033[0m"
+                msg_alert "\033[31m$FWF_RESERVE_ERR\033[0m"
             fi
         done
     }
 
     add_ip() {
         while true; do
-            comp_box "手动输入时仅支持 \033[32m192.168.1.0/24\033[0m 或 \033[32m192.168.1.0\033[0m 的形式" \
-                "不支持ipv6地址过滤，可能导致过滤失败，建议使用mac地址过滤"
-            content_line "已添加的IP地址（段）："
+            comp_box "$FWF_IP_HINT" \
+                "$FWF_IP_HINT2"
+            content_line "$FWF_IP_EXISTED"
             content_line ""
             if [ -s "$CRASHDIR/configs/ip_filter" ]; then
                 while IFS= read -r line; do
                     content_line "$line"
                 done <"$CRASHDIR/configs/ip_filter"
             else
-                content_line "暫未添加任何IP地址（段）"
+                content_line "$FWF_NONE_IP"
             fi
 
             separator_line "="
-            content_line "\033[33m序号   设备IP     设备名称\033[32m"
+            content_line "$FWF_IP_HEADER"
             if [ -s "$dhcpdir" ]; then
                 awk '{print NR") "$3, $4}' "$dhcpdir" |
                     while IFS= read -r line; do
                         content_line "$line"
                     done
             else
-                content_line "无纪录"
+                content_line "$FWF_MAC_NONE"
             fi
             btm_box "" \
-                "0) $COMMON_BACK"
-            read -r -p "请输入对应序号或直接输入IP地址段> " num
+                "$FWF_BACK"
+            read -r -p "$FWF_IP_INPUT_HINT" num
             if [ -z "$num" ] || [ "$num" = 0 ]; then
                 i=
                 break
@@ -373,17 +374,17 @@ fw_filter_lan() {
                 if [ -z "$(cat "$CRASHDIR"/configs/ip_filter | grep -E "$num")" ]; then
                     echo "$num" | grep -oE '^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(/(3[0-2]|[12]?[0-9]))?$' >>"$CRASHDIR"/configs/ip_filter
                 else
-                    msg_alert "\033[31m已添加的地址，请勿重复添加！\033[0m"
+                    msg_alert "\033[31m$FWF_IP_DUP\033[0m"
                 fi
             elif [ "$num" -le "$(cat "$dhcpdir" 2>/dev/null | awk 'END{print NR}')" ]; then
                 ipadd=$(cat "$dhcpdir" | awk '{print $3}' | sed -n "$num"p)
                 if [ -z "$(cat "$CRASHDIR"/configs/mac | grep -E "$ipadd")" ]; then
                     echo "$ipadd" >>"$CRASHDIR"/configs/ip_filter
                 else
-                    msg_alert "\033[31m已添加的地址，请勿重复添加！\033[0m"
+                    msg_alert "\033[31m$FWF_IP_DUP\033[0m"
                 fi
             else
-                msg_alert "\033[31m输入有误，请重新输入！\033[0m"
+                msg_alert "\033[31m$FWF_RESERVE_ERR\033[0m"
             fi
         done
     }
@@ -391,11 +392,11 @@ fw_filter_lan() {
     del_all() {
         while true; do
             if [ -z "$(cat "$CRASHDIR"/configs/mac "$CRASHDIR"/configs/ip_filter 2>/dev/null)" ]; then
-                msg_alert "\033[31m列表中没有需要移除的设备！\033[0m"
+                msg_alert "\033[31m$FWF_REMOVE_NONE\033[0m"
                 break
             else
-                comp_box "请选择需要移除的设备："
-                content_line "      \033[32m设备IP             \033[36m设备mac地址     \033[35m设备名称\033[0m"
+                comp_box "$FWF_REMOVE_TITLE"
+                content_line "$FWF_REMOVE_HEADER"
                 i=1
                 for dev in $(cat "$CRASHDIR"/configs/mac "$CRASHDIR"/configs/ip_filter 2>/dev/null); do
                     get_devinfo
@@ -404,7 +405,7 @@ fw_filter_lan() {
                     i=$((i + 1))
                 done
                 btm_box "" \
-                    "0) $COMMON_BACK"
+                    "$FWF_BACK"
                 read -r -p "$COMMON_INPUT> " num
                 mac_filter_rows=$(cat "$CRASHDIR"/configs/mac 2>/dev/null | wc -l)
                 ip_filter_rows=$(cat "$CRASHDIR"/configs/ip_filter 2>/dev/null | wc -l)
@@ -413,13 +414,13 @@ fw_filter_lan() {
                     break
                 elif [ "$num" -le "$mac_filter_rows" ]; then
                     sed -i "${num}d" "$CRASHDIR"/configs/mac
-                    msg_alert "\033[32m对应设备已移除！\033[0m"
+                    msg_alert "\033[32m$FWF_REMOVE_OK\033[0m"
                 elif [ "$num" -le $((mac_filter_rows + ip_filter_rows)) ]; then
                     num=$((num - mac_filter_rows))
                     sed -i "${num}d" "$CRASHDIR"/configs/ip_filter
-                    msg_alert "\033[32m对应设备已移除！\033[0m"
+                    msg_alert "\033[32m$FWF_REMOVE_OK\033[0m"
                 else
-                    msg_alert "\033[31m输入有误，请重新输入！\033[0m"
+                    msg_alert "\033[31m$FWF_RESERVE_ERR\033[0m"
                 fi
             fi
         done
@@ -432,22 +433,24 @@ fw_filter_lan() {
         [ -z "$dhcpdir" ] && [ -f /tmp/dnsmasq.leases ] && dhcpdir='/tmp/dnsmasq.leases'
         [ -z "$dhcpdir" ] && dhcpdir='/dev/null'
         [ -z "$macfilter_type" ] && macfilter_type='黑名单'
-        if [ "$macfilter_type" = "黑名单" ]; then
-            fw_filter_lan_over='白名单'
-            fw_filter_lan_scrip='不'
+        if [ "$macfilter_type" = '黑名单' ]; then
+            macfilter_type_show="$FWF_BLACK_LIST"
+            fw_filter_lan_over="$FWF_WHITE_LIST"
+            fw_filter_lan_desc="$FWF_FILTER_BLACK_DESC"
         else
-            fw_filter_lan_over='黑名单'
-            fw_filter_lan_scrip=''
+            macfilter_type_show="$FWF_WHITE_LIST"
+            fw_filter_lan_over="$FWF_BLACK_LIST"
+            fw_filter_lan_desc="$FWF_FILTER_WHITE_DESC"
         fi
 
-        comp_box "\033[30;47m请在此添加或移除设备\033[0m" \
+        comp_box "\033[30;47m$FWF_FILTER_MENU_TITLE\033[0m" \
             "" \
-            "当前过滤方式为：\033[33m$macfilter_type模式\033[0m" \
-            "仅列表内设备流量\033[36m$fw_filter_lan_scrip经过\033[0m内核"
+            "$FWF_FILTER_MODE\033[33m$macfilter_type_show$FWF_FILTER_MODE_SUFFIX\033[0m" \
+            "\033[36m$fw_filter_lan_desc\033[0m"
         if [ -n "$(cat "$CRASHDIR"/configs/mac)" ]; then
-            content_line "当前已过滤设备为："
+            content_line "$FWF_FILTER_EXISTED"
             content_line ""
-            content_line "  \033[36m设备mac/ip地址\033[0m     \033[35m设备名称\033[0m"
+            content_line "$FWF_FILTER_HEADER"
             for dev in $(cat "$CRASHDIR"/configs/mac 2>/dev/null); do
                 get_devinfo
                 content_line "$(printf "\033[36m%-20s \033[35m%s\033[0m" \
@@ -460,22 +463,26 @@ fw_filter_lan() {
             done
             separator_line "="
         fi
-        btm_box "1) 切换为\033[33m$fw_filter_lan_over模式\033[0m" \
-            "2) \033[32m添加指定设备（mac地址）\033[0m" \
-            "3) \033[32m添加指定设备（IP地址／网段）\033[0m" \
-            "4) \033[36m移除指定设备\033[0m" \
-            "9) \033[31m清空整个列表\033[0m" \
+        btm_box "$FWF_FILTER_SWITCH" \
+            "$FWF_FILTER_ADD_MAC" \
+            "$FWF_FILTER_ADD_IP" \
+            "$FWF_FILTER_REMOVE" \
+            "$FWF_FILTER_CLEAR" \
             "" \
-            "0) $COMMON_BACK"
+            "$FWF_BACK"
         read -r -p "$COMMON_INPUT> " num
         case "$num" in
         "" | 0)
             break
             ;;
         1)
-            macfilter_type=$fw_filter_lan_over
-            if setconfig macfilter_type $macfilter_type; then
-                msg_alert "\033[32m已切换为$macfilter_type模式！\033[0m"
+            if [ "$macfilter_type" = '黑名单' ]; then
+                macfilter_type='白名单'
+            else
+                macfilter_type='黑名单'
+            fi
+            if setconfig macfilter_type "$macfilter_type"; then
+                msg_alert "\033[32m$FWF_SWITCH_OK\033[0m"
             else
                 msg_alert "\033[31m$COMMON_FAILED\033[0m"
             fi
@@ -492,7 +499,7 @@ fw_filter_lan() {
         9)
             : >"$CRASHDIR"/configs/mac
             : >"$CRASHDIR"/configs/ip_filter
-            msg_alert "\033[31m设备列表已清空！\033[0m"
+            msg_alert "\033[31m$FWF_LIST_CLEARED\033[0m"
             ;;
         *)
             errornum

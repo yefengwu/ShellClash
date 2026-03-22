@@ -3,6 +3,7 @@
 
 [ -n "$__IS_MODULE_OVERRIDE" ] && return
 __IS_MODULE_OVERRIDE=1
+load_lang override
 
 YAMLSDIR="$CRASHDIR"/yamls
 JSONSDIR="$CRASHDIR"/jsons
@@ -12,18 +13,18 @@ override() {
     while true; do
         [ -z "$rule_link" ] && rule_link=1
         [ -z "$server_link" ] && server_link=1
-        comp_box "\033[30;47m 欢迎使用配置文件覆写功能！\033[0m"
-        content_line "2) 管理\033[36m自定义规则\033[0m"
+        comp_box "\033[30;47m $OVR_TITLE\033[0m"
+        content_line "$OVR_MENU_2"
         echo "$crashcore" | grep -q 'singbox' || {
-            content_line "3) 管理\033[33m自定义节点\033[0m"
-            content_line "4) 管理\033[36m自定义策略组\033[0m"
+            content_line "$OVR_MENU_3"
+            content_line "$OVR_MENU_4"
         }
-        content_line "5) \033[32m自定义\033[0m高级功能"
-        [ "$disoverride" != 1 ] && content_line "9) \033[33m禁用\033[0m配置文件覆写"
+        content_line "$OVR_MENU_5"
+        [ "$disoverride" != 1 ] && content_line "$OVR_MENU_9"
         content_line ""
-        content_line "0) 返回上级菜单"
+        content_line "$OVR_BACK"
         separator_line "="
-        read -r -p "请输入对应数字> " num
+        read -r -p "$OVR_INPUT_NUM" num
         case "$num" in
         "" | 0)
             break
@@ -46,12 +47,12 @@ override() {
             sleep 3
             ;;
         9)
-            comp_box "\033[33m此功能可能会导致严重问题！启用后脚本中大部分功能都将禁用！！！\033[0m" \
-                "如果你不是非常了解$crashcore的运行机制，切勿开启！\033[0m" \
-                "\033[33m继续后如出现任何问题，请务必自行解决，一切提问恕不受理！\033[0m"
+            comp_box "\033[33m$OVR_WARN_1\033[0m" \
+                "\033[33m$OVR_WARN_2\033[0m" \
+                "\033[33m$OVR_WARN_3\033[0m"
             sleep 2
-            btm_box "1) 我确认遇到问题可以自行解决" \
-                "0) 返回上级菜单"
+            btm_box "$OVR_WARN_CONFIRM" \
+                "$OVR_CONFIRM_NO"
             read -r -p "$COMMON_INPUT> " res
             [ "$res" = '1' ] && {
                 disoverride=1
@@ -72,15 +73,15 @@ override() {
 # 自定义规则
 setrules() {
     set_rule_type() {
-        comp_box "\033[33m请选择规则类型：\033[0m"
+        comp_box "\033[33m$OVR_RULES_TYPE\033[0m"
         printf '%s\n' "$rule_type" |
             awk '{for (i = 1; i <= NF; i++) print i") " $i}' |
             while IFS= read -r line; do
                 content_line "$line"
             done
         btm_box "" \
-            "0) 返回上级菜单"
-        read -r -p "请输入对应数字> " num
+            "$OVR_BACK"
+        read -r -p "$OVR_INPUT_NUM" num
         case "$num" in
         "" | 0) ;;
         [0-9]*)
@@ -88,8 +89,8 @@ setrules() {
                 errornum
             else
                 rule_type_set=$(echo "$rule_type" | cut -d' ' -f"$num")
-                comp_box "\033[33m请输入规则语句，\n可以是域名、泛域名、IP网段或者其他匹配规则类型的内容\033[0m"
-                read -r -p "请输入对应规则> " rule_state_set
+                comp_box "\033[33m$OVR_RULES_ADD_RULE\033[0m"
+                read -r -p "$OVR_RULES_INPUT_RULE" rule_state_set
                 if [ -n "$rule_state_set" ]; then
                     set_group_type
                 else
@@ -104,16 +105,16 @@ setrules() {
     }
 
     set_group_type() {
-        comp_box "\033[36m请选择具体规则\033[0m" \
-            "\033[33m此处规则读取自现有配置文件，如果你后续更换配置文件时运行出错，请尝试重新添加\033[0m"
+        comp_box "\033[36m$OVR_RULES_GROUP\033[0m" \
+            "\033[33m$OVR_RULES_EXIST_WARN\033[0m"
         printf '%s\n' "$rule_group" |
             awk -F '#' '{for (i = 1; i <= NF; i++) print i") " $i}' |
             while IFS= read -r line; do
                 content_line "$line"
             done
         btm_box "" \
-            "0) 返回上级菜单"
-        read -r -p "请输入对应数字> " num
+            "$OVR_BACK"
+        read -r -p "$OVR_INPUT_NUM" num
         case "$num" in
         "" | 0) ;;
         [0-9]*)
@@ -124,7 +125,7 @@ setrules() {
                 rule_all="- ${rule_type_set},${rule_state_set},${rule_group_set}"
                 echo "IP-CIDR SRC-IP-CIDR IP-CIDR6" | grep -q -- "$rule_type_set" && rule_all="${rule_all},no-resolve"
                 echo "$rule_all" >>"$YAMLSDIR"/rules.yaml
-                msg_alert "\033[32m添加成功！\033[0m"
+                msg_alert "\033[32m$OVR_RULES_ADD_OK\033[0m"
             fi
             ;;
         *)
@@ -135,15 +136,15 @@ setrules() {
 
     del_rule_type() {
         while true; do
-            comp_box "输入对应数字即可移除相应规则："
+            comp_box "$OVR_RULES_DEL_HINT"
             sed -i '/^ *$/d; /^#/d' "$YAMLSDIR"/rules.yaml
             awk -F '#' '!/^#/ {print NR") "$1 $2 $3}' "$YAMLSDIR/rules.yaml" |
                 while IFS= read -r line; do
                     content_line "$line"
                 done
             btm_box "" \
-                "0) 返回上级菜单"
-            read -r -p "请输入对应数字> " num
+                "$OVR_BACK"
+            read -r -p "$OVR_INPUT_NUM" num
             case "$num" in
             "" | 0)
                 break
@@ -170,18 +171,18 @@ setrules() {
     }
 
     while true; do
-        comp_box "\033[33m你可以在这里快捷管理自定义规则\033[0m" \
-            "如需批量操作，请手动编辑：\033[36m $YAMLSDIR/rules.yaml\033[0m" \
-            "\033[33msingbox和clash共用此处规则，可无缝切换！\033[0m" \
-            "大量规则请尽量使用rule-set功能添加，\n\033[31m此处过量添加可能导致启动卡顿！\033[0m"
-        content_line "1) 新增自定义规则"
-        content_line "2) 移除自定义规则"
-        content_line "3) 清空规则列表"
-        echo "$crashcore" | grep -q 'singbox' || content_line "4) 配置节点绕过：	\033[36m$proxies_bypass\033[0m"
+        comp_box "\033[33m$OVR_RULES_MENU_HINT\033[0m" \
+            "$OVR_RULES_MANUAL" \
+            "\033[33m$OVR_RULES_SHARED\033[0m" \
+            "$OVR_RULES_WARN"
+        content_line "$OVR_RULES_ADD"
+        content_line "$OVR_RULES_DEL"
+        content_line "$OVR_RULES_CLEAR"
+        echo "$crashcore" | grep -q 'singbox' || content_line "$OVR_RULES_BYPASS	\033[36m$proxies_bypass\033[0m"
         content_line ""
-        content_line "0) 返回上级菜单"
+        content_line "$OVR_BACK"
         separator_line "="
-        read -r -p "请输入对应数字> " num
+        read -r -p "$OVR_INPUT_NUM" num
         case "$num" in
         "" | 0)
             break
@@ -195,13 +196,13 @@ setrules() {
             if [ -s "$YAMLSDIR"/rules.yaml ]; then
                 del_rule_type
             else
-                msg_alert "请先添加自定义规则！"
+                msg_alert "$OVR_RULES_NO_RULES"
             fi
             ;;
         3)
-            comp_box "是否确认清空全部自定义规则？"
-            btm_box "1) 是" \
-                "0) 否，返回上级菜单"
+            comp_box "$OVR_RULES_CLEAR_CONFIRM"
+            btm_box "$OVR_CONFIRM_YES" \
+                "$OVR_CONFIRM_NO"
             read -r -p "$COMMON_INPUT> " res
             if [ "$res" = "1" ]; then
                 if sed -i '/^\s*[^#]/d' "$YAMLSDIR"/rules.yaml; then
@@ -213,13 +214,12 @@ setrules() {
             ;;
         4)
             if [ "$proxies_bypass" = "OFF" ]; then
-                comp_box "\033[33m本功能会自动将当前配置文件中的节点域名或IP设置为直连规则以防止出现双重流量！\033[0m" \
-                    "\033[33m请确保下游设备使用的节点与ShellCrash中使用的节点相同，否则无法生效！\033[0m" \
+                comp_box "\033[33m$OVR_RULES_BYPASS_WARN1\033[0m" \
+                    "\033[33m$OVR_RULES_BYPASS_WARN2\033[0m" \
                     "" \
-                    "是否启用节点绕过？"
-                btm_box
-                "1) 是" \
-                    "0) 否，返回上级菜单"
+                    "$OVR_RULES_BYPASS_PROMPT"
+                btm_box "$OVR_CONFIRM_YES" \
+                    "$OVR_CONFIRM_NO"
                 read -r -p "$COMMON_INPUT> " res
                 if [ "$res" = "1" ]; then
                     proxies_bypass=ON
@@ -246,28 +246,28 @@ setrules() {
 # 自定义clash策略组
 setgroups() {
     set_group_type() {
-        comp_box "\033[33m注意策略组名称必须和【自定义规则】或【自定义节点】功能中指定的策略组一致！\033[0m" \
-            "\033[33m建议先创建策略组，之后可在【自定义规则】或【自定义节点】功能中智能指定\033[0m" \
-            "\033[33m如需在当前策略组下添加节点，请手动编辑$YAMLSDIR/proxy-groups.yaml\033[0m"
-        btm_box "\033[36m请直接输入自定义策略组名称\033[0m\n（不支持纯数字且不要包含特殊字符！）" \
-            "或输入 0 返回上级菜单"
-        read -r -p "请输入> " new_group_name
+        comp_box "\033[33m$OVR_GROUPS_WARN1\033[0m" \
+            "\033[33m$OVR_GROUPS_WARN2\033[0m" \
+            "\033[33m$OVR_GROUPS_WARN3\033[0m"
+        btm_box "\033[36m$OVR_GROUPS_INPUT_NAME\033[0m" \
+            "$OVR_CONFIRM_NO"
+        read -r -p "$OVR_PROMPT" new_group_name
 
-        comp_box "\033[32m请选择策略组【$new_group_name】的类型：\033[0m"
+        comp_box "\033[32m$OVR_GROUPS_CHOOSE_TYPE【$new_group_name】\033[0m"
         printf '%s\n' "$group_type_cn" |
             awk '{for (i = 1; i <= NF; i++) print i") " $i}' |
             while IFS= read -r line; do
                 content_line "$line"
             done
         separator_line "="
-        read -r -p "请输入对应数字> " num
+        read -r -p "$OVR_GROUPS_INPUT_NUM" num
         new_group_type=$(echo "$group_type" | awk '{print $'"$num"'}')
         if [ "$num" = "1" ]; then
             unset new_group_url interval
         else
-            comp_box "请输入测速地址" \
-                "或直接回车使用默认地址：https://www.gstatic.com/generate_204"
-            read -r -p "请输入> " new_group_url
+            comp_box "$OVR_GROUPS_URL" \
+                "$OVR_GROUPS_URL_HINT"
+            read -r -p "$OVR_PROMPT" new_group_url
             [ -z "$new_group_url" ] && new_group_url=https://www.gstatic.com/generate_204
             new_group_url="url: '$new_group_url'"
             interval="interval: 300"
@@ -283,22 +283,22 @@ setgroups() {
      - DIRECT
 EOF
         sed -i "/^ *$/d" "$YAMLSDIR"/proxy-groups.yaml
-        msg_alert "\033[32m添加成功！\033[0m"
+        msg_alert "\033[32m$OVR_GROUPS_ADD_OK\033[0m"
 
     }
 
     set_group_add() {
-        comp_box "\033[36m请选择想要将本策略添加到的策略组\033[0m" \
-            "\033[32m如需添加到多个策略组，请一次性输入多个数字并用空格隔开\033[0m"
+        comp_box "\033[36m$OVR_PROXIES_ADD_HINT\033[0m" \
+            "\033[32m$OVR_PROXIES_MULTI_HINT\033[0m"
         printf '%s\n' "$proxy_group" |
             awk -F '#' '{for (i = 1; i <= NF; i++) print i") " $i}' |
             while IFS= read -r line; do
                 content_line "$line"
             done
         content_line ""
-        content_line "0) 跳过添加"
+        content_line "$OVR_GROUPS_SKIP"
         separator_line "="
-        read -r -p "请输入对应数字（多个用空格分隔）> " char
+        read -r -p "$OVR_PROMPT" char
         case "$char" in
         "" | 0) ;;
         *)
@@ -317,21 +317,21 @@ EOF
     }
 
     while true; do
-        comp_box "\033[33m你可以在这里快捷管理自定义策略组\033[0m" \
-            "\033[36m如需修改或批量操作，请手动编辑：$YAMLSDIR/proxy-groups.yaml\033[0m"
-        btm_box "1) 添加自定义策略组" \
-            "2) 查看自定义策略组" \
-            "3) 清空自定义策略组" \
+        comp_box "\033[33m$OVR_GROUPS_MENU_HINT\033[0m" \
+            "\033[36m$OVR_GROUPS_MANUAL\033[0m"
+        btm_box "$OVR_GROUPS_ADD" \
+            "$OVR_GROUPS_VIEW" \
+            "$OVR_GROUPS_CLEAR" \
             "" \
-            "0) 返回上级菜单"
-        read -r -p "请输入对应数字> " num
+            "$OVR_BACK"
+        read -r -p "$OVR_INPUT_NUM" num
         case "$num" in
         "" | 0)
             break
             ;;
         1)
             group_type="select url-test fallback load-balance"
-            group_type_cn="手动选择 自动选择 故障转移 负载均衡"
+            group_type_cn="$OVR_GROUP_TYPE_CN"
             proxy_group="$(cat "$YAMLSDIR"/proxy-groups.yaml "$YAMLSDIR"/config.yaml 2>/dev/null | sed "/#自定义策略组开始/,/#自定义策略组结束/d" | grep -Ev '^#' | grep -o '\- name:.*' | sed 's/#.*//' | sed 's/- name: /#/g' | tr -d '\n' | sed 's/#//')"
             set_group_type
             ;;
@@ -343,9 +343,9 @@ EOF
             echo "==========================================================="
             ;;
         3)
-            comp_box "是否确认清空全部自定义策略组？"
-            btm_box "1) 是" \
-                "0) 否，返回上级菜单"
+                comp_box "$OVR_GROUPS_CLEAR_CONFIRM"
+                btm_box "$OVR_CONFIRM_YES" \
+                    "$OVR_CONFIRM_NO"
             read -r -p "$COMMON_INPUT> " res
             if [ "$res" = "1" ]; then
                 if echo '#用于添加自定义策略组' >"$YAMLSDIR"/proxy-groups.yaml; then
@@ -367,16 +367,16 @@ setproxies() {
 
     set_proxy_type() {
         while true; do
-            comp_box "\033[33m注意\n节点格式必须是单行、不包括括号、“name:”为开头，例如：\033[0m" \
+            comp_box "\033[33m$OVR_PROXIES_WARN1\033[0m" \
                 "\033[36m【name: \"test\", server: 192.168.1.1, port: 12345, type: socks5, udp: true】\033[0m" \
-                "更多写法请参考：\033[32mhttps://juewuy.github.io/\033[0m"
-            btm_box "\033[36m请直接输入自定义节点\033[0m" \
-                "或输入 0 返回上级菜单"
-            read -r -p "请输入> " proxy_state_set
+                "$OVR_PROXIES_WARN2"
+            btm_box "\033[36m$OVR_PROXIES_INPUT\033[0m" \
+                "$OVR_CONFIRM_NO"
+        read -r -p "$OVR_PROMPT" proxy_state_set
             if [ "$proxy_state_set" = 0 ]; then
                 break
             elif echo "$proxy_state_set" | grep -q "#"; then
-                msg_alert "\033[33m绝对禁止包含【#】号！\033[0m"
+                msg_alert "\033[33m$OVR_PROXIES_BLOCK_HASH\033[0m"
             elif echo "$proxy_state_set" | grep -Eq "^name:"; then
                 set_group_add
             else
@@ -386,17 +386,17 @@ setproxies() {
     }
 
     set_group_add() {
-        comp_box "\033[36m请选择想要将节点添加到的策略组\033[0m" \
-            "\033[32m如需添加到多个策略组，请一次性输入多个数字并用空格隔开\033[0m" \
-            "\033[33m如需自定义策略组，请先使用【管理自定义策略组功能】添加\033[0m"
+            comp_box "\033[36m$OVR_PROXIES_ADD_HINT\033[0m" \
+                "\033[32m$OVR_PROXIES_MULTI_HINT\033[0m" \
+                "\033[33m$OVR_PROXIES_GROUP_HINT\033[0m"
         printf '%s\n' "$proxy_group" |
             awk -F '#' '{for (i = 1; i <= NF; i++) print i") " $i}' |
             while IFS= read -r line; do
                 content_line "$line"
             done
         btm_box "" \
-            "0) 返回上级菜单"
-        read -r -p "请输入对应数字（多个用空格分隔）> " char
+            "$OVR_BACK"
+        read -r -p "$OVR_PROMPT" char
         case "$char" in
         "" | 0) ;;
         *)
@@ -406,7 +406,7 @@ setproxies() {
             done
             if [ -n "$rule_group_add" ]; then
                 echo "- {$proxy_state_set}$rule_group_add" >>"$YAMLSDIR"/proxies.yaml
-                msg_alert "\033[32m添加成功！\033[0m"
+                msg_alert "\033[32m$OVR_PROXIES_ADD_OK\033[0m"
                 unset rule_group_add
             else
                 errornum
@@ -416,15 +416,15 @@ setproxies() {
     }
 
     while true; do
-        comp_box "\033[33m你可以在这里快捷管理自定义节点\033[0m" \
-            "\033[36m如需批量操作，请手动编辑：$YAMLSDIR/proxies.yaml\033[0m"
-        btm_box "1) 添加自定义节点" \
-            "2) 管理自定义节点" \
-            "3) 清空自定义节点" \
-            "4) 配置节点绕过：	\033[36m$proxies_bypass\033[0m" \
+        comp_box "\033[33m$OVR_PROXIES_MENU_HINT\033[0m" \
+            "\033[36m$OVR_PROXIES_MANUAL\033[0m"
+        btm_box "$OVR_PROXIES_ADD" \
+            "$OVR_PROXIES_MANAGE" \
+            "$OVR_PROXIES_CLEAR" \
+            "$OVR_PROXIES_BYPASS	\033[36m$proxies_bypass\033[0m" \
             "" \
-            "0) 返回上级菜单"
-        read -r -p "请输入对应数字> " num
+            "$OVR_BACK"
+        read -r -p "$OVR_INPUT_NUM" num
         case "$num" in
         "" | 0)
             break
@@ -437,8 +437,8 @@ setproxies() {
         2)
             sed -i '/^ *$/d' "$YAMLSDIR"/proxies.yaml 2>/dev/null
             if [ -s "$YAMLSDIR"/proxies.yaml ]; then
-                comp_box "\033[33m输入节点对应数字可以移除对应节点\033[0m" \
-                    "当前已添加的自定义节点为："
+                comp_box "\033[33m$OVR_PROXIES_EXIST_HINT\033[0m" \
+                    "$OVR_PROXIES_EXIST_TITLE"
                 grep -Ev '^#' "$YAMLSDIR/proxies.yaml" |
                     awk -F '[,}]' '{print NR") " $1 " " $NF}' |
                     sed 's/- {//g' |
@@ -446,8 +446,8 @@ setproxies() {
                         content_line "$line"
                     done
                 btm_box "" \
-                    "0) 返回上级菜单"
-                read -r -p "请输入对应数字> " num
+                    "$OVR_BACK"
+                read -r -p "$OVR_INPUT_NUM" num
                 if [ "$num" = 0 ]; then
                     continue
                 elif [ "$num" -le $(cat "$YAMLSDIR"/proxies.yaml | grep -Ev '^#' | wc -l) ]; then
@@ -460,13 +460,13 @@ setproxies() {
                     errornum
                 fi
             else
-                msg_alert "请先添加自定义节点！"
+                msg_alert "$OVR_PROXIES_NO_PROXY"
             fi
             ;;
         3)
-            comp_box "是否确认清空全部自定义节点？"
-            btm_box "1) 是" \
-                "0) 否，返回上级菜单"
+            comp_box "$OVR_PROXIES_CLEAR_CONFIRM"
+            btm_box "$OVR_CONFIRM_YES" \
+                "$OVR_CONFIRM_NO"
             read -r -p "$COMMON_INPUT> " res
             if [ "$res" = "1" ]; then
                 if sed -i '/^\s*[^#]/d' "$YAMLSDIR"/proxies.yaml 2>/dev/null; then
@@ -480,12 +480,12 @@ setproxies() {
             ;;
         4)
             if [ "$proxies_bypass" = "OFF" ]; then
-                comp_box "\033[33m本功能会自动将当前配置文件中的节点域名或IP设置为直连规则以防止出现双重流量！\033[0m" \
-                    "\033[33m请确保下游设备使用的节点与ShellCrash中使用的节点相同，否则无法生效！\033[0m" \
+                comp_box "\033[33m$OVR_PROXIES_BYPASS_WARN1\033[0m" \
+                    "\033[33m$OVR_PROXIES_BYPASS_WARN2\033[0m" \
                     "" \
-                    "是否确定启用节点绕过："
-                btm_box "1) 是" \
-                    "0) 否，返回上级菜单"
+                    "$OVR_PROXIES_BYPASS_PROMPT"
+                btm_box "$OVR_CONFIRM_YES" \
+                    "$OVR_CONFIRM_NO"
                 read -r -p "$COMMON_INPUT> " res
                 if [ "$res" = "1" ]; then
                     proxies_bypass=ON
@@ -527,24 +527,24 @@ EOF
 #listeners:
 EOF
 
-    comp_box "\033[32m已经创建自定义设定文件：$YAMLSDIR/user.yaml ！\033[0m" \
-        "\033[33m可用于编写自定义的DNS等功能\033[0m" \
+    comp_box "\033[32m$OVR_ADV_USER_CREATED1\033[0m" \
+        "\033[33m$OVR_ADV_USER_CREATED2\033[0m" \
         "" \
-        "\033[32m已经创建自定义功能文件：$YAMLSDIR/others.yaml ！\033[0m" \
-        "\033[33m可用于编写自定义的锚点、入站、proxy-providers、rule-set、sub-rules、script等功能\033[0m"
+        "\033[32m$OVR_ADV_USER_CREATED3\033[0m" \
+        "\033[33m$OVR_ADV_USER_CREATED4\033[0m"
 
-    btm_box "Windows下请使用\033[33mWinSCP软件\033[0m进行编辑！\033[0m" \
-        "MacOS下请使用\033[33mSecureFX软件\033[0m进行编辑！\033[0m" \
-        "Linux可使用\033[33mvim\033[0m进行编辑（路由设备若不显示中文请勿使用）！\033[0m"
+    btm_box "\033[33m$OVR_ADV_WIN\033[0m" \
+        "\033[33m$OVR_ADV_MAC\033[0m" \
+        "\033[33m$OVR_ADV_LIN\033[0m"
 }
 
 # s自定义singbox配置文件
 set_singbox_adv() {
-    comp_box "支持覆盖脚本设置的模块有：\033[0m" \
+    comp_box "\033[33m$OVR_SING_TITLE1\033[0m" \
         "\033[36mlog dns ntp certificate experimental\033[0m" \
-        "支持与内置功能合并（但不可冲突）的模块有：\033[0m" \
+        "\033[33m$OVR_SING_TITLE2\033[0m" \
         "\033[36mendpoints inbounds outbounds providers route services\033[0m" \
-        "将相应json文件放入\033[33m$JSONSDIR\033[0m目录后即可在启动时自动加载" \
+        "$OVR_SING_TITLE3" \
         "" \
-        "使用前请务必参考配置教程：\033[32;4m https://juewuy.github.io/nWTjEpkSK \033[0m"
+        "$OVR_SING_TITLE4"
 }
