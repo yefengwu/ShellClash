@@ -62,7 +62,7 @@ checkport() {
 		fi
 
 		if [ "$conflict_found" -eq 0 ]; then
-			conflict_info=$(check_port_with_info "$((redir_port + 1))" tcp)
+			conflict_info=$(check_port_with_info "$((redir_port + 1))" all)
 			[ $? -ne 0 ] && conflict_found=1 && conflict_port="$((redir_port + 1))"
 		fi
 
