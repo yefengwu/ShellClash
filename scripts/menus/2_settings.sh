@@ -439,7 +439,7 @@ set_adv_config() {
 			;;
 		1)
 			xport=mix_port
-			inputport tcp
+			inputport
 			if [ $? -eq 1 ]; then
 				break
 			else
@@ -471,7 +471,7 @@ set_adv_config() {
 			;;
 		3)
 			xport=redir_port
-			inputport tcp
+			inputport
 			if [ $? -eq 1 ]; then
 				break
 			else
@@ -480,7 +480,7 @@ set_adv_config() {
 			;;
 		4)
 			xport=dns_port
-			inputport all
+			inputport
 			if [ $? -eq 1 ]; then
 				break
 			else

@@ -50,24 +50,24 @@ checkport() {
 		local conflict_port=""
 		local conflict_info=""
 
-		conflict_info=$(check_port_with_info "$mix_port" tcp)
+		conflict_info=$(check_port_with_info "$mix_port")
 		if [ $? -ne 0 ]; then
 			conflict_found=1
 			conflict_port="$mix_port"
 		fi
 
 		if [ "$conflict_found" -eq 0 ]; then
-			conflict_info=$(check_port_with_info "$redir_port" tcp)
+			conflict_info=$(check_port_with_info "$redir_port")
 			[ $? -ne 0 ] && conflict_found=1 && conflict_port="$redir_port"
 		fi
 
 		if [ "$conflict_found" -eq 0 ]; then
-			conflict_info=$(check_port_with_info "$((redir_port + 1))" all)
+			conflict_info=$(check_port_with_info "$((redir_port + 1))")
 			[ $? -ne 0 ] && conflict_found=1 && conflict_port="$((redir_port + 1))"
 		fi
 
 		if [ "$conflict_found" -eq 0 ]; then
-			conflict_info=$(check_port_with_info "$dns_port" all)
+			conflict_info=$(check_port_with_info "$dns_port")
 			[ $? -ne 0 ] && conflict_found=1 && conflict_port="$dns_port"
 		fi
 
