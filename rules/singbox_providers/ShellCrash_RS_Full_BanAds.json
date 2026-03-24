@@ -22,7 +22,6 @@
     { "tag": "🪟 微软服务", "type": "selector", "outbounds": ["🎯 本地直连", "🚀 节点选择", "♻️ 自动选择", "🛠️ 手动切换", "🇭🇰 香港节点", "🇹🇼 台湾节点", "🇺🇸 美国节点", "🇯🇵 日本节点", "🇪🇺 欧洲节点", "🇰🇷 韩国节点", "🇸🇬 狮城节点", "👑 高级节点", "📉 省流节点", {providers_tags}] },
     { "tag": "🍎 苹果服务", "type": "selector", "outbounds": ["🎯 本地直连", "🚀 节点选择", "♻️ 自动选择", "🛠️ 手动切换", "🇭🇰 香港节点", "🇹🇼 台湾节点", "🇺🇸 美国节点", "🇯🇵 日本节点", "🇪🇺 欧洲节点", "🇰🇷 韩国节点", "🇸🇬 狮城节点", "👑 高级节点", "📉 省流节点", {providers_tags}] },
     { "tag": "🇬 谷歌服务", "type": "selector", "outbounds": ["🎯 本地直连", "🚀 节点选择", "♻️ 自动选择", "🛠️ 手动切换", "🇭🇰 香港节点", "🇹🇼 台湾节点", "🇺🇸 美国节点", "🇯🇵 日本节点", "🇪🇺 欧洲节点", "🇰🇷 韩国节点", "🇸🇬 狮城节点", "👑 高级节点", "📉 省流节点", {providers_tags}] },
-    { "tag": "🧲 BT下载", "type": "selector", "outbounds": ["🎯 本地直连", "🚀 节点选择", "♻️ 自动选择", "🛠️ 手动切换", "🇭🇰 香港节点", "🇹🇼 台湾节点", "🇺🇸 美国节点", "🇯🇵 日本节点", "🇪🇺 欧洲节点", "🇰🇷 韩国节点", "🇸🇬 狮城节点", "👑 高级节点", "📉 省流节点", {providers_tags}] },
     { "tag": "📈 网络测速", "type": "selector", "outbounds": ["🎯 本地直连", "🚀 节点选择", "♻️ 自动选择", "🛠️ 手动切换", "🇭🇰 香港节点", "🇹🇼 台湾节点", "🇺🇸 美国节点", "🇯🇵 日本节点", "🇪🇺 欧洲节点", "🇰🇷 韩国节点", "🇸🇬 狮城节点", "👑 高级节点", "📉 省流节点", {providers_tags}] },
     { "tag": "↔️ 直连软件", "type": "selector", "outbounds": ["🎯 本地直连", "🚀 节点选择", "♻️ 自动选择", "🛠️ 手动切换", {providers_tags}] },
     { "tag": "🀄️ 国内流量", "type": "selector", "outbounds": ["🎯 本地直连", "🚀 节点选择", "♻️ 自动选择", "🛠️ 手动切换", {providers_tags}] },
@@ -56,7 +55,6 @@
 
       { "rule_set": ["networktest"], "outbound": "📈 网络测速" },
       { "rule_set": ["applications"], "outbound": "↔️ 直连软件" },
-      { "rule_set": ["trackerslist"], "outbound": "🧲 BT下载" },
       { "rule_set": ["apple-cn"], "outbound": "🍎 苹果服务" },
       { "rule_set": ["microsoft-cn"], "outbound": "🪟 微软服务" },
       { "rule_set": ["google-cn"], "outbound": "🇬 谷歌服务" },
@@ -111,14 +109,6 @@
         "format": "binary",
         "path": "./ruleset/applications.srs",
         "url": "https://testingcf.jsdelivr.net/gh/DustinWin/ruleset_geodata@refs/heads/sing-box-ruleset/applications.srs",
-        "download_detour": "DIRECT"
-      },
-      {
-        "tag": "trackerslist",
-        "type": "remote",
-        "format": "binary",
-        "path": "./ruleset/trackerslist.srs",
-        "url": "https://testingcf.jsdelivr.net/gh/DustinWin/ruleset_geodata@refs/heads/sing-box-ruleset/trackerslist.srs",
         "download_detour": "DIRECT"
       },
       {

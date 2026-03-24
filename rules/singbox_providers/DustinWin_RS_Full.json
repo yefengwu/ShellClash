@@ -12,7 +12,6 @@
     { "tag": "🎥 奈飞视频", "type": "selector", "outbounds": [ "🚀 节点选择", "👑 高级节点", "🇭🇰 香港节点", "🇹🇼 台湾节点", "🇯🇵 日本节点", "🇸🇬 新加坡节点", "🇺🇸 美国节点", "📉 省流节点", {providers_tags} ] },
     { "tag": "📹 油管视频", "type": "selector", "outbounds": [ "🚀 节点选择", "👑 高级节点", "🇭🇰 香港节点", "🇹🇼 台湾节点", "🇯🇵 日本节点", "🇸🇬 新加坡节点", "🇺🇸 美国节点", "📉 省流节点", {providers_tags} ] },
     { "tag": "🌍 国外媒体", "type": "selector", "outbounds": [ "🚀 节点选择", "👑 高级节点", "🇭🇰 香港节点", "🇹🇼 台湾节点", "🇯🇵 日本节点", "🇸🇬 新加坡节点", "🇺🇸 美国节点", "📉 省流节点", {providers_tags} ] },
-    { "tag": "📋 Trackerslist", "type": "selector", "outbounds": [ "🎯 本地直连", "🚀 节点选择" ] },
     { "tag": "🇨🇳 国内域名", "type": "selector", "outbounds": [ "🎯 本地直连", "🚀 节点选择" ] },
     { "tag": "🀄️ 国内 IP", "type": "selector", "outbounds": [ "🎯 本地直连", "🚀 节点选择" ] },
     { "tag": "🌎 国外域名", "type": "selector", "outbounds": [ "🚀 节点选择", "🎯 本地直连" ] },
@@ -36,7 +35,6 @@
     "rules": [
       { "rule_set": [ "private" ], "outbound": "🎯 本地直连" },
       { "rule_set": [ "ads" ], "outbound": "🛑 广告域名" },
-      { "rule_set": [ "trackerslist" ], "outbound": "📋 Trackerslist" },
       { "rule_set": [ "microsoft-cn" ], "outbound": "🪟 微软服务" },
       { "rule_set": [ "apple-cn" ], "outbound": "🍎 苹果服务" },
       { "rule_set": [ "google-cn" ], "outbound": "🇬 谷歌服务" },
@@ -72,14 +70,6 @@
         "format": "binary",
         "path": "./ruleset/private.srs",
         "url": "https://testingcf.jsdelivr.net/gh/DustinWin/ruleset_geodata@sing-box-ruleset/private.srs",
-        "download_detour": "DIRECT"
-      },
-      {
-        "tag": "trackerslist",
-        "type": "remote",
-        "format": "binary",
-        "path": "./ruleset/trackerslist.srs",
-        "url": "https://testingcf.jsdelivr.net/gh/DustinWin/ruleset_geodata@sing-box-ruleset/trackerslist.srs",
         "download_detour": "DIRECT"
       },
       {

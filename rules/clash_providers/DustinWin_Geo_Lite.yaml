@@ -3,7 +3,6 @@ proxy-groups:
   - {name: 🚀 节点选择, type: select, proxies: [♻️ 自动选择, 👉 手动选择, 🇭🇰 香港节点, 🇹🇼 台湾节点, 🇯🇵 日本节点, 🇸🇬 新加坡节点, 🇺🇸 美国节点, 👑 高级节点, 📉 省流节点, {providers_tags}]}
   - {name: 📈 网络测试, type: select, proxies: [🎯 本地直连, 🚀 节点选择, 🇭🇰 香港节点, 🇹🇼 台湾节点, 🇯🇵 日本节点, 🇸🇬 新加坡节点, 🇺🇸 美国节点, 👑 高级节点, 📉 省流节点, {providers_tags}]}
   - {name: 🤖 AI 平台, type: select, proxies: [🚀 节点选择, 👑 高级节点, 🇭🇰 香港节点, 🇹🇼 台湾节点, 🇯🇵 日本节点, 🇸🇬 新加坡节点, 🇺🇸 美国节点, 📉 省流节点, {providers_tags}]}
-  - {name: 📋 Trackerslist, type: select, proxies: [🎯 本地直连, 🚀 节点选择]}
   - {name: 🎮 游戏服务, type: select, proxies: [🎯 本地直连, 👑 高级节点, 🚀 节点选择]}
   - {name: 🪟 微软服务, type: select, proxies: [🎯 本地直连, 🚀 节点选择]}
   - {name: 🇬 谷歌服务, type: select, proxies: [🎯 本地直连, 🚀 节点选择]}
@@ -32,7 +31,6 @@ proxy-groups:
 rules:
   - GEOSITE,private,🔒 私有网络
   - GEOSITE,ads,🛑 广告域名
-  - GEOSITE,trackerslist,📋 Trackerslist
   - GEOSITE,microsoft-cn,🪟 微软服务
   - GEOSITE,apple-cn,🍎 苹果服务
   - GEOSITE,google-cn,🇬 谷歌服务
