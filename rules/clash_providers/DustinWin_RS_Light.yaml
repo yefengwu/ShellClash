@@ -1,10 +1,11 @@
 #DustinWin-ruleset轻量规则
 proxy-groups:
   - {name: 🚀 节点选择, type: select, proxies: [♻️ 自动选择, 👉 手动选择, 🇭🇰 香港节点, 🇹🇼 台湾节点, 🇯🇵 日本节点, 🇸🇬 新加坡节点, 🇺🇸 美国节点, 👑 高级节点, 📉 省流节点, {providers_tags}]}
-  - {name: 🎯 本地直连, type: select, proxies: [DIRECT, 🚀 节点选择]}
-  - {name: 🌎 国外域名, type: select, proxies: [🚀 节点选择, DIRECT]}
+  - {name: 🀄️ 国内 IP, type: select, proxies: [🎯 本地直连, 🚀 节点选择]}
+  - {name: 🌎 国外域名, type: select, proxies: [🚀 节点选择, 🇭🇰 香港节点, 🇹🇼 台湾节点, 🇯🇵 日本节点, 🇸🇬 新加坡节点, 🇺🇸 美国节点, 👑 高级节点, 📉 省流节点, {providers_tags}]}
   - {name: 📲 电报消息, type: select, proxies: [🚀 节点选择, 🇭🇰 香港节点, 🇹🇼 台湾节点, 🇯🇵 日本节点, 🇸🇬 新加坡节点, 🇺🇸 美国节点, 👑 高级节点, 📉 省流节点, {providers_tags}]}
   - {name: 🐟 漏网之鱼, type: select, proxies: [🚀 节点选择, 🇭🇰 香港节点, 🇹🇼 台湾节点, 🇯🇵 日本节点, 🇸🇬 新加坡节点, 🇺🇸 美国节点, 👑 高级节点, 📉 省流节点, {providers_tags}, 🎯 本地直连]}
+  - {name: 🎯 本地直连, type: select, proxies: [DIRECT], hidden: true}
 
   - {name: 👑 高级节点, type: url-test, tolerance: 50, include-all: true, filter: "(?i)(专线|专用|高级|直连|急速|高倍率|游戏|game|IEPL|IPLC|AIA|CTM|CC|AC)"}
   - {name: 📉 省流节点, type: url-test, tolerance: 100, include-all: true, filter: "(0\\.[1-5]|低倍率|省流|大流量)"}
@@ -17,14 +18,6 @@ proxy-groups:
   - {name: 🇺🇸 美国节点, type: url-test, tolerance: 100, include-all: true, filter: "(?i)(🇺🇸|美|us|unitedstates|united states)"}
 
 rule-providers:
-  cn:
-    type: http
-    behavior: domain
-    format: mrs
-    path: ./ruleset/cn.mrs
-    url: "https://testingcf.jsdelivr.net/gh/DustinWin/ruleset_geodata@mihomo-ruleset/cn.mrs"
-    interval: 86400
-
   private:
     type: http
     behavior: domain
@@ -77,8 +70,7 @@ rules:
   - RULE-SET,private,DIRECT
   - RULE-SET,tld-proxy,🌎 国外域名
   - RULE-SET,proxy,🌎 国外域名
-  - RULE-SET,cn,🎯 本地直连
   - RULE-SET,privateip,DIRECT,no-resolve
-  - RULE-SET,cnip,🎯 本地直连
+  - RULE-SET,cnip,🀄️ 国内 IP
   - RULE-SET,telegramip,📲 电报消息,no-resolve
   - MATCH,🐟 漏网之鱼
