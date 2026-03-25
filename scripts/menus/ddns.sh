@@ -12,21 +12,21 @@ add_ddns() {
     cat >>"$ddns_dir" <<EOF
 
 config service '$service'
-	option enabled '1'
-	option force_unit 'hours'
-	option lookup_host '$domain'
-	option service_name '$service_name'
-	option domain '$domain'
-	option username '$username'
-	option use_https '0'
-	option use_ipv6 '$use_ipv6'
-	option password '$password'
-	option ip_source 'web'
-	option check_unit 'minutes'
-	option check_interval '$check_interval'
-	option force_interval '$force_interval'
-	option interface 'wan'
-	option bind_network 'wan'
+    option enabled '1'
+    option force_unit 'hours'
+    option lookup_host '$domain'
+    option service_name '$service_name'
+    option domain '$domain'
+    option username '$username'
+    option use_https '0'
+    option use_ipv6 '$use_ipv6'
+    option password '$password'
+    option ip_source 'web'
+    option check_unit 'minutes'
+    option check_interval '$check_interval'
+    option force_interval '$force_interval'
+    option interface 'wan'
+    option bind_network 'wan'
 EOF
     /usr/lib/ddns/dynamic_dns_updater.sh -S "$service" start >/dev/null 2>&1 &
     sleep 3
@@ -71,12 +71,12 @@ set_ddns() {
 set_ddns_service() {
     while true; do
         services_dir=/etc/ddns/"$serv"
-		[ -s "$services_dir" ] || services_dir=/etc/ddns/services
+        [ -s "$services_dir" ] || services_dir=/etc/ddns/services
         [ -s "$services_dir" ] || services_dir=/usr/share/ddns/list
-		[ -s "$services_dir" ] || {
-		    msg_alert "\033[33m$DDNS_LIST_NOT_FOUND\033[0m"
-		    ddns service update >/dev/null || msg_alert "\033[31m$DDNS_DOWNLOAD_FAILED\033[0m"
-		}
+        [ -s "$services_dir" ] || {
+            msg_alert "\033[33m$DDNS_LIST_NOT_FOUND\033[0m"
+            ddns service update >/dev/null || msg_alert "\033[31m$DDNS_DOWNLOAD_FAILED\033[0m"
+        }
         comp_box "\033[32m$DDNS_SELECT_PROVIDER\033[0m"
 
         list=$(awk '/^#/ || !NF {next} {print $1}' "$services_dir")

@@ -39,7 +39,7 @@ parse_singbox_dns() { #dns转换
         esac
     fi
     # 输出
-	echo '"type": "'"$type"'", "server": "'"$server"'", "server_port": '"$port"','
+    echo '"type": "'"$type"'", "server": "'"$server"'", "server_port": '"$port"','
 }
 modify_json() {
     #提取配置文件以获得outbounds.json,providers.json及route.json
@@ -53,11 +53,11 @@ modify_json() {
     }
     cat "$TMPDIR"/format.json | sed -n '/"route":/,/^\(  "[a-z]\|}\)/p' | sed '$d' >>"$TMPDIR"/jsons/route.json
     #生成endpoints.json
-	[ "$ts_service" = ON ] || [ "$wg_service" = ON ] && [ "$zip_type" != upx ] && {
-		. "$CRASHDIR"/configs/gateway.cfg
-		. "$CRASHDIR"/libs/sb_endpoints.sh
-	}
-	#生成log.json
+    [ "$ts_service" = ON ] || [ "$wg_service" = ON ] && [ "$zip_type" != upx ] && {
+        . "$CRASHDIR"/configs/gateway.cfg
+        . "$CRASHDIR"/libs/sb_endpoints.sh
+    }
+    #生成log.json
     cat >"$TMPDIR"/jsons/log.json <<EOF
 { "log": { "level": "info", "timestamp": true } }
 EOF
@@ -75,7 +75,7 @@ EOF
         "path": [
           $custom_hosts
           "$HOME/.hosts",
-		  "/etc/hosts"
+          "/etc/hosts"
         ],
         "predefined": {
           "localhost": [
@@ -86,28 +86,28 @@ EOF
           "time.facebook.com": "203.107.6.88"
         }
       }
-	],
+    ],
     "rules": [
       {
         "ip_accept_any": true,
         "server": "hosts"
       }
-	]}
+    ]}
 }
 EOF
     fi
     #生成dns.json
     [ "$ipv6_dns" != "OFF" ] && strategy='prefer_ipv4' || strategy='ipv4_only'
     #获取detour出口
-	auto_detour=$(grep -E '"type": "urltest"' -A 1 "$TMPDIR"/jsons/outbounds.json | grep '自动' | head -n 1 | sed 's/^[[:space:]]*"tag": //;s/,$//')
+    auto_detour=$(grep -E '"type": "urltest"' -A 1 "$TMPDIR"/jsons/outbounds.json | grep '自动' | head -n 1 | sed 's/^[[:space:]]*"tag": //;s/,$//')
     [ -z "$auto_detour" ] && auto_detour=$(grep -E '"type": "urltest"' -A 1 "$TMPDIR"/jsons/outbounds.json | grep '"tag":' | head -n 1 | sed 's/^[[:space:]]*"tag": //;s/,$//')
     [ -z "$auto_detour" ] && auto_detour=$(grep -E '"type": "selector"' -A 1 "$TMPDIR"/jsons/outbounds.json | grep '"tag":' | head -n 1 | sed 's/^[[:space:]]*"tag": //;s/,$//')
     [ -z "$auto_detour" ] && auto_detour='"DIRECT"'
-	#ecs优化
-	[ "$ecs_subnet" = ON ] && {
-		. "$CRASHDIR"/libs/get_ecsip.sh
-		client_subnet='"client_subnet": "'"$ecs_address"'",'
-	}
+    #ecs优化
+    [ "$ecs_subnet" = ON ] && {
+        . "$CRASHDIR"/libs/get_ecsip.sh
+        client_subnet='"client_subnet": "'"$ecs_address"'",'
+    }
     #根据dns模式生成
     [ "$dns_mod" = "redir_host" ] && {
         global_dns=dns_proxy
@@ -133,7 +133,7 @@ EOF
     [ "$dns_protect" = "OFF" ] && sed -i 's/"server": "dns_proxy"/"server": "dns_direct"/g' "$TMPDIR"/jsons/route.json
     #生成add_rule_set.json
     [ "$dns_mod" = "mix" ] || [ "$dns_mod" = "route" ] && ! grep -Eq '"tag" *:[[:space:]]*"cn"' "$CRASHDIR"/jsons/*.json && {
-		[ "$crashcore" = "singboxr" ] && srs_path='"path": "./ruleset/cn.srs",'
+        [ "$crashcore" = "singboxr" ] && srs_path='"path": "./ruleset/cn.srs",'
         cat >"$TMPDIR"/jsons/add_rule_set.json <<EOF
 {
   "route": {
@@ -158,14 +158,14 @@ EOF
       {
         "tag": "dns_proxy",
         $(parse_singbox_dns "$dns_fallback")
-		"routing_mark": $routing_mark,
-		"detour": $auto_detour,
+        "routing_mark": $routing_mark,
+        "detour": $auto_detour,
         "domain_resolver": "dns_resolver"
       },
       {
         "tag": "dns_direct",
         $(parse_singbox_dns "$dns_nameserver")
-		"routing_mark": $routing_mark,
+        "routing_mark": $routing_mark,
         "domain_resolver": "dns_resolver"
       },
       {
@@ -177,7 +177,7 @@ EOF
       {
         "tag": "dns_resolver",
         $(parse_singbox_dns "$dns_resolver")
-		"routing_mark": $routing_mark
+        "routing_mark": $routing_mark
       }
     ],
     "rules": [
@@ -186,14 +186,14 @@ EOF
       $fake_ip_filter_domain
       $fake_ip_filter_suffix
       $fake_ip_filter_regex
-	  { "clash_mode": "Global", "query_type": ["A", "AAAA"], "server": "$global_dns", "strategy": "$strategy", "rewrite_ttl": 1 },
+      { "clash_mode": "Global", "query_type": ["A", "AAAA"], "server": "$global_dns", "strategy": "$strategy", "rewrite_ttl": 1 },
       $direct_dns
-	  $proxy_dns
+      $proxy_dns
     ],
     "final": "dns_proxy",
-	"strategy": "$strategy",
+    "strategy": "$strategy",
     "independent_cache": true,
-	$client_subnet
+    $client_subnet
     "reverse_mapping": true
   }
 }
@@ -263,10 +263,10 @@ EOF
 }
 EOF
     #inbounds.json添加自定义入站
-	[ "$vms_service" = ON ] || [ "$sss_service" = ON ] && {
-		. "$CRASHDIR"/configs/gateway.cfg
-		. "$CRASHDIR"/libs/sb_inbounds.sh
-	}
+    [ "$vms_service" = ON ] || [ "$sss_service" = ON ] && {
+        . "$CRASHDIR"/configs/gateway.cfg
+        . "$CRASHDIR"/libs/sb_inbounds.sh
+    }
     if [ "$redir_mod" = "Mix" -o "$redir_mod" = "Tun" ]; then
         [ "ipv6_redir" = 'ON' ] && ipv6_address='"fe80::e5c5:2469:d09b:609a/64",'
         cat >>"$TMPDIR"/jsons/tun.json <<EOF
@@ -299,21 +299,21 @@ EOF
     [ -n "$add_direct$add_reject$add_global" ] && cat >"$TMPDIR"/jsons/add_outbounds.json <<EOF
 {
   "outbounds": [
-	$add_direct
-	$add_reject
-	$add_global
+    $add_direct
+    $add_reject
+    $add_global
   ]
 }
 EOF
     #生成experimental.json
-	[ "$crashcore" = "singboxr" ] && urltest_unified_delay=',"urltest_unified_delay": true'
+    [ "$crashcore" = "singboxr" ] && urltest_unified_delay=',"urltest_unified_delay": true'
     cat >"$TMPDIR"/jsons/experimental.json <<EOF
 {
   "experimental": {
     "clash_api": {
       "external_controller": "0.0.0.0:$db_port",
       "external_ui": "ui",
-	  "external_ui_download_url": "$external_ui_url",
+      "external_ui_download_url": "$external_ui_url",
       "secret": "$secret",
       "default_mode": "Rule"
     }$urltest_unified_delay

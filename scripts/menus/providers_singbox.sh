@@ -97,21 +97,21 @@ gen_providers_txt() {
     [ -n "$include" ] && include_ele="\"include\": \"$include\","
     if [ -n "$(echo "$2" | grep -E '^./')" ]; then
         cat >>"$TMPDIR"/providers/providers.json <<EOF
-	{
+    {
       "tag": "$tag",
       "type": "local",
-	  "path": "$2",
+      "path": "$2",
 EOF
     else
         cat >>"$TMPDIR"/providers/providers.json <<EOF
-	{
+    {
       "tag": "$tag",
       "type": "remote",
       "url": "$2",
       "path": "./providers/$tag.yaml",
       "user_agent": "$ua",
       "update_interval": "${interval2}h",
-	  $exclude_ele
+      $exclude_ele
       $include_ele
 EOF
     fi
@@ -124,11 +124,11 @@ EOF
         "interval": "${interval}m",
         "timeout": "3s"
       },
-	  "override_tls": {
-		"enabled": true,
-		"insecure": $override_tls
-	  }
-	},
+      "override_tls": {
+        "enabled": true,
+        "insecure": $override_tls
+      }
+    },
 EOF
     # 写入提供者
     echo '{ "tag": "'"$tag"'", "type": "urltest", "tolerance": 100, "providers": ["'"$tag"'"], "include": ".*" },' >>"$TMPDIR"/providers/outbounds_add.json

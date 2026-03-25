@@ -22,7 +22,7 @@ tg_push_token() {
     push_TG="$TOKEN"
     setconfig push_TG "$TOKEN"
     setconfig chat_ID "$chat_ID"
-	. "$CRASHDIR"/libs/logger.sh && logger "$BOT_TG_SET_DONE" 32
+    . "$CRASHDIR"/libs/logger.sh && logger "$BOT_TG_SET_DONE" 32
 }
 
 get_chatid() {

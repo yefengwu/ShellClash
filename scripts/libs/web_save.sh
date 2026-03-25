@@ -9,7 +9,7 @@ get_save() { #获取面板信息
 }
 web_save() { #最小化保存面板节点选择
     #使用get_save获取面板节点设置
-	get_save "http://127.0.0.1:${db_port}/proxies" | sed 's/{}//g' | sed 's/:{/\
+    get_save "http://127.0.0.1:${db_port}/proxies" | sed 's/{}//g' | sed 's/:{/\
 /g'| grep -aE '"Selector"' >"$TMPDIR"/web_proxies
     [ -s "$TMPDIR"/web_proxies ] && while read line; do
         def=$(echo $line | grep -oE '"all".*",' | awk -F "[\"]" '{print $4}')
@@ -25,8 +25,8 @@ web_save() { #最小化保存面板节点选择
         if [ -s "$TMPDIR/$file" ]; then
             . "$CRASHDIR"/libs/compare.sh && compare "$TMPDIR/$file" "$CRASHDIR/configs/$file"
             [ "$?" = 0 ] && rm -f "$TMPDIR/$file" || mv -f "$TMPDIR/$file" "$CRASHDIR/configs/$file"
-		else
-			> "$CRASHDIR/configs/$file" #空文件时移除旧文件
+        else
+            > "$CRASHDIR/configs/$file" #空文件时移除旧文件
         fi
     done
 }

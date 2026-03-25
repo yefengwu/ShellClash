@@ -3,7 +3,7 @@
 
 ckcmd iptables && iptables -h | grep -q '\-w' && iptable='iptables -w' || iptable=iptables
 ckcmd ip6tables && ip6tables -h | grep -q '\-w' && ip6table='ip6tables -w' || ip6table=ip6tables
-	
+    
 start_ipt_route() { #iptables-route通用工具
     #$1:iptables/ip6tables	$2:所在的表(nat/mangle) $3:所在的链(OUTPUT/PREROUTING)	$4:新创建的shellcrash链表	$5:tcp/udp/all
     #区分ipv4/ipv6
@@ -32,9 +32,9 @@ start_ipt_route() { #iptables-route通用工具
     done
     [ "$firewall_area" = 5 ] && "$1" $w -t "$2" -A "$4" -s $bypass_host -j RETURN
     [ -z "$ports" ] && {
-		"$1" $w -t "$2" -A "$4" -p tcp -m multiport --dports "$mix_port,$redir_port,$tproxy_port" -j RETURN
-		"$1" $w -t "$2" -A "$4" -p udp -m multiport --dports "$mix_port,$redir_port,$tproxy_port" -j RETURN
-	}
+        "$1" $w -t "$2" -A "$4" -p tcp -m multiport --dports "$mix_port,$redir_port,$tproxy_port" -j RETURN
+        "$1" $w -t "$2" -A "$4" -p udp -m multiport --dports "$mix_port,$redir_port,$tproxy_port" -j RETURN
+    }
     #跳过目标保留地址及目标本机网段
     for ip in $HOST_IP $RESERVED_IP; do
         "$1" $w -t "$2" -A "$4" -d $ip -j RETURN
@@ -136,35 +136,35 @@ start_ipt_dns() { #iptables-dns通用工具
     "$1" $w -t nat -I "$2" -p udp --dport 53 -j "$3"
 }
 start_ipt_wan() { #iptables公网防火墙
-	ipt_wan_accept(){
-		$iptable -I INPUT -p "$1" -m multiport --dports "$accept_ports" -j ACCEPT
-		ckcmd ip6tables && $ip6table -I INPUT -p "$1" -m multiport --dports "$accept_ports" -j ACCEPT
-	}
-	ipt_wan_reject(){
-		$iptable -I INPUT -p "$1" -m multiport --dports "$reject_ports" -j REJECT
-		ckcmd ip6tables && $ip6table -I INPUT -p "$1" -m multiport --dports "$reject_ports" -j REJECT
-	}
-	#端口拦截
-	reject_ports="$mix_port,$db_port"
-	ipt_wan_reject tcp
-	ipt_wan_reject udp
-	#端口放行
-	[ -f "$CRASHDIR"/configs/gateway.cfg ] && . "$CRASHDIR"/configs/gateway.cfg
-	accept_ports=$(echo "$fw_wan_ports,$vms_port,$sss_port" | sed "s/,,/,/g ;s/^,// ;s/,$//")
+    ipt_wan_accept(){
+        $iptable -I INPUT -p "$1" -m multiport --dports "$accept_ports" -j ACCEPT
+        ckcmd ip6tables && $ip6table -I INPUT -p "$1" -m multiport --dports "$accept_ports" -j ACCEPT
+    }
+    ipt_wan_reject(){
+        $iptable -I INPUT -p "$1" -m multiport --dports "$reject_ports" -j REJECT
+        ckcmd ip6tables && $ip6table -I INPUT -p "$1" -m multiport --dports "$reject_ports" -j REJECT
+    }
+    #端口拦截
+    reject_ports="$mix_port,$db_port"
+    ipt_wan_reject tcp
+    ipt_wan_reject udp
+    #端口放行
+    [ -f "$CRASHDIR"/configs/gateway.cfg ] && . "$CRASHDIR"/configs/gateway.cfg
+    accept_ports=$(echo "$fw_wan_ports,$vms_port,$sss_port" | sed "s/,,/,/g ;s/^,// ;s/,$//")
     [ -n "$accept_ports" ] && {
-		ipt_wan_accept tcp
-		ipt_wan_accept udp
-	}
-	#局域网请求放行
-	for ip in $host_ipv4; do
-		$iptable -I INPUT -s $ip -j ACCEPT
-	done
-	ckcmd ip6tables && for ip in $host_ipv6; do
-		$ip6table -I INPUT -s $ip -j ACCEPT
-	done
-	#本机请求全放行
-	$iptable -I INPUT -i lo -j ACCEPT
-	ckcmd ip6tables && $ip6table -I INPUT -i lo -j ACCEPT
+        ipt_wan_accept tcp
+        ipt_wan_accept udp
+    }
+    #局域网请求放行
+    for ip in $host_ipv4; do
+        $iptable -I INPUT -s $ip -j ACCEPT
+    done
+    ckcmd ip6tables && for ip in $host_ipv6; do
+        $ip6table -I INPUT -s $ip -j ACCEPT
+    done
+    #本机请求全放行
+    $iptable -I INPUT -i lo -j ACCEPT
+    ckcmd ip6tables && $ip6table -I INPUT -i lo -j ACCEPT
 }
 start_iptables() { #iptables配置总入口
     #启动公网访问防火墙

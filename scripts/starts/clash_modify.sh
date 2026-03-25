@@ -16,15 +16,15 @@ modify_yaml() {
     #Meta内核专属配置
     [ "$crashcore" = 'meta' ] && {
         [ -z "$(grep 'PROCESS' "$CRASHDIR"/yamls/*.yaml)" ] && find_process='find-process-mode: "off"'
-		#ecs优化
-		[ "$ecs_subnet" = ON ] && {
-			. "$CRASHDIR"/libs/get_ecsip.sh
-			if [ -n "$ecs_address" ];then
-				dns_fallback=$(echo "$dns_fallback, " | sed "s|, |#ecs-override=true\&ecs=$ecs_address, |g" | sed 's|, $||')
-			else
-				logger "自动获取ecs网段失败！"
-			fi
-		}
+        #ecs优化
+        [ "$ecs_subnet" = ON ] && {
+            . "$CRASHDIR"/libs/get_ecsip.sh
+            if [ -n "$ecs_address" ];then
+                dns_fallback=$(echo "$dns_fallback, " | sed "s|, |#ecs-override=true\&ecs=$ecs_address, |g" | sed 's|, $||')
+            else
+                logger "自动获取ecs网段失败！"
+            fi
+        }
     }
     #dns配置
     [ -z "$(cat "$CRASHDIR"/yamls/user.yaml 2>/dev/null | grep '^dns:')" ] && {
@@ -100,17 +100,17 @@ EOF
         if [ "$crashcore" = "meta" ]; then
             echo "  'services.googleapis.cn': services.googleapis.com" >>"$TMPDIR"/hosts.yaml
         fi
-		#加载本机hosts
-		sys_hosts=/etc/hosts
-		[ -f /data/etc/custom_hosts ] && sys_hosts='/etc/hosts /data/etc/custom_hosts'
-		cat $sys_hosts | while read line; do
-			[ -n "$(echo "$line" | grep -oE "([0-9]{1,3}[\.]){3}")" ] &&
-				[ -z "$(echo "$line" | grep -oE '^#')" ] &&
-				hosts_ip=$(echo $line | awk '{print $1}') &&
-				hosts_domain=$(echo $line | awk '{print $2}') &&
-				[ -z "$(cat "$TMPDIR"/hosts.yaml | grep -oE "$hosts_domain")" ] &&
-				echo "  '$hosts_domain': $hosts_ip" >>"$TMPDIR"/hosts.yaml
-		done
+        #加载本机hosts
+        sys_hosts=/etc/hosts
+        [ -f /data/etc/custom_hosts ] && sys_hosts='/etc/hosts /data/etc/custom_hosts'
+        cat $sys_hosts | while read line; do
+            [ -n "$(echo "$line" | grep -oE "([0-9]{1,3}[\.]){3}")" ] &&
+                [ -z "$(echo "$line" | grep -oE '^#')" ] &&
+                hosts_ip=$(echo $line | awk '{print $1}') &&
+                hosts_domain=$(echo $line | awk '{print $2}') &&
+                [ -z "$(cat "$TMPDIR"/hosts.yaml | grep -oE "$hosts_domain")" ] &&
+                echo "  '$hosts_domain': $hosts_ip" >>"$TMPDIR"/hosts.yaml
+        done
     fi
     #分割配置文件
     yaml_char='proxies proxy-groups proxy-providers rules rule-providers sub-rules listeners'
@@ -172,10 +172,10 @@ EOF
         done
     }
     #添加自定义入站
-	[ "$vms_service" = ON ] || [ "$sss_service" = ON ] && {
-		. "$CRASHDIR"/configs/gateway.cfg
-		. "$CRASHDIR"/libs/meta_listeners.sh
-	}
+    [ "$vms_service" = ON ] || [ "$sss_service" = ON ] && {
+        . "$CRASHDIR"/configs/gateway.cfg
+        . "$CRASHDIR"/libs/meta_listeners.sh
+    }
     #节点绕过功能支持
     sed -i "/#节点绕过/d" "$TMPDIR"/rules.yaml
     [ "$proxies_bypass" = "ON" ] && {

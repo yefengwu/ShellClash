@@ -3,7 +3,7 @@
 get_bin() { #专用于项目内部文件的下载
     [ -z "$update_url" ] && update_url=https://testingcf.jsdelivr.net/gh/juewuy/ShellCrash@master
     if [ -n "$url_id" ]; then
-		[ -n "$release_type" ] && rt="$release_type" || rt=master
+        [ -n "$release_type" ] && rt="$release_type" || rt=master
         echo "$2" | grep -q '^bin/' && rt=update #/bin文件改为在update分支下载
         echo "$2" | grep -qE '^public/|^rules/' && rt=dev #/public和/rules文件改为在dev分支下载    
         if [ "$url_id" = 101 -o "$url_id" = 104 ]; then

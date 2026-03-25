@@ -56,7 +56,7 @@ elif [ -n "$sysdir" -a "$USER" = "root" -a "$(cat /proc/1/comm 2>/dev/null)" = "
     mv -f "$CRASHDIR"/starts/shellcrash.service "$sysdir"/shellcrash.service 2>/dev/null
     sed -i "s%/etc/ShellCrash%$CRASHDIR%g" "$sysdir"/shellcrash.service
     systemctl daemon-reload
-	rm -rf "$CRASHDIR"/starts/shellcrash.procd
+    rm -rf "$CRASHDIR"/starts/shellcrash.procd
 elif rc-status -r >/dev/null 2>&1; then
     #设为openrc方式启动
     mv -f "$CRASHDIR"/starts/shellcrash.openrc /etc/init.d/shellcrash
@@ -65,7 +65,7 @@ elif rc-status -r >/dev/null 2>&1; then
 else
     #设为保守模式启动
     setconfig start_old 已开启
-	rm -rf "$CRASHDIR"/starts/shellcrash.procd
+    rm -rf "$CRASHDIR"/starts/shellcrash.procd
 fi
 rm -rf "$CRASHDIR"/starts/shellcrash.service
 rm -rf "$CRASHDIR"/starts/shellcrash.openrc
@@ -116,10 +116,10 @@ else
 fi
 #梅林/Padavan额外设置
 [ -n "$initdir" ] && {
-	touch "$initdir"
+    touch "$initdir"
     sed -i '/ShellCrash初始化/'d "$initdir"
     echo "$CRASHDIR/starts/general_init.sh & #ShellCrash初始化脚本" >>"$initdir"
-	chmod 755 "$CRASHDIR"/starts/general_init.sh
+    chmod 755 "$CRASHDIR"/starts/general_init.sh
     chmod a+rx "$initdir" 2>/dev/null
     setconfig initdir "$initdir"
 }
@@ -128,14 +128,14 @@ fi
 #镜像化OpenWrt(snapshot)额外设置
 if [ "$systype" = "mi_snapshot" -o "$systype" = "ng_snapshot" ]; then
     chmod 755 "$CRASHDIR"/starts/snapshot_init.sh
-	if [ "$systype" = "mi_snapshot" ];then
-		path="/data/shellcrash_init.sh"
-		sed -i "s#^CRASHDIR=.*#CRASHDIR=$CRASHDIR#" "$CRASHDIR"/starts/snapshot_init.sh
-		mv -f "$CRASHDIR"/starts/snapshot_init.sh "$path"
-		[ ! -f /data/auto_start.sh ] && echo '#用于自定义需要开机启动的功能或者命令，会在开机后自动运行' > /data/auto_start.sh
-	else
-		path="$CRASHDIR"/starts/snapshot_init.sh
-	fi
+    if [ "$systype" = "mi_snapshot" ];then
+        path="/data/shellcrash_init.sh"
+        sed -i "s#^CRASHDIR=.*#CRASHDIR=$CRASHDIR#" "$CRASHDIR"/starts/snapshot_init.sh
+        mv -f "$CRASHDIR"/starts/snapshot_init.sh "$path"
+        [ ! -f /data/auto_start.sh ] && echo '#用于自定义需要开机启动的功能或者命令，会在开机后自动运行' > /data/auto_start.sh
+    else
+        path="$CRASHDIR"/starts/snapshot_init.sh
+    fi
     uci delete firewall.auto_ssh 2>/dev/null
     uci delete firewall.ShellCrash 2>/dev/null
     uci set firewall.ShellCrash=include
@@ -157,15 +157,15 @@ fi
     sed -i "/^PATH=/a\\$CRASHDIR/start.sh init & #ShellCrash初始化脚本" "$dir/asusware.arm/etc/init.d/S50downloadmaster"
 #容器环境额外设置
 [ "$systype" = 'container' ] && {
-	setconfig userguide '1'
-	setconfig crashcore 'meta'
-	setconfig dns_mod 'mix'
-	setconfig firewall_area '1'
-	setconfig firewall_mod 'nftables'
-	setconfig release_type 'master'
-	setconfig start_old 'OFF'
-	echo "$CRASHDIR/menu.sh" >> /etc/profile
-	cat > /usr/bin/crash <<'EOF'
+    setconfig userguide '1'
+    setconfig crashcore 'meta'
+    setconfig dns_mod 'mix'
+    setconfig firewall_area '1'
+    setconfig firewall_mod 'nftables'
+    setconfig release_type 'master'
+    setconfig start_old 'OFF'
+    echo "$CRASHDIR/menu.sh" >> /etc/profile
+    cat > /usr/bin/crash <<'EOF'
 #!/bin/sh
 CRASHDIR=${CRASHDIR:-/etc/ShellCrash}
 export CRASHDIR

@@ -31,19 +31,19 @@ get_core_config() { #下载内核配置文件
     Server_ua=$(grep -aE '^4' "$CRASHDIR"/configs/servers.list | sed -n ""$server_link"p" | awk '{print $4}')
     Config=$(grep -aE '^5' "$CRASHDIR"/configs/servers.list | sed -n ""$rule_link"p" | awk '{print $3}')
     gen_ua
-	#如果传来的是Url链接则合成Https链接，否则直接使用Https链接
+    #如果传来的是Url链接则合成Https链接，否则直接使用Https链接
     if [ -z "$Https" ]; then
         #Urlencord转码处理保留字符
         if ckcmd hexdump;then
-			Url=$(echo $Url | sed 's/%26/\&/g')   #处理分隔符
-			urlencodeUrl="exclude=$(urlencode "$exclude")&include=$(urlencode "$include")&url=$(urlencode "$Url")&config=$(urlencode "$Config")"
-		else
-			urlencodeUrl="exclude=$exclude&include=$include&url=$Url&config=$Config"
-		fi
+            Url=$(echo $Url | sed 's/%26/\&/g')   #处理分隔符
+            urlencodeUrl="exclude=$(urlencode "$exclude")&include=$(urlencode "$include")&url=$(urlencode "$Url")&config=$(urlencode "$Config")"
+        else
+            urlencodeUrl="exclude=$exclude&include=$include&url=$Url&config=$Config"
+        fi
         Https="${Server}/sub?target=${target}&${Server_ua}=${user_agent}&insert=true&new_name=true&scv=true&udp=true&${urlencodeUrl}"
         url_type=true
-	else
-		Https=$(echo $Https | sed 's/\\&/\&/g')   #还原转义
+    else
+        Https=$(echo $Https | sed 's/\\&/\&/g')   #还原转义
     fi
     #输出
     echo "-----------------------------------------------"
@@ -92,7 +92,7 @@ get_core_config() { #下载内核配置文件
         else
             . "$CRASHDIR"/starts/clash_config_check.sh
         fi
-		check_config
+        check_config
         #如果不同则备份并替换文件
         if [ -s "$core_config" ]; then
             compare "$core_config_new" "$core_config"

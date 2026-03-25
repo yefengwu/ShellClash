@@ -48,31 +48,31 @@ set_dns_mod() {
             msg_alert "\033[36m$DNS_SET_OK：$dns_mod\033[0m"
             ;;
         4)
-			if [ "$dns_protect" = ON ]; then
-				dns_protect=OFF
-			else
-				dns_protect=ON
-			fi
-			setconfig dns_protect "$dns_protect"
-			common_success
+            if [ "$dns_protect" = ON ]; then
+                dns_protect=OFF
+            else
+                dns_protect=ON
+            fi
+            setconfig dns_protect "$dns_protect"
+            common_success
             ;;
         5)
-			if [ "$hosts_opt" = ON ]; then
-				hosts_opt=OFF
-			else
-				hosts_opt=ON
-			fi
-			setconfig hosts_opt "$hosts_opt"
-			common_success
+            if [ "$hosts_opt" = ON ]; then
+                hosts_opt=OFF
+            else
+                hosts_opt=ON
+            fi
+            setconfig hosts_opt "$hosts_opt"
+            common_success
             ;;
         6)
-			if [ "$ecs_subnet" = ON ]; then
-				ecs_subnet=OFF
-			else
-				ecs_subnet=ON
-			fi
-			setconfig ecs_subnet "$ecs_subnet"
-			common_success
+            if [ "$ecs_subnet" = ON ]; then
+                ecs_subnet=OFF
+            else
+                ecs_subnet=ON
+            fi
+            setconfig ecs_subnet "$ecs_subnet"
+            common_success
             ;;
         7)
             while true; do

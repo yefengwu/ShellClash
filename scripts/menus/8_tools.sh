@@ -758,7 +758,7 @@ debug() {
         . "$CRASHDIR"/libs/core_tools.sh && core_find && "$TMPDIR"/CrashCore merge "$TMPDIR"/debug.json -C "$TMPDIR"/jsons && line_break
         comp_box "\033[32m$TOOLS_MERGE_OK\033[0m"
         [ "$TMPDIR" = "$BINDIR" ] && rm -rf "$TMPDIR"/CrashCore
-		debug
+        debug
         ;;
     *)
         errornum

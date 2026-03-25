@@ -1111,7 +1111,7 @@ saveserver() {
 setserver() {
     while true; do
         line_break
-		LISTFILE="$CRASHDIR"/configs/servers_"$i18n".list
+        LISTFILE="$CRASHDIR"/configs/servers_"$i18n".list
         [ -z "$release_type" ] && release_name=$UPG_SOURCE_UNSET
         [ -n "$release_type" ] && release_name="$release_type$UPG_SOURCE_ROLLBACK_TAG"
         [ "$release_type" = stable ] && release_name=$UPG_SOURCE_STABLE_TEXT
