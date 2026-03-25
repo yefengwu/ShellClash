@@ -48,116 +48,31 @@ set_dns_mod() {
             msg_alert "\033[36m$DNS_SET_OK：$dns_mod\033[0m"
             ;;
         4)
-            while true; do
-                line_break
-                separator_line "="
-                if [ "$dns_protect" = ON ]; then
-                    content_line "$DNS_PROTECT_NOW\033[33m$DNS_ENABLED\033[0m$DNS_PROTECT_DISABLE_Q"
-                else
-                    content_line "$DNS_PROTECT_NOW\033[33m$DNS_DISABLED\033[0m$DNS_PROTECT_ENABLE_Q"
-                fi
-                separator_line "="
-                btm_box "1) $DNS_YES" \
-                    "2) $DNS_RESET_DEFAULT" \
-                    "0) $DNS_NO_BACK"
-                read -r -p "$COMMON_INPUT> " num
-                case "$num" in
-                0)
-                    break
-                    ;;
-                1)
-                    if [ "$dns_protect" = ON ]; then
-                        dns_protect=OFF
-                    else
-                        dns_protect=ON
-                    fi
-                    ;;
-                2)
-                    dns_protect=ON
-                    ;;
-                *)
-                    errornum
-                    continue
-                    ;;
-                esac
-                setconfig dns_protect "$dns_protect"
-                common_success
-            done
+			if [ "$dns_protect" = ON ]; then
+				dns_protect=OFF
+			else
+				dns_protect=ON
+			fi
+			setconfig dns_protect "$dns_protect"
+			common_success
             ;;
         5)
-            while true; do
-                line_break
-                separator_line "="
-                if [ "$hosts_opt" = ON ]; then
-                    content_line "$DNS_HOSTS_NOW\033[33m$DNS_ENABLED\033[0m$DNS_HOSTS_DISABLE_Q"
-                else
-                    content_line "$DNS_HOSTS_NOW\033[33m$DNS_DISABLED\033[0m$DNS_HOSTS_ENABLE_Q"
-                fi
-                separator_line "="
-                btm_box "1) $DNS_YES" \
-                    "2) $DNS_RESET_DEFAULT" \
-                    "0) $DNS_NO_BACK"
-                read -r -p "$COMMON_INPUT> " num
-                case "$num" in
-                0)
-                    break
-                    ;;
-                1)
-                    if [ "$hosts_opt" = ON ]; then
-                        hosts_opt=OFF
-                    else
-                        hosts_opt=ON
-                    fi
-                    ;;
-                2)
-                    hosts_opt=ON
-                    ;;
-                *)
-                    errornum
-                    continue
-                    ;;
-                esac
-                setconfig dns_protect "$hosts_opt"
-                common_success
-            done
+			if [ "$hosts_opt" = ON ]; then
+				hosts_opt=OFF
+			else
+				hosts_opt=ON
+			fi
+			setconfig hosts_opt "$hosts_opt"
+			common_success
             ;;
         6)
-
-            while true; do
-                line_break
-                separator_line "="
-                if [ "$ecs_subnet" = ON ]; then
-                    content_line "$DNS_HOSTS_NOW\033[33m$DNS_ENABLED\033[0m$DNS_HOSTS_DISABLE_Q"
-                else
-                    content_line "$DNS_HOSTS_NOW\033[33m$DNS_DISABLED\033[0m$DNS_HOSTS_ENABLE_Q"
-                fi
-                separator_line "="
-                btm_box "1) $DNS_YES" \
-                    "2) $DNS_RESET_DEFAULT" \
-                    "0) $DNS_NO_BACK"
-                read -r -p "$COMMON_INPUT> " num
-                case "$num" in
-                0)
-                    break
-                    ;;
-                1)
-                    if [ "$ecs_subnet" = ON ]; then
-                        ecs_subnet=OFF
-                    else
-                        ecs_subnet=ON
-                    fi
-                    ;;
-                2)
-                    ecs_subnet=OFF
-                    ;;
-                *)
-                    errornum
-                    continue
-                    ;;
-                esac
-                setconfig dns_protect "$ecs_subnet"
-                common_success
-            done
+			if [ "$ecs_subnet" = ON ]; then
+				ecs_subnet=OFF
+			else
+				ecs_subnet=ON
+			fi
+			setconfig ecs_subnet "$ecs_subnet"
+			common_success
             ;;
         7)
             while true; do

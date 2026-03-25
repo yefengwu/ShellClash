@@ -153,7 +153,7 @@ ckstatus() {
 			zip_type=$(echo "$file" | grep -oE 'tar.gz$|upx$|gz$')
 			. "$CRASHDIR"/menus/9_upgrade.sh && setcoretype
 			. "$CRASHDIR"/libs/core_tools.sh && core_check "/tmp/$file"
-			if [ "$?" = 0 ]; then
+			if [ "$?" = 0 ] && [ -n "$crashcore" ]; then
 				msg_alert "\033[32m$MENU_CORE_LOADED_OK\033[0m"
 				switch_core
 			else
