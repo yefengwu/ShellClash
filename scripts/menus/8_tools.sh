@@ -755,10 +755,10 @@ debug() {
         main_menu
         ;;
     9)
-        . "$CRASHDIR"/libs/core_webget.sh && core_find && "$TMPDIR"/CrashCore merge "$TMPDIR"/debug.json -C "$TMPDIR"/jsons && line_break
+        . "$CRASHDIR"/libs/core_tools.sh && core_find && "$TMPDIR"/CrashCore merge "$TMPDIR"/debug.json -C "$TMPDIR"/jsons && line_break
         comp_box "\033[32m$TOOLS_MERGE_OK\033[0m"
         [ "$TMPDIR" = "$BINDIR" ] && rm -rf "$TMPDIR"/CrashCore
-        main_menu
+		debug
         ;;
     *)
         errornum

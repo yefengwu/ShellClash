@@ -5,7 +5,7 @@
 [ -z "$CRASHDIR" ] && CRASHDIR=$( cd $(dirname $0);cd ..;pwd)
 . "$CRASHDIR"/libs/get_config.sh
 [ -z "$BINDIR" -o -z "$TMPDIR" -o -z "$COMMAND" ] && . "$CRASHDIR"/init.sh >/dev/null 2>&1
-[ ! -f "$TMPDIR" ] && mkdir -p "$TMPDIR"
+[ ! -d "$TMPDIR" ] && mkdir -p "$TMPDIR"
 
 #当上次启动失败时终止自启动
 [ -f "$CRASHDIR"/.start_error ] && exit 1
