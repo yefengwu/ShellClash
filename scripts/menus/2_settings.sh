@@ -214,7 +214,7 @@ settings() {
 				;;
 			1)
 				echo chs >"$CRASHDIR"/configs/i18n.cfg
-				msg_alert "\033[32m$SET_SWITCH_RERUN\033[0m"
+				msg_alert "\033[32m切换成功，请重新执行脚本！\033[0m"
 				;;
 			2)
 				echo en >"$CRASHDIR"/configs/i18n.cfg

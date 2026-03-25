@@ -1111,19 +1111,20 @@ saveserver() {
 setserver() {
     while true; do
         line_break
+		LISTFILE="$CRASHDIR"/configs/servers_"$i18n".list
         [ -z "$release_type" ] && release_name=$UPG_SOURCE_UNSET
         [ -n "$release_type" ] && release_name="$release_type$UPG_SOURCE_ROLLBACK_TAG"
         [ "$release_type" = stable ] && release_name=$UPG_SOURCE_STABLE_TEXT
         [ "$release_type" = master ] && release_name=$UPG_SOURCE_MASTER_TEXT
         [ "$release_type" = dev ] && release_name=$UPG_SOURCE_DEV_TEXT
-        [ -n "$url_id" ] && url_name=$(grep "$url_id" "$CRASHDIR"/configs/servers.list 2>/dev/null | awk '{print $2}') || url_name="$update_url"
+        [ -n "$url_id" ] && url_name=$(grep "$url_id" "$LISTFILE" 2>/dev/null | awk '{print $2}') || url_name="$update_url"
 
         comp_box "\033[30;47m$UPG_SOURCE_TITLE\033[0m" \
             "" \
             "$UPG_SOURCE_CUR_VER\033[4;33m$release_name\033[0m" \
             "$UPG_SOURCE_CUR_URL\n\033[4;32m$url_name\033[0m"
 
-        grep -E "^1|$release_name" "$CRASHDIR"/configs/servers.list |
+        grep -E "^1|^2" "$LISTFILE" |
             awk '{print NR") "$2}' |
             while IFS= read -r line; do
                 content_line "$line"
@@ -1145,12 +1146,12 @@ setserver() {
             break
             ;;
         [1-99])
-            url_id_new=$(grep -E "^1|$release_name" "$CRASHDIR"/configs/servers.list | sed -n "$num"p | awk '{print $1}')
+            url_id_new=$(grep -E "^1|$release_name" "$LISTFILE" | sed -n "$num"p | awk '{print $1}')
             if [ -z "$url_id_new" ]; then
                 errornum
                 continue
             elif [ "$url_id_new" -ge 200 ]; then
-                update_url=$(grep -E "^1|$release_name" "$CRASHDIR"/configs/servers.list | sed -n "$num"p | awk '{print $3}')
+                update_url=$(grep -E "^1|$release_name" "$LISTFILE" | sed -n "$num"p | awk '{print $3}')
                 url_id=''
                 saveserver
                 break
@@ -1257,7 +1258,3 @@ setserver() {
         esac
     done
 }
-
-
-
-

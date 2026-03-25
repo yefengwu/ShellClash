@@ -111,7 +111,7 @@ task_add() {
     while true; do
         comp_box "\033[36m$TASK5_SELECT_ADD\033[0m"
         # 输出任务列表
-        list=$(cat "$CRASHDIR"/task/task.list "$CRASHDIR"/task/task.user 2>/dev/null | grep -Ev '^(#|$)' | awk -F '#' '{print $3}')
+        list=$(cat "$CRASHDIR"/task/task_${i18n}.list "$CRASHDIR"/task/task.user 2>/dev/null | grep -Ev '^(#|$)' | awk -F '#' '{print $3}')
         list_box "$list"
         btm_box "" \
             "0) $COMMON_BACK"

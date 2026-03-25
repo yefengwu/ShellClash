@@ -9,6 +9,8 @@ __IS_MODULE_SUBCONVERTER=1
 
 load_lang subconverter
 
+LISTFILE="$CRASHDIR"/configs/servers_"$i18n".list
+
 # Subconverter在线订阅转换
 subconverter() {
     while true; do
@@ -115,8 +117,8 @@ gen_link_ele() {
 
 # 选择在线规则模版
 gen_link_config() {
-    list=$(grep -aE '^5' "$CRASHDIR"/configs/servers.list | awk '{print $2$4}')
-    now=$(grep -aE '^5' "$CRASHDIR"/configs/servers.list | sed -n ""$rule_link"p" | awk '{print $2}')
+    list=$(grep -aE '^5' "$LISTFILE" | awk '{print $2$4}')
+    now=$(grep -aE '^5' "$LISTFILE" | sed -n ""$rule_link"p" | awk '{print $2}')
     comp_box "$SUBCONVERTER_RULE_CURRENT\033[33m$now\033[0m"
     list_box "$list"
     content_line ""
@@ -140,8 +142,8 @@ gen_link_config() {
 
 # 选择Subconverter服务器
 gen_link_server() {
-    list=$(grep -aE '^3|^4' "$CRASHDIR"/configs/servers.list | awk '{print $3"	"$2}')
-    now=$(grep -aE '^3|^4' "$CRASHDIR"/configs/servers.list | sed -n ""$server_link"p" | awk '{print $3}')
+    list=$(grep -aE '^3|^4' "$LISTFILE" | awk '{print $3"	"$2}')
+    now=$(grep -aE '^3|^4' "$LISTFILE" | sed -n ""$server_link"p" | awk '{print $3}')
 
     comp_box "\033[36m$SUBCONVERTER_SERVER_HINT\033[0m" \
         "\033[32m$SUBCONVERTER_SERVER_THANKS\033[0m" \
