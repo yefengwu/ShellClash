@@ -306,6 +306,7 @@ EOF
 }
 EOF
     #生成experimental.json
+	[ "$crashcore" = "singboxr" ] && urltest_unified_delay=',"urltest_unified_delay": true'
     cat >"$TMPDIR"/jsons/experimental.json <<EOF
 {
   "experimental": {
@@ -315,7 +316,7 @@ EOF
 	  "external_ui_download_url": "$external_ui_url",
       "secret": "$secret",
       "default_mode": "Rule"
-    }
+    }$urltest_unified_delay
   }
 }
 EOF
