@@ -17,7 +17,7 @@
 [ -f "/data/etc/crontabs/root" ] && systype=mi_snapshot #小米设备
 [ -w "/var/mnt/cfg/firewall" ] && systype=ng_snapshot   #NETGEAR设备
 #容器内环境
-grep -qE '/(docker|lxc|kubepods|crio|containerd)/' /proc/1/cgroup || [ -f /run/.containerenv ] || [ -f /.dockerenv ] && systype='container'
+grep -qE '/(docker|lxc|kubepods|crio|containerd)/' /proc/1/cgroup 2>/dev/null || [ -f /run/.containerenv ] || [ -f /.dockerenv ] && systype='container'
 #检查环境变量
 [ "$systype" = 'container' ] && CRASHDIR='/etc/ShellCrash'
 [ -z "$CRASHDIR" ] && [ -n "$clashdir" ] && CRASHDIR="$clashdir"
@@ -37,11 +37,11 @@ mkdir -p "$CRASHDIR"/configs
 #判断系统类型写入不同的启动文件
 [ -w /usr/lib/systemd/system ] && sysdir=/usr/lib/systemd/system
 [ -w /etc/systemd/system ] && sysdir=/etc/systemd/system
-if [ -f /etc/rc.common -a "$(cat /proc/1/comm)" = "procd" ]; then
+if [ -f /etc/rc.common -a "$(cat /proc/1/comm 2>/dev/null)" = "procd" ]; then
     #设为init.d方式启动
     cp -f "$CRASHDIR"/starts/shellcrash.procd /etc/init.d/shellcrash
     chmod 755 /etc/init.d/shellcrash
-elif [ -n "$sysdir" -a "$USER" = "root" -a "$(cat /proc/1/comm)" = "systemd" ]; then
+elif [ -n "$sysdir" -a "$USER" = "root" -a "$(cat /proc/1/comm 2>/dev/null)" = "systemd" ]; then
     #创建shellcrash用户
     userdel shellcrash 2>/dev/null
     sed -i '/0:7890/d' /etc/passwd
