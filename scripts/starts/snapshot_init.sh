@@ -14,10 +14,10 @@ while [ ! -f "$CRASHDIR/configs/ShellCrash.cfg" ]; do
 done
 . "$CRASHDIR"/configs/ShellCrash.cfg
 
-autoSSH(){
+autoSSH() {
     #自动开启SSH
-    [ "`uci -c /usr/share/xiaoqiang get xiaoqiang_version.version.CHANNEL`" != 'stable' ] && {
-        uci -c /usr/share/xiaoqiang set xiaoqiang_version.version.CHANNEL='stable' 
+    [ "$(uci -c /usr/share/xiaoqiang get xiaoqiang_version.version.CHANNEL)" != 'stable' ] && {
+        uci -c /usr/share/xiaoqiang set xiaoqiang_version.version.CHANNEL='stable'
         uci -c /usr/share/xiaoqiang commit xiaoqiang_version.version
     }
     [ -z "$(pidof dropbear)" -o -z "$(netstat -ntul | grep :22)" ] && {
@@ -26,15 +26,15 @@ autoSSH(){
         [ -n "$mi_autoSSH_pwd" ] && echo -e "$mi_autoSSH_pwd\n$mi_autoSSH_pwd" | passwd root
     }
     #配置nvram
-    [ "$(nvram get ssh_en)" = 0 ] && nvram set ssh_en=1 
+    [ "$(nvram get ssh_en)" = 0 ] && nvram set ssh_en=1
     [ "$(nvram get telnet_en)" = 0 ] && nvram set telnet_en=1
-    nvram commit &> /dev/null
+    nvram commit >/dev/null 2>&1
     #备份还原SSH秘钥
     [ -f "$CRASHDIR"/configs/dropbear_rsa_host_key ] && ln -sf "$CRASHDIR"/configs/dropbear_rsa_host_key /etc/dropbear/dropbear_rsa_host_key
     [ -f "$CRASHDIR"/configs/authorized_keys ] && ln -sf "$CRASHDIR"/configs/authorized_keys /etc/dropbear/authorized_keys
 }
-tunfix(){
-    ko_dir=$(modinfo ip_tables | grep  -Eo '/lib/modules.*/ip_tables.ko' | sed 's|/ip_tables.ko||' )
+tunfix() {
+    ko_dir=$(modinfo ip_tables | grep -Eo '/lib/modules.*/ip_tables.ko' | sed 's|/ip_tables.ko||')
     #在/tmp创建并挂载overlay
     mkdir -p /tmp/overlay
     mkdir -p /tmp/overlay/upper
@@ -43,12 +43,12 @@ tunfix(){
     #将tun.ko链接到lib
     ln -sf "$CRASHDIR"/tools/tun.ko "$ko_dir"/tun.ko
 }
-tproxyfix(){
+tproxyfix() {
     sed -i 's/sysctl -w net.bridge.bridge-nf-call-ip/#sysctl -w net.bridge.bridge-nf-call-ip/g' /etc/init.d/qca-nss-ecm
     sysctl -w net.bridge.bridge-nf-call-iptables=0
     sysctl -w net.bridge.bridge-nf-call-ip6tables=0
 }
-auto_clean(){
+auto_clean() {
     #自动清理升级备份文件夹
     rm -rf /data/etc_bak
     #自动清理被写入闪存的系统日志并禁止服务
@@ -57,9 +57,9 @@ auto_clean(){
     sed -i '\#/logrotate#{ /^[[:space:]]*#/!s/^/#ShellCrash自动注释 / }' /etc/crontabs/root
     sed -i '\#/sec_cfg_bak#{ /^[[:space:]]*#/!s/^/#ShellCrash自动注释 / }' /etc/crontabs/root
     rm -rf /data/usr/log /data/usr/sec_cfg
-    
+
 }
-auto_start(){
+auto_start() {
     #设置init.d服务
     [ ! -x /etc/init.d/shellcrash ] && {
         cp -f "$CRASHDIR"/starts/shellcrash.procd /etc/init.d/shellcrash
@@ -68,7 +68,7 @@ auto_start(){
     #初始化环境变量
     grep -q '^export CRASHDIR=' '/etc/profile' || {
         . "$CRASHDIR"/libs/set_profile.sh
-        set_profile '/etc/profile' 
+        set_profile '/etc/profile'
     }
     #启动服务
     if [ ! -f "$CRASHDIR"/.dis_startup ] && [ ! -f "$CRASHDIR"/.start_error ]; then
@@ -83,12 +83,12 @@ auto_start(){
         /etc/init.d/shellcrash start && /etc/init.d/shellcrash enable
     fi
 }
-init(){
+init() {
     #等待启动完成
-    while ! ip a| grep -q lan; do
+    while ! ip a | grep -q lan; do
         sleep 10
     done
-    autoSSH #软固化功能
+    autoSSH    #软固化功能
     auto_clean #自动清理
     auto_start
     #启动自定义服务
@@ -103,9 +103,8 @@ case "$1" in
     auto_clean) auto_clean ;;
     init) init ;;
     *)
-        if [ -z "$(pidof CrashCore)" ];then
+        if [ -z "$(pidof CrashCore)" ]; then
             init &
         fi
-    ;;
+        ;;
 esac
-
