@@ -3,8 +3,15 @@ getlanip() { #获取局域网host地址
     while [ "$i" -le "20" ]; do
         #ipv4局域网网段
         host_ipv4=$(ip route show scope link | grep -Ev 'wan|utun|iot|peer|docker|podman|virbr|vnet|ovs|vmbr|veth|vmnic|vboxnet|lxcbr|xenbr|vEthernet' | awk '{print $1}')
-        #ipv6局域网网段
-        [ "$ipv6_redir" = "ON" ] && host_ipv6=$(ip -6 route show | grep -Ev 'default|unreachable|fe80::/|wan|ppp|utun|iot|peer|docker|podman|virbr|vnet|ovs|vmbr|veth|vmnic|vboxnet|lxcbr|xenbr|vEthernet' | awk '{print $1}' | tr '\n' ' ' | sed 's/ $//')
+        #ipv6局域网网段 - 从IPv4已识别的LAN接口获取全局IPv6前缀
+        [ "$ipv6_redir" = "ON" ] && {
+            lan_ifaces=$(ip route show scope link | grep -Ev 'ppp|wan|utun|iot|peer|docker|podman|virbr|vnet|ovs|vmbr|veth|vmnic|vboxnet|lxcbr|xenbr|vEthernet' | awk '{for(i=1;i<=NF;i++) if($i=="dev") {print $(i+1); break}}' | grep -v '^lo$' | sort -u)
+            host_ipv6=$(
+                for iface in $lan_ifaces; do
+                    ip -6 addr show dev $iface 2>/dev/null
+                done | grep 'scope global' | awk '{print $2}' | tr '\n' ' ' | sed 's/ $//'
+            )
+        }
         [ -f "$TMPDIR"/ShellCrash.log ] && break
         [ -n "$host_ipv4" -a "$ipv6_redir" != "ON" ] && break
         [ -n "$host_ipv4" -a -n "$host_ipv6" ] && break
