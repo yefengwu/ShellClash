@@ -1,4 +1,4 @@
-﻿GW_TITLE="访问与控制菜单"
+GW_TITLE="访问与控制菜单"
 GW_WARN="注意："
 GW_FW_VPS_HINT="如在vps运行，还需在vps安全策略对相关端口同时放行"
 GW_FW_PORT_LIMIT="最多支持设置放行10个端口，请先减少一些！"
