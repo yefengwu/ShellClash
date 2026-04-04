@@ -20,7 +20,7 @@ settings() {
         comp_box "\033[30;47m$SET_MENU_TITLE\033[0m"
         content_line "1) $SET_MENU_REDIR\t\033[36m$redir_mod$MENU_MOD\033[0m"
         content_line "2) $SET_MENU_DNS\t\033[36m$dns_mod\033[0m"
-        content_line "3) $SET_MENU_FW_FILTER"
+        content_line "3) $SET_MENU_FW_FILTER\t$SET_MENU_FW_FILTER_DESC"
         [ "$disoverride" != "1" ] && {
             content_line "4) $SET_MENU_SKIP_CERT\t\033[36m$skip_cert\033[0m"
             content_line "5) $SET_MENU_SNIFFER\t\033[36m$sniffer\033[0m"
