@@ -144,20 +144,21 @@ ckstatus() {
 
     # 检查/tmp内核文件
     for file in $(ls /tmp | grep -v [/$] | grep -v ' ' | grep -Ev ".*(zip|7z|tar)$" | grep -iE 'CrashCore|^clash$|^clash-linux.*|^mihomo.*|^sing.*box'); do
-        comp_box "$MENU_TMP_CORE_FOUND \033[36m/tmp/$file\033[0m" \
+		local tmp_file="/tmp/$file"
+        comp_box "$MENU_TMP_CORE_FOUND \033[36m$tmp_file\033[0m" \
             "$MENU_TMP_CORE_ASK"
         btm_box "1) 立即加载" \
             "0) 暂不加载"
         read -r -p "$COMMON_INPUT> " res
         [ "$res" = 1 ] && {
-            zip_type=$(echo "$file" | grep -oE 'tar.gz$|upx$|gz$')
+            zip_type=$(echo "$tmp_file" | grep -oE 'tar.gz$|upx$|gz$')
             . "$CRASHDIR"/menus/9_upgrade.sh && setcoretype
-            . "$CRASHDIR"/libs/core_tools.sh && core_check "/tmp/$file"
+            . "$CRASHDIR"/libs/core_tools.sh && core_check "$tmp_file"
             if [ "$?" = 0 ] && [ -n "$crashcore" ]; then
                 msg_alert "\033[32m$MENU_CORE_LOADED_OK\033[0m"
                 switch_core
             else
-                rm -rf /tmp/"$file"
+                rm -rf "$tmp_file"
                 msg_alert "\033[33m$MENU_CORE_LOADED_BAD\033[0m" \
                     "\033[33m$MENU_CORE_REMOVED\033[0m"
             fi
@@ -166,17 +167,17 @@ ckstatus() {
 
     # 检查/tmp配置文件
     for file in $(ls /tmp | grep -v [/$] | grep -v ' ' | grep -iE 'config.yaml$|config.yml$|config.json$'); do
-        tmp_file=/tmp/$file
-        comp_box "$MENU_TMP_CFG_FOUND\033[36m/tmp/$file\033[0m" \
+        local tmp_file="/tmp/$file"
+        comp_box "$MENU_TMP_CFG_FOUND\033[36m$tmp_file\033[0m" \
             "$MENU_TMP_CFG_ASK"
         btm_box "1) 立即加载" \
             "0) 暂不加载"
         read -p "$COMMON_INPUT> " res
         [ "$res" = 1 ] && {
-            if [ -n "$(echo /tmp/$file | grep -iE '.json$')" ]; then
-                mv -f /tmp/$file "$CRASHDIR"/jsons/config.json
+            if [ -n "$(echo $tmp_file | grep -iE '.json$')" ]; then
+                mv -f "$tmp_file" "$CRASHDIR"/jsons/config.json
             else
-                mv -f /tmp/$file "$CRASHDIR"/yamls/config.yaml
+                mv -f "$tmp_file" "$CRASHDIR"/yamls/config.yaml
             fi
             msg_alert "\033[32m$MENU_CFG_LOADED_OK\033[0m "
         }
