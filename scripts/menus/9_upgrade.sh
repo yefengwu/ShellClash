@@ -391,7 +391,7 @@ checkcustcore() {
 setcustcore() {
     while true; do
         [ -z "$cpucore" ] && check_cpucore
-		[ -n "$custcorelink" ] && custcore="$(echo "$custcorelink" | sed 's#.*github.com##; s#/releases/download/#@#')"
+        [ -n "$custcorelink" ] && custcore="$(echo "$custcorelink" | sed 's#.*github.com##; s#/releases/download/#@#')"
         line_break
         separator_line "="
         content_line "\033[36m$UPG_CUSTOM_CORE_SOURCE\033[0m"
@@ -399,17 +399,16 @@ setcustcore() {
         content_line "\033[31m$UPG_CUSTOM_CORE_TASK_WARN\033[0m"
         content_line "\033[32m$UPG_CUSTOM_CORE_NET_WARN\033[0m"
         [ -n "$custcore" ] && {
-            content_line "$UPG_CUSTOM_CORE_CURRENT_TEXT"
-			content_line "\033[36m$custcore\033[0m"
+            content_line "$UPG_CUSTOM_CORE_CURRENT\033[36m$custcore\033[0m"
         }
         separator_line "="
         content_line "$UPG_CUSTOM_CORE_SELECT"
         separator_line "-"
-        btm_box "1) \033[36mMetaCubeX/mihomo\033[32m@release\033[0m版本官方内核" \
-            "2) \033[36mvernesong/mihomo\033[32m@alpha\033[0m版本内核(支持Smart策略)" \
-            "3) \033[36mSagerNet/sing-box\033[32m@release\033[0m版本官方内核" \
-            "4) \033[36mDustinWin/mihomo\033[0m多版本内核" \
-			"5) \033[36mDustinWin/sing-boxr\033[0m多版本内核" \
+        btm_box "1) \033[36mMetaCubeX/mihomo\033[32m@release\033[0m$UPG_CUSTOM_CORE_MENU_OFFICIAL" \
+            "2) \033[36mvernesong/mihomo\033[32m@alpha\033[0m$UPG_CUSTOM_CORE_MENU_ALPHA" \
+            "3) \033[36mSagerNet/sing-box\033[32m@release\033[0m$UPG_CUSTOM_CORE_MENU_OFFICIAL" \
+            "4) \033[36mDustinWin/mihomo\033[0m$UPG_CUSTOM_CORE_MENU_MULTI" \
+            "5) \033[36mDustinWin/sing-boxr\033[0m$UPG_CUSTOM_CORE_MENU_MULTI" \
             "$UPG_CORE_MENU_9" \
             "" \
             "0) $COMMON_BACK"
@@ -596,7 +595,7 @@ getgeo() {
     content_line "$UPG_GEO_GETTING"
     get_bin "$TMPDIR"/"${geoname}" bin/geodata/"$geotype"
     if [ "$?" = "1" ]; then
-        content_line "\033[31m$UPG_GEO_FAIL\033[0m"
+        content_line "\033[31m$UPG_DOWNLOAD_FAIL\033[0m"
         error_down
     else
         echo "$geoname" | grep -Eq '.mrs|.srs|.tar.gz' && {
@@ -606,7 +605,7 @@ getgeo() {
         if echo "$geoname" | grep -Eq '.tar.gz'; then
             tar -zxf "$TMPDIR"/"${geoname}" ${tar_para} -C "$BINDIR"/"${geofile}" >/dev/null
             if [ $? -ne 0 ]; then
-                content_line "$UPG_GEO_EXTRACT_FAIL"
+                content_line "$UPG_EXTRACT_FAIL"
                 separator_line "="
                 sleep 1
                 line_break
@@ -630,7 +629,7 @@ getcustgeo() {
     content_line "$UPG_GEO_LINKING"
     webget "$TMPDIR"/"$geoname" "$custgeolink"
     if [ "$?" = "1" ]; then
-        content_line "\033[31m$UPG_GEO_FAIL\033[0m"
+        content_line "\033[31m$UPG_DOWNLOAD_FAIL\033[0m"
         error_down
     else
         echo "$geoname" | grep -Eq '.mrs|.srs' && {
@@ -867,7 +866,7 @@ getdb() {
     content_line "$UPG_DB_GETTING"
     get_bin "$TMPDIR"/clashdb.tar.gz bin/dashboard/${db_type}.tar.gz
     if [ "$?" = "1" ]; then
-        content_line "\033[31m$UPG_GEO_FAIL\033[0m"
+        content_line "\033[31m$UPG_DOWNLOAD_FAIL\033[0m"
         error_down
         return 1
     else
@@ -875,7 +874,7 @@ getdb() {
         mkdir -p "$dbdir" >/dev/null
         tar -zxf "$TMPDIR/clashdb.tar.gz" ${tar_para} -C "$dbdir" >/dev/null
         if [ $? -ne 0 ]; then
-            content_line "$UPG_GEO_EXTRACT_FAIL"
+            content_line "$UPG_EXTRACT_FAIL"
             separator_line "="
             line_break
             sleep 1
@@ -1036,7 +1035,7 @@ getcrt() {
     content_line "$UPG_DB_GETTING"
     get_bin "$TMPDIR"/ca-certificates.crt bin/fix/ca-certificates.crt echooff
     if [ "$?" = "1" ]; then
-        content_line "\033[31m$UPG_GEO_FAIL\033[0m"
+        content_line "\033[31m$UPG_DOWNLOAD_FAIL\033[0m"
         error_down
     else
         [ "$systype" = 'mi_snapshot' ] && cp -f "$TMPDIR"/ca-certificates.crt "$CRASHDIR"/tools #镜像化设备特殊处理
