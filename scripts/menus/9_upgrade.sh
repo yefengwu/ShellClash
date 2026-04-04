@@ -300,11 +300,11 @@ getcore() {
     # 获取在线内核文件
     line_break
     separator_line "="
-    content_line "$UPG_GETTING_CORE_TEXT"
+    content_line "${UPG_GETTING_CORE_TEXT_PREFIX}${crashcore}${UPG_GETTING_CORE_TEXT_SUFFIX}"
     core_webget
     case "$?" in
     0)
-        content_line "\033[32m$UPG_CORE_DOWNLOAD_OK_TEXT\033[0m"
+        content_line "\033[32m${UPG_CORE_DOWNLOAD_OK_TEXT_PREFIX}${crashcore}${UPG_CORE_DOWNLOAD_OK_TEXT_SUFFIX}\033[0m"
         separator_line "="
         sleep 1
         switch_core
@@ -403,10 +403,10 @@ setcustcore() {
         separator_line "="
         content_line "$UPG_CUSTOM_CORE_SELECT"
         separator_line "-"
-        btm_box "$UPG_CORE_MENU_1" \
-            "$UPG_CORE_MENU_2" \
-            "$UPG_CORE_MENU_3" \
-            "$UPG_CORE_MENU_4" \
+        btm_box "${UPG_CORE_MENU_1_PREFIX}${meta_v}${UPG_CORE_MENU_1_SUFFIX}" \
+            "${UPG_CORE_MENU_2_PREFIX}${singboxr_v}${UPG_CORE_MENU_2_SUFFIX}" \
+            "${UPG_CORE_MENU_3_PREFIX}${singbox_v}${UPG_CORE_MENU_3_SUFFIX}" \
+            "${UPG_CORE_MENU_4_PREFIX}${clash_v}${UPG_CORE_MENU_4_SUFFIX}" \
             "$UPG_CORE_MENU_9" \
             "" \
             "0) $COMMON_BACK"
@@ -506,22 +506,22 @@ setcore() {
             "" \
             "\033[33m$UPG_CORE_MENU_SELECT\033[0m"
 
-        content_line "$UPG_CORE_V1"
+        content_line "${UPG_CORE_V1_PREFIX}${meta_v}${UPG_CORE_V1_SUFFIX}"
         sub_content_line "$UPG_CORE_V1_DOC"
 
-        content_line "$UPG_CORE_V2"
+        content_line "${UPG_CORE_V2_PREFIX}${singboxr_v}${UPG_CORE_V2_SUFFIX}"
         sub_content_line "$UPG_CORE_V2_DOC"
 
         [ "$zip_type" = 'upx' ] && {
-            content_line "$UPG_CORE_V3"
+            content_line "${UPG_CORE_V3_PREFIX}${singbox_v}${UPG_CORE_V3_SUFFIX}"
             sub_content_line "$UPG_CORE_V3_DOC"
         }
         [ "$zip_type" = 'upx' ] && {
-            content_line "$UPG_CORE_V4"
+            content_line "${UPG_CORE_V4_PREFIX}${clash_v}${UPG_CORE_V4_SUFFIX}"
             sub_content_line "$UPG_CORE_V4_DOC"
         }
-        btm_box "$UPG_CORE_MENU_5" \
-            "$UPG_CORE_MENU_6" \
+        btm_box "${UPG_CORE_MENU_5_PREFIX}${zip_type}${UPG_CORE_MENU_5_SUFFIX}" \
+            "${UPG_CORE_MENU_6_PREFIX}${custcore}${UPG_CORE_MENU_6_SUFFIX}" \
             "$UPG_CORE_MENU_7" \
             "$UPG_CORE_MENU_9" \
             "" \
@@ -609,7 +609,7 @@ getgeo() {
         else
             mv -f "$TMPDIR"/"${geoname}" "$BINDIR"/"${geofile}""${geoname}"
         fi
-        content_line "\033[32m$UPG_GEO_OK\033[0m"
+        content_line "\033[32m${UPG_GEO_OK_PREFIX}${geotype}${UPG_GEO_OK_SUFFIX}\033[0m"
         geo_v="$(echo "$geotype" | awk -F "." '{print $1}')_v"
         setconfig "$geo_v" "$GeoIP_v"
     fi
@@ -630,7 +630,7 @@ getcustgeo() {
             [ ! -d "$BINDIR"/ruleset ] && mkdir -p "$BINDIR"/ruleset
         }
         mv -f "$TMPDIR"/"${geoname}" "$BINDIR"/"${geofile}""${geoname}"
-        content_line "\033[32m$UPG_GEO_OK\033[0m"
+        content_line "\033[32m${UPG_GEO_OK_PREFIX}${geotype}${UPG_GEO_OK_SUFFIX}\033[0m"
         separator_line "="
     fi
     sleep 1
@@ -818,7 +818,7 @@ setgeo() {
             ;;
         9)
             while true; do
-                comp_box "\033[33m$UPG_GEO_CLEAN_HINT1\033[0m" \
+                comp_box "\033[33m${UPG_GEO_CLEAN_HINT1_PREFIX}${CRASHDIR}${UPG_GEO_CLEAN_HINT1_SUFFIX}\033[0m" \
                     "$UPG_GEO_CLEAN_HINT2"
                 btm_box "$UPG_GEO_CLEAN_CONFIRM" \
                     "0) $COMMON_BACK"
@@ -912,7 +912,7 @@ dbdir() {
         fi
     elif [ -w /www ] && [ -n "$(pidof nginx)" ]; then
         comp_box "$UPG_DB_DIR_SELECT"
-        btm_box "$UPG_DB_DIR_1" \
+        btm_box "${UPG_DB_DIR_1_PREFIX}${CRASHDIR}${UPG_DB_DIR_1_SUFFIX}" \
             "$UPG_DB_DIR_2" \
             "" \
             "0) $COMMON_BACK"

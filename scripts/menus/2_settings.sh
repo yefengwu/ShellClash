@@ -265,6 +265,7 @@ set_redir_mod() {
         [ -z "$firewall_area" ] && firewall_area=1
         [ "$firewall_area" = 4 ] && redir_mod="$MENU_PURE_MOD"
         [ -z "$redir_mod" ] && redir_mod='Redir'
+        [ -z "$vm_redir" ] && vm_redir='OFF'
         firewall_area_dsc=$(echo "$SET_FW_AREA_DESC($bypass_host)" | cut -d'|' -f$firewall_area)
         comp_box "\033[33m$SET_REDIR_RESTART_HINT\033[0m" \
             "$SET_REDIR_CURRENT\033[47;30m$redir_mod$MENU_MOD\033[0m；  $SET_CORE_CURRENT\033[47;30m$crashcore\033[0m"
@@ -550,7 +551,6 @@ set_adv_config() {
 
 set_firewall_area() {
     while true; do
-        [ -z "$vm_redir" ] && vm_redir='OFF'
         comp_box "\033[33m$FW_AREA_NOTE_1\033[0m" \
             "\033[33m$FW_AREA_NOTE_2\033[0m" \
             "" \

@@ -19,9 +19,9 @@ ssh_tools() {
         [ -z "$ssh_port" ] && ssh_port=10022
         comp_box "\033[33m$TOOLS_SSH_ONLY_OPENWRT\033[0m" \
             "\033[31m$TOOLS_SSH_UNSUPPORTED_SYSTEM\033[0m"
-        btm_box "$TOOLS_SSH_PORT_ITEM" \
+        btm_box "${TOOLS_SSH_PORT_ITEM_PREFIX}\033[36m$ssh_port\033[0m${TOOLS_SSH_PORT_ITEM_SUFFIX}" \
             "$TOOLS_SSH_PASS_ITEM" \
-            "$TOOLS_SSH_TOGGLE_ITEM" \
+            "${TOOLS_SSH_TOGGLE_ITEM_PREFIX}\033[33m$ssh_ol\033[0m${TOOLS_SSH_TOGGLE_ITEM_SUFFIX}" \
             "" \
             "0) $COMMON_BACK \033[0m"
         read -r -p "$COMMON_INPUT> " num
@@ -88,9 +88,9 @@ tools() {
         content_line "$TOOLS_MENU_GUIDE_ITEM"
         content_line "$TOOLS_MENU_LOG_ITEM"
         [ -f /etc/firewall.user ] && content_line "$TOOLS_MENU_SSH_ITEM"
-        [ -x /usr/sbin/otapredownload ] && content_line "$TOOLS_MENU_MI_UPDATE_ITEM"
-        [ "$systype" = "mi_snapshot" ] && content_line "$TOOLS_MENU_MI_AUTO_SSH_ITEM"
-        [ "$systype" = "mi_snapshot" ] && content_line "$TOOLS_MENU_MI_TUN_FIX_ITEM"
+        [ -x /usr/sbin/otapredownload ] && content_line "${TOOLS_MENU_MI_UPDATE_ITEM_PREFIX}\033[33m$mi_update\033[0m${TOOLS_MENU_MI_UPDATE_ITEM_SUFFIX}"
+        [ "$systype" = "mi_snapshot" ] && content_line "${TOOLS_MENU_MI_AUTO_SSH_ITEM_PREFIX}\033[$mi_mi_autoSSH_type \033[0m${TOOLS_MENU_MI_AUTO_SSH_ITEM_SUFFIX}"
+        [ "$systype" = "mi_snapshot" ] && content_line "${TOOLS_MENU_MI_TUN_FIX_ITEM_PREFIX}\033[$mi_tunfix \033[0m${TOOLS_MENU_MI_TUN_FIX_ITEM_SUFFIX}"
         btm_box "" \
             "0) $COMMON_BACK"
         read -r -p "$COMMON_INPUT> " num
@@ -123,7 +123,8 @@ tools() {
                         sed -i "/^\s*#.*otapredownload/ s/^\s*#//" /etc/crontabs/root ||
                         echo "15 3,4,5 * * * /usr/sbin/otapredownload >/dev/null 2>&1" >>/etc/crontabs/root
                 fi
-                    msg_alert "\033[32m$TOOLS_MI_UPDATE_MSG"
+                [ "$mi_update" = "$TOOLS_DISABLE" ] && mi_update=$TOOLS_ENABLE || mi_update=$TOOLS_DISABLE
+                msg_alert "\033[32m${TOOLS_MI_UPDATE_MSG_PREFIX}\033[33m$mi_update\033[0m${TOOLS_MI_UPDATE_MSG_SUFFIX}\033[0m"
             fi
             ;;
         6)
@@ -227,17 +228,17 @@ log_pusher() {
         [ -n "$push_Gotify" ] && stat_Gotify=32mON || stat_Gotify=33mOFF
         [ "$task_push" = 1 ] && stat_task=32mON || stat_task=33mOFF
         [ -n "$device_name" ] && device_s=32m$device_name || device_s=33m$COMMON_UNSET
-        comp_box "$TOOLS_LOG_TG" \
-            "$TOOLS_LOG_DEER" \
-            "$TOOLS_LOG_BARK" \
-            "$TOOLS_LOG_PO" \
-            "$TOOLS_LOG_PP" \
-            "$TOOLS_LOG_SYNO" \
-            "$TOOLS_LOG_GOTIFY" \
+        comp_box "${TOOLS_LOG_TG_PREFIX}\033[$stat_TG\033[0m${TOOLS_LOG_TG_SUFFIX}" \
+            "${TOOLS_LOG_DEER_PREFIX}\033[$stat_Deer\033[0m${TOOLS_LOG_DEER_SUFFIX}" \
+            "${TOOLS_LOG_BARK_PREFIX}\033[$stat_bark\033[0m${TOOLS_LOG_BARK_SUFFIX}" \
+            "${TOOLS_LOG_PO_PREFIX}\033[$stat_Po\033[0m${TOOLS_LOG_PO_SUFFIX}" \
+            "${TOOLS_LOG_PP_PREFIX}\033[$stat_PP\033[0m${TOOLS_LOG_PP_SUFFIX}" \
+            "${TOOLS_LOG_SYNO_PREFIX}\033[$stat_SynoChat\033[0m${TOOLS_LOG_SYNO_SUFFIX}" \
+            "${TOOLS_LOG_GOTIFY_PREFIX}\033[$stat_Gotify\033[0m${TOOLS_LOG_GOTIFY_SUFFIX}" \
             "" \
             "$TOOLS_LOG_VIEW" \
-            "$TOOLS_LOG_TASK" \
-            "$TOOLS_LOG_DEVICE" \
+            "${TOOLS_LOG_TASK_PREFIX}\033[$stat_task\033[0m${TOOLS_LOG_TASK_SUFFIX}" \
+            "${TOOLS_LOG_DEVICE_PREFIX}\033[$device_s\033[0m${TOOLS_LOG_DEVICE_SUFFIX}" \
             "$TOOLS_LOG_CLEAR" \
             "" \
             "0) $COMMON_BACK"
@@ -685,18 +686,18 @@ testcommand() {
 debug() {
     echo "$crashcore" | grep -q 'singbox' && config_tmp="$TMPDIR"/jsons || config_tmp="$TMPDIR"/config.yaml
     comp_box "\033[36m$TOOLS_DEBUG_WARN1\033[0m" \
-        "$TOOLS_DEBUG_WARN2" \
+        "${TOOLS_DEBUG_WARN2_PREFIX}\033[32m$TMPDIR/debug.log\033[0m${TOOLS_DEBUG_WARN2_SUFFIX}" \
         "$TOOLS_DEBUG_WARN3" \
         "$TOOLS_DEBUG_WARN4"
-    content_line "$TOOLS_DEBUG_ITEM_1"
-    content_line "$TOOLS_DEBUG_ITEM_2"
+    content_line "${TOOLS_DEBUG_ITEM_1_PREFIX}\033[32m$config_tmp\033[0m${TOOLS_DEBUG_ITEM_1_SUFFIX}"
+    content_line "${TOOLS_DEBUG_ITEM_2_PREFIX}\033[32m$config_tmp\033[0m${TOOLS_DEBUG_ITEM_2_SUFFIX}"
     content_line "$TOOLS_DEBUG_ITEM_3"
     content_line "$TOOLS_DEBUG_ITEM_4"
     content_line "$TOOLS_DEBUG_ITEM_5"
-    content_line "$TOOLS_DEBUG_ITEM_6"
+    content_line "${TOOLS_DEBUG_ITEM_6_PREFIX}\033[32m$CRASHDIR/debug.log\033[0m${TOOLS_DEBUG_ITEM_6_SUFFIX}"
     content_line ""
     content_line "$TOOLS_DEBUG_ITEM_8"
-    [ -s "$TMPDIR"/jsons/inbounds.json ] && content_line "$TOOLS_DEBUG_ITEM_9"
+    [ -s "$TMPDIR"/jsons/inbounds.json ] && content_line "${TOOLS_DEBUG_ITEM_9_PREFIX}\033[32m$config_tmp\033[0m${TOOLS_DEBUG_ITEM_9_SUFFIX}\033[32m$TMPDIR/debug.json\033[0m"
     btm_box "" \
         "0) $COMMON_BACK"
     read -r -p "$COMMON_INPUT> " num
@@ -765,4 +766,3 @@ debug() {
         ;;
     esac
 }
-

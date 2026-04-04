@@ -12,11 +12,11 @@ set_fw_filter() {
         [ -z "$quic_rj" ] && quic_rj=OFF
         [ -z "$cn_ip_route" ] && cn_ip_route=OFF
         touch "$CRASHDIR"/configs/mac "$CRASHDIR"/configs/ip_filter
-        [ -z "$(cat "$CRASHDIR"/configs/mac "$CRASHDIR"/configs/ip_filter 2>/dev/null)" ] && mac_return=OFF || mac_return=ON
-        comp_box "$FWF_ITEM_1" \
-            "$FWF_ITEM_2" \
-            "$FWF_ITEM_3" \
-            "$FWF_ITEM_4" \
+        [ -z "$(cat "$CRASHDIR"/configs/mac "$CRASHDIR"/configs/ip_filter 2>/dev/null)" ] && mac_filter_info=OFF || mac_filter_info=ON
+        comp_box "${FWF_ITEM_1_PREFIX}\033[36m$common_ports\033[0m\t${FWF_ITEM_1_SUFFIX}" \
+            "${FWF_ITEM_2_PREFIX}\033[36m$mac_filter_info\033[0m\t${FWF_ITEM_2_SUFFIX}" \
+            "${FWF_ITEM_3_PREFIX}\033[36m$quic_rj\033[0m\t${FWF_ITEM_3_SUFFIX}" \
+            "${FWF_ITEM_4_PREFIX}\033[36m$cn_ip_route\033[0m\t${FWF_ITEM_4_SUFFIX}" \
             "$FWF_ITEM_5" \
             "$FWF_ITEM_6" \
             "" \
@@ -94,7 +94,7 @@ set_common_ports() {
             content_line "$FWF_ALLOWED_PORTS\033[36m$multiport\033[0m"
         fi
         separator_line "="
-        btm_box "$FWF_PORT_MENU_1" \
+        btm_box "${FWF_PORT_MENU_1_PREFIX}\033[36m$common_ports\033[0m${FWF_PORT_MENU_1_SUFFIX}" \
             "$FWF_PORT_MENU_2" \
             "$FWF_PORT_MENU_3" \
             "$FWF_PORT_MENU_4" \
@@ -463,7 +463,7 @@ fw_filter_lan() {
             done
             separator_line "="
         fi
-        btm_box "$FWF_FILTER_SWITCH" \
+        btm_box "${FWF_FILTER_SWITCH_PREFIX}\033[33m$fw_filter_lan_over\033[0m${FWF_FILTER_SWITCH_SUFFIX}" \
             "$FWF_FILTER_ADD_MAC" \
             "$FWF_FILTER_ADD_IP" \
             "$FWF_FILTER_REMOVE" \

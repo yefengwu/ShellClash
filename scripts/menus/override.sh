@@ -3,10 +3,9 @@
 
 [ -n "$__IS_MODULE_OVERRIDE" ] && return
 __IS_MODULE_OVERRIDE=1
-load_lang override
-
 YAMLSDIR="$CRASHDIR"/yamls
 JSONSDIR="$CRASHDIR"/jsons
+load_lang override
 
 # 配置文件覆写
 override() {
@@ -48,7 +47,7 @@ override() {
             ;;
         9)
             comp_box "\033[33m$OVR_WARN_1\033[0m" \
-                "\033[33m$OVR_WARN_2\033[0m" \
+                "\033[33m${OVR_WARN_2_PREFIX}$crashcore${OVR_WARN_2_SUFFIX}\033[0m" \
                 "\033[33m$OVR_WARN_3\033[0m"
             sleep 2
             btm_box "$OVR_WARN_CONFIRM" \
