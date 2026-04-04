@@ -140,8 +140,8 @@ hotupdate() { #热更新订阅
 
 case "$1" in
     [1-9][0-9][0-9])
-        task_command=$(cat "$CRASHDIR"/task/task.list "$CRASHDIR"/task/task.user 2>/dev/null | grep "$1" | awk -F '#' '{print $2}')
-        task_name=$(cat "$CRASHDIR"/task/task.list "$CRASHDIR"/task/task.user 2>/dev/null | grep "$1" | awk -F '#' '{print $3}')
+        task_command=$(cat "$CRASHDIR"/task/task_${i18n}.list "$CRASHDIR"/task/task.user 2>/dev/null | grep "$1" | awk -F '#' '{print $2}')
+        task_name=$(cat "$CRASHDIR"/task/task_${i18n}.list "$CRASHDIR"/task/task.user 2>/dev/null | grep "$1" | awk -F '#' '{print $3}')
         #task_logger "任务$task_name 开始执行"
         eval $task_command && task_res="$TASK_CMD_RES_OK" || task_res="$TASK_CMD_RES_FAIL"
         task_logger "$TASK_CMD_EXEC_PREFIX$2$TASK_CMD_EXEC_MID$task_res"

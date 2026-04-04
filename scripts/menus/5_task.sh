@@ -122,8 +122,8 @@ task_add() {
             ;;
         [1-9] | [1-9][0-9])
             if [ "$num" -le "$(echo "$list" | wc -l)" ]; then
-                task_id=$(cat "$CRASHDIR"/task/task.list "$CRASHDIR"/task/task.user 2>/dev/null | grep -Ev '^(#|$)' | sed -n "$num p" | awk -F '#' '{print $1}')
-                task_name=$(cat "$CRASHDIR"/task/task.list "$CRASHDIR"/task/task.user 2>/dev/null | grep -Ev '^(#|$)' | sed -n "$num p" | awk -F '#' '{print $3}')
+                task_id=$(cat "$CRASHDIR"/task/task_${i18n}.list "$CRASHDIR"/task/task.user 2>/dev/null | grep -Ev '^(#|$)' | sed -n "$num p" | awk -F '#' '{print $1}')
+                task_name=$(cat "$CRASHDIR"/task/task_${i18n}.list "$CRASHDIR"/task/task.user 2>/dev/null | grep -Ev '^(#|$)' | sed -n "$num p" | awk -F '#' '{print $3}')
                 task_type
                 break
             else
@@ -292,7 +292,7 @@ task_manager() {
                     fi
                 else
                     task_des=$(echo "$task_txt" | awk '{print $2}')
-                    task_name=$(cat "$CRASHDIR"/task/task.list "$CRASHDIR"/task/task.user 2>/dev/null | grep "$task_id" | awk -F '#' '{print $3}')
+                    task_name=$(cat "$CRASHDIR"/task/task_${i18n}.list "$CRASHDIR"/task/task.user 2>/dev/null | grep "$task_id" | awk -F '#' '{print $3}')
                     comp_box "$TASK5_CURRENT_TASK\033[36m$task_des\033[0m"
                     btm_box "1) $TASK5_EDIT_TASK" \
                         "2) $TASK5_DEL_TASK" \
@@ -313,7 +313,7 @@ task_manager() {
                         common_success
                         ;;
                     3)
-                        task_command=$(cat "$CRASHDIR"/task/task.list "$CRASHDIR"/task/task.user 2>/dev/null | grep "$task_id" | awk -F '#' '{print $2}')
+                        task_command=$(cat "$CRASHDIR"/task/task_${i18n}.list "$CRASHDIR"/task/task.user 2>/dev/null | grep "$task_id" | awk -F '#' '{print $2}')
                         eval "$task_command" && task_res="$TASK5_RUN_OK" || task_res="$TASK5_RUN_FAIL"
                         msg_alert "\033[33m$TASK5_TASK_PREFIX$task_des】$task_res\033[0m"
                         ;;
