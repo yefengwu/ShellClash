@@ -3,7 +3,7 @@
 
 ckcmd iptables && iptables -h | grep -q '\-w' && iptable='iptables -w' || iptable=iptables
 ckcmd ip6tables && ip6tables -h | grep -q '\-w' && ip6table='ip6tables -w' || ip6table=ip6tables
-    
+	
 start_ipt_route() { #iptables-route通用工具
     #$1:iptables/ip6tables	$2:所在的表(nat/mangle) $3:所在的链(OUTPUT/PREROUTING)	$4:新创建的shellcrash链表	$5:tcp/udp/all
     #区分ipv4/ipv6
@@ -37,6 +37,7 @@ start_ipt_route() { #iptables-route通用工具
     }
     #跳过目标保留地址及目标本机网段
     for ip in $HOST_IP $RESERVED_IP; do
+        [ "$ip" = "default" ] && continue
         "$1" $w -t "$2" -A "$4" -d $ip -j RETURN
     done
     #绕过CN_IP
@@ -65,7 +66,8 @@ start_ipt_route() { #iptables-route通用工具
                     "$1" $w -t "$2" -A "$4" -p "$5" -s $ip -j $JUMP
                 done
         else
-            for ip in $HOST_IP; do #仅限指定网段流量
+            for ip in $HOST_IP; do #仅限指定网段流量 (已修复 default 报错)
+                [ "$ip" = "default" ] && continue
                 "$1" $w -t "$2" -A "$4" -p "$5" -s $ip -j $JUMP
             done
         fi
@@ -123,7 +125,8 @@ start_ipt_dns() { #iptables-dns通用工具
                 "$1" $w -t nat -A "$3" -p udp -s $ip -j REDIRECT --to-ports "$dns_redir_port"
             done
     else
-        for ip in $HOST_IP; do #仅限指定网段流量
+        for ip in $HOST_IP; do #仅限指定网段流量 (已修复 default 报错)
+            [ "$ip" = "default" ] && continue
             "$1" $w -t nat -A "$3" -p tcp -s $ip -j REDIRECT --to-ports "$dns_redir_port"
             "$1" $w -t nat -A "$3" -p udp -s $ip -j REDIRECT --to-ports "$dns_redir_port"
         done
@@ -256,7 +259,8 @@ start_iptables() { #iptables配置总入口
             fi
         }
     }
-    [ "$vm_redir" = "ON" ] && [ -n "$$vm_ipv4" ] && {
+    # 修复了原本双刀号 $$vm_ipv4 会变为进程 PID_ipv4 的语法错误问题
+    [ "$vm_redir" = "ON" ] && [ -n "$vm_ipv4" ] && {
         JUMP="REDIRECT --to-ports $redir_port"                    #跳转劫持的具体命令
         start_ipt_dns iptables PREROUTING shellcrash_vm_dns       #ipv4-局域网dns转发
         start_ipt_route iptables nat PREROUTING shellcrash_vm tcp #ipv4-局域网tcp转发
