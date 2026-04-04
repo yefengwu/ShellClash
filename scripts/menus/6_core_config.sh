@@ -143,9 +143,9 @@ setproviders() {
         content_line "d) $CORECFG_DEL_PROVIDER"
         content_line ""
         content_line "\033[36m$CORECFG_MORE_CONFIG_HINT\033[0m"
-        [ -n "$link" ] &&
+        [ -n "$2" ] &&
             content_line "b) $CORECFG_GEN_LOCAL_ONE"
-        echo "$link$link_uri" | grep -q '://' &&
+        echo "$2" | grep -q '://' &&
             content_line "c) $CORECFG_GEN_ONLINE_ONE"
         echo "$link" | grep -q '^http' &&
             content_line "e) $CORECFG_GET_ONLINE_DIRECT"
