@@ -1,6 +1,8 @@
 # ===== Common Prompts =====
 
 MENU_RESTART_NOTICE="Changes have been detected. Please restart the service!"
+MENU_RESTART_NOW="Restart now"
+MENU_RESTART_LATER="Not now"
 
 MENU_PORT_CONFLICT_TITLE="The port is occupied by the following process. The core may fail to start!"
 MENU_PORT_CONFLICT_HINT="Please modify the default port configuration!"
@@ -13,6 +15,8 @@ MENU_CFG_LOADED_OK="Configuration file loaded successfully!"
 
 MENU_OVERRIDE_WARN="You have disabled configuration overwrite. This will cause many features to be unavailable!"
 MENU_OVERRIDE_ASK="Cancel the disable setting?"
+MENU_YES="Yes"
+MENU_NO="No"
 
 # ===== Welcome & Status =====
 MENU_WELCOME="Welcome to ShellCrash!"
@@ -37,6 +41,8 @@ MENU_TG_CHANNEL="Telegram Channel: "
 # ===== /tmp File Detection =====
 MENU_TMP_CORE_FOUND="Available core file found:"
 MENU_TMP_CORE_ASK="Load this core file? (The current service will be stopped)"
+MENU_LOAD_NOW="Load now"
+MENU_LOAD_LATER="Not now"
 
 MENU_TMP_CFG_FOUND="Kernel configuration file found:"
 MENU_TMP_CFG_ASK="Load as the configuration file? (1/0) > "

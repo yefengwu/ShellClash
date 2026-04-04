@@ -33,8 +33,8 @@ load_lang menu
 
 checkrestart() {
     comp_box "\033[32m$MENU_RESTART_NOTICE\033[0m"
-    btm_box "1) 立即重启" \
-        "0) 暂不重启"
+    btm_box "1) $MENU_RESTART_NOW" \
+        "0) $MENU_RESTART_LATER"
     read -r -p "$COMMON_INPUT> " res
     if [ "$res" = 1 ]; then
         start_service
@@ -147,8 +147,8 @@ ckstatus() {
 		local tmp_file="/tmp/$file"
         comp_box "$MENU_TMP_CORE_FOUND \033[36m$tmp_file\033[0m" \
             "$MENU_TMP_CORE_ASK"
-        btm_box "1) 立即加载" \
-            "0) 暂不加载"
+        btm_box "1) $MENU_LOAD_NOW" \
+            "0) $MENU_LOAD_LATER"
         read -r -p "$COMMON_INPUT> " res
         [ "$res" = 1 ] && {
             zip_type=$(echo "$tmp_file" | grep -oE 'tar.gz$|upx$|gz$')
@@ -170,8 +170,8 @@ ckstatus() {
         local tmp_file="/tmp/$file"
         comp_box "$MENU_TMP_CFG_FOUND\033[36m$tmp_file\033[0m" \
             "$MENU_TMP_CFG_ASK"
-        btm_box "1) 立即加载" \
-            "0) 暂不加载"
+        btm_box "1) $MENU_LOAD_NOW" \
+            "0) $MENU_LOAD_LATER"
         read -p "$COMMON_INPUT> " res
         [ "$res" = 1 ] && {
             if [ -n "$(echo $tmp_file | grep -iE '.json$')" ]; then
@@ -187,8 +187,8 @@ ckstatus() {
     [ "$disoverride" = "1" ] && {
         comp_box "\033[33m$MENU_OVERRIDE_WARN\033[0m" \
             "$MENU_OVERRIDE_ASK"
-        btm_box "1) 是" \
-            "0) 否"
+        btm_box "1) $MENU_YES" \
+            "0) $MENU_NO"
         read -p "$COMMON_INPUT> " res
         [ "$res" = 1 ] && unset disoverride && setconfig disoverride
     }
