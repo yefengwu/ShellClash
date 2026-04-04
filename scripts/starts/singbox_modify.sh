@@ -272,8 +272,8 @@ EOF
         . "$CRASHDIR"/configs/gateway.cfg
         . "$CRASHDIR"/libs/sb_inbounds.sh
     }
-    if [ "$redir_mod" = "Mix" -o "$redir_mod" = "Tun" ]; then
-        [ "ipv6_redir" = 'ON' ] && ipv6_address='"fe80::e5c5:2469:d09b:609a/64",'
+    if [ "$redir_mod" = "Mix" ] || [ "$redir_mod" = "Tun" ]; then
+        [ "$ipv6_redir" = 'ON' ] && ipv6_address='"fd00:face:b00c::1/126",'
         cat >>"$TMPDIR"/jsons/tun.json <<EOF
 {
   "inbounds": [
