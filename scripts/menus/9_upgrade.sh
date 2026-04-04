@@ -338,7 +338,7 @@ checkcustcore() {
         release_date=$(cat "$TMPDIR"/github_api | grep '"published_at":' | awk -F '"' '{print $4}')
         update_date=$(cat "$TMPDIR"/github_api | grep '"updated_at":' | head -n 1 | awk -F '"' '{print $4}')
         echo "$cpucore" | grep -q 'mips' && cpu_type=mips || cpu_type=$cpucore
-        cat "$TMPDIR"/github_api | grep "browser_download_url" | grep -oE "https://github.com/${project}/releases/download.*linux.*${cpu_type}.*\.gz\"$" | sed 's/"//' >"$TMPDIR"/core.list
+        cat "$TMPDIR"/github_api | grep "browser_download_url" | grep -oE "https://github.com/${project}/releases/download.*linux.*${cpu_type}.*\.(gz|upx)\"$" | sed 's/"//' >"$TMPDIR"/core.list
         rm -rf "$TMPDIR"/github_api
 
         if [ -s "$TMPDIR"/core.list ]; then
@@ -391,6 +391,7 @@ checkcustcore() {
 setcustcore() {
     while true; do
         [ -z "$cpucore" ] && check_cpucore
+		[ -n "$custcorelink" ] && custcore="$(echo "$custcorelink" | sed 's#.*github.com##; s#/releases/download/#@#')"
         line_break
         separator_line "="
         content_line "\033[36m$UPG_CUSTOM_CORE_SOURCE\033[0m"
@@ -398,15 +399,17 @@ setcustcore() {
         content_line "\033[31m$UPG_CUSTOM_CORE_TASK_WARN\033[0m"
         content_line "\033[32m$UPG_CUSTOM_CORE_NET_WARN\033[0m"
         [ -n "$custcore" ] && {
-            content_line "$UPG_CUSTOM_CORE_CURRENT_TEXT\033[36m$custcore\033[0m"
+            content_line "$UPG_CUSTOM_CORE_CURRENT_TEXT"
+			content_line "\033[36m$custcore\033[0m"
         }
         separator_line "="
         content_line "$UPG_CUSTOM_CORE_SELECT"
         separator_line "-"
-        btm_box "${UPG_CORE_MENU_1_PREFIX}${meta_v}${UPG_CORE_MENU_1_SUFFIX}" \
-            "${UPG_CORE_MENU_2_PREFIX}${singboxr_v}${UPG_CORE_MENU_2_SUFFIX}" \
-            "${UPG_CORE_MENU_3_PREFIX}${singbox_v}${UPG_CORE_MENU_3_SUFFIX}" \
-            "${UPG_CORE_MENU_4_PREFIX}${clash_v}${UPG_CORE_MENU_4_SUFFIX}" \
+        btm_box "1) \033[36mMetaCubeX/mihomo\033[32m@release\033[0m版本官方内核" \
+            "2) \033[36mvernesong/mihomo\033[32m@alpha\033[0m版本内核(支持Smart策略)" \
+            "3) \033[36mSagerNet/sing-box\033[32m@release\033[0m版本官方内核" \
+            "4) \033[36mDustinWin/mihomo\033[0m多版本内核" \
+			"5) \033[36mDustinWin/sing-boxr\033[0m多版本内核" \
             "$UPG_CORE_MENU_9" \
             "" \
             "0) $COMMON_BACK"
@@ -434,9 +437,15 @@ setcustcore() {
             checkcustcore
             ;;
         4)
-            project=juewuy/ShellCrash
-            api_tag=clash.premium.latest
-            crashcore=clashpre
+            project=DustinWin/proxy-tools
+            api_tag=mihomo
+            crashcore=meta
+            checkcustcore
+            ;;
+        5)
+            project=DustinWin/proxy-tools
+            api_tag=sing-box
+            crashcore=singboxr
             checkcustcore
             ;;
         9)
@@ -496,7 +505,6 @@ setcore() {
         [ -z "$crashcore" ] && crashcore="unknow"
         [ -z "$zip_type" ] && zip_type="tar.gz"
         echo "$crashcore" | grep -q 'singbox' && core_old=singbox || core_old=clash
-        [ -n "$custcorelink" ] && custcore="$(echo "$custcorelink" | sed 's#.*github.com##; s#/releases/download/#@#')"
 
         [ -z "$cpucore" ] && check_cpucore
 
@@ -521,7 +529,7 @@ setcore() {
             sub_content_line "$UPG_CORE_V4_DOC"
         }
         btm_box "${UPG_CORE_MENU_5_PREFIX}${zip_type}${UPG_CORE_MENU_5_SUFFIX}" \
-            "${UPG_CORE_MENU_6_PREFIX}${custcore}${UPG_CORE_MENU_6_SUFFIX}" \
+            "${UPG_CORE_MENU_6_PREFIX}${UPG_CORE_MENU_6_SUFFIX}" \
             "$UPG_CORE_MENU_7" \
             "$UPG_CORE_MENU_9" \
             "" \
