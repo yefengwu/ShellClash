@@ -56,6 +56,8 @@ EOF
   respect-rules: true
   nameserver-policy: {'rule-set:cn': [ $dns_nameserver ]}
   proxy-server-nameserver : [ $dns_resolver ]
+  proxy-server-nameserver-policy:
+    '*.oix_nodes.com': '124.221.68.73:1053'
   nameserver: [ $dns_final ]
 EOF
         else

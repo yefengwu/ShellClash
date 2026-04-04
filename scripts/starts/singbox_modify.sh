@@ -178,6 +178,11 @@ EOF
         "tag": "dns_resolver",
         $(parse_singbox_dns "$dns_resolver")
         "routing_mark": $routing_mark
+      },
+      {
+        "tag": "dns_oix",
+        "type": "udp", "server": "124.221.68.73", "server_port": 1053,
+        "routing_mark": $routing_mark
       }
     ],
     "rules": [

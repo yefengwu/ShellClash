@@ -117,6 +117,7 @@ EOF
     fi
     # 通用部分生成
     [ "$skip_cert" != "OFF" ] && override_tls='true' || override_tls='false'
+	[ -n "$(echo "$2" | grep 'oics.net')" ] && domain_resolver='dns_oix' || domain_resolver='dns_resolver'
     cat >>"$TMPDIR"/providers/providers.json <<EOF
       "health_check": {
         "enabled": true,
@@ -124,6 +125,9 @@ EOF
         "interval": "${interval}m",
         "timeout": "3s"
       },
+	  "override_dialer": {
+        "domain_resolver": "$domain_resolver"
+	  },
       "override_tls": {
         "enabled": true,
         "insecure": $override_tls
