@@ -205,7 +205,7 @@ EOF
 EOF
     #生成add_route.json
     #域名嗅探配置
-    [ "$sniffer" != OFF ] && sniffer_set='{ "action": "sniff", "timeout": "500ms" },'
+    [ "$sniffer" != OFF ] && sniffer_set='{ "domain_suffix": [ "push.apple.com" ], "rule_set": [ "telegramip" ], "domain": [ "Mijia Cloud" ], "invert": true, "action": "sniff", "timeout": "500ms" },'
     [ "$ts_service" = ON ] && tailscale_set='{ "inbound": [ "ts-ep" ], "port": 53, "action": "hijack-dns" },'
     cat >"$TMPDIR"/jsons/add_route.json <<EOF
 {
