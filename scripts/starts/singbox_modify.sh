@@ -41,7 +41,7 @@ parse_singbox_dns() { #dns转换
     # 输出
     echo '"type": "'"$type"'", "server": "'"$server"'", "server_port": '"$port"','
 }
-modify_json() {
+extract_base_jsons() {
     #提取配置文件以获得outbounds.json,providers.json及route.json
     "$TMPDIR"/CrashCore format -c $core_config >"$TMPDIR"/format.json
     echo '{' >"$TMPDIR"/jsons/outbounds.json
@@ -52,6 +52,9 @@ modify_json() {
         cat "$TMPDIR"/format.json | sed -n '/^  "providers":/,/^  "[a-z]/p' | sed '$d' >>"$TMPDIR"/jsons/providers.json
     }
     cat "$TMPDIR"/format.json | sed -n '/"route":/,/^\(  "[a-z]\|}\)/p' | sed '$d' >>"$TMPDIR"/jsons/route.json
+}
+
+generate_basic_jsons() {
     #生成endpoints.json
     [ "$ts_service" = ON ] || [ "$wg_service" = ON ] && [ "$zip_type" != upx ] && {
         . "$CRASHDIR"/configs/gateway.cfg
@@ -96,6 +99,9 @@ EOF
 }
 EOF
     fi
+}
+
+prepare_dns_config() {
     #生成dns.json
     [ "$ipv6_dns" != "OFF" ] && strategy='prefer_ipv4' || strategy='ipv4_only'
     #获取detour出口
@@ -131,6 +137,9 @@ EOF
     }
     #防泄露设置
     [ "$dns_protect" = "OFF" ] && sed -i 's/"server": "dns_proxy"/"server": "dns_direct"/g' "$TMPDIR"/jsons/route.json
+}
+
+generate_dns_related_jsons() {
     #生成add_rule_set.json
     [ "$dns_mod" = "mix" ] || [ "$dns_mod" = "route" ] && ! grep -Eq '"tag" *:[[:space:]]*"cn"' "$CRASHDIR"/jsons/*.json && {
         [ "$crashcore" = "singboxr" ] && srs_path='"path": "./ruleset/cn.srs",'
@@ -203,6 +212,9 @@ EOF
   }
 }
 EOF
+}
+
+generate_route_and_inbounds_jsons() {
     #生成add_route.json
     #域名嗅探配置
     [ "$sniffer" != OFF ] && sniffer_set='{ "domain_suffix": [ "push.apple.com" ], "rule_set": [ "telegramip" ], "domain": [ "Mijia Cloud" ], "invert": true, "action": "sniff", "timeout": "500ms" },'
@@ -292,6 +304,9 @@ EOF
 }
 EOF
     fi
+}
+
+generate_outbounds_and_experimental_jsons() {
     #生成add_outbounds.json
     grep -qE '"tag": "DIRECT"' "$TMPDIR"/jsons/outbounds.json || add_direct='{ "tag": "DIRECT", "type": "direct" }'
     grep -qE '"tag": "REJECT"' "$TMPDIR"/jsons/outbounds.json || add_reject='{ "tag": "REJECT", "type": "block" }'
@@ -325,6 +340,9 @@ EOF
   }
 }
 EOF
+}
+
+generate_custom_rules_json() {
     #生成自定义规则文件
     [ -n "$(grep -Ev ^# "$CRASHDIR"/yamls/rules.yaml 2>/dev/null)" ] && {
         cat "$CRASHDIR"/yamls/rules.yaml |
@@ -348,6 +366,9 @@ EOF
             sed '$s/,$/ ] } }/' >"$TMPDIR"/jsons/cust_add_rules.json
         [ ! -s "$TMPDIR"/jsons/cust_add_rules.json ] && rm -rf "$TMPDIR"/jsons/cust_add_rules.json
     }
+}
+
+normalize_and_finalize_jsons() {
     #清理route.json中的process_name规则以及"auto_detect_interface"
     sed -i '/"process_name": \[/,/],$/d' "$TMPDIR"/jsons/route.json
     sed -i '/"process_name": "[^"]*",/d' "$TMPDIR"/jsons/route.json
@@ -367,6 +388,9 @@ EOF
             rm -rf "$TMPDIR"/jsons/${file}.json
         fi
     done
+}
+
+link_custom_jsons() {
     #加载自定义配置文件
     mkdir -p "$TMPDIR"/jsons_base
     #以下为覆盖脚本的自定义文件
@@ -382,6 +406,9 @@ EOF
             ln -sf "$CRASHDIR"/jsons/${char}.json "$TMPDIR"/jsons/cust_${char}.json
         }
     done
+}
+
+validate_and_restore_custom_jsons() {
     #测试自定义配置文件
     if ! error=$("$TMPDIR"/CrashCore check -D "$BINDIR" -C "$TMPDIR"/jsons 2>&1); then
         echo $error
@@ -393,6 +420,19 @@ EOF
         rm -rf "$TMPDIR"/jsons/cust_*
         mv -f "$TMPDIR"/jsons_base/* "$TMPDIR"/jsons 2>/dev/null
     fi
+}
+
+modify_json() {
+    extract_base_jsons
+    generate_basic_jsons
+    prepare_dns_config
+    generate_dns_related_jsons
+    generate_route_and_inbounds_jsons
+    generate_outbounds_and_experimental_jsons
+    generate_custom_rules_json
+    normalize_and_finalize_jsons
+    link_custom_jsons
+    validate_and_restore_custom_jsons
     #清理缓存
     rm -rf "$TMPDIR"/*.json
     rm -rf "$TMPDIR"/jsons_base

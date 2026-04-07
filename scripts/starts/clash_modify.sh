@@ -1,8 +1,7 @@
 #!/bin/sh
 # Copyright (C) Juewuy
 
-#修饰clash配置文件
-modify_yaml() {
+prepare_clash_base_config() {
     ##########需要变更的配置###########
     [ "$ipv6_dns" != "OFF" ] && dns_v6='true' || dns_v6='false'
     external="external-controller: 0.0.0.0:$db_port"
@@ -69,6 +68,9 @@ EOF
     #域名嗅探配置
     [ "$sniffer" = "ON" ] && [ "$crashcore" = "meta" ] && sniffer_set="sniffer: {enable: true, parse-pure-ip: true, skip-domain: ['+.push.apple.com', 'Mijia Cloud'], sniff: {http: {ports: [80, 8080-8880], override-destination: true}, tls: {ports: [443, 8443]}, quic: {ports: [443, 8443]}}}"
     [ "$crashcore" = "clashpre" ] && [ "$dns_mod" = "redir_host" -o "$sniffer" = "ON" ] && exper="experimental: {ignore-resolve-fail: true, interface-name: en0,sniff-tls-sni: true}"
+}
+
+generate_set_and_hosts_yaml() {
     #生成set.yaml
     cat >"$TMPDIR"/set.yaml <<EOF
 mixed-port: $mix_port
@@ -114,6 +116,9 @@ EOF
                 echo "  '$hosts_domain': $hosts_ip" >>"$TMPDIR"/hosts.yaml
         done
     fi
+}
+
+split_and_customize_yaml_parts() {
     #分割配置文件
     yaml_char='proxies proxy-groups proxy-providers rules rule-providers sub-rules listeners'
     for char in $yaml_char; do
@@ -173,6 +178,9 @@ EOF
             IFS="$oldIFS"
         done
     }
+}
+
+add_custom_inbounds_and_rules() {
     #添加自定义入站
     [ "$vms_service" = ON ] || [ "$sss_service" = ON ] && {
         . "$CRASHDIR"/configs/gateway.cfg
@@ -193,6 +201,9 @@ EOF
         cat "$TMPDIR"/rules.yaml >>"$TMPDIR"/rules.add
         mv -f "$TMPDIR"/rules.add "$TMPDIR"/rules.yaml
     }
+}
+
+generate_rule_providers_and_merge_yaml() {
     #mix和route模式生成rule-providers
     [ "$dns_mod" = "mix" ] || [ "$dns_mod" = "route" ] && ! grep -Eq '^[[:space:]]*cn:' "$TMPDIR"/rule-providers.yaml && ! grep -q '^rule-providers' "$CRASHDIR"/yamls/others.yaml 2>/dev/null && {
         space=$(sed -n "1p" "$TMPDIR"/rule-providers.yaml | grep -oE '^ *') #获取空格数
@@ -222,6 +233,9 @@ EOF
     done
     #合并完整配置文件
     cut -c 1- "$TMPDIR"/set.yaml $yaml_dns $yaml_hosts $yaml_user $yaml_others $yaml_add >"$TMPDIR"/config.yaml
+}
+
+validate_and_rebuild_yaml_if_needed() {
     #测试自定义配置文件
     "$TMPDIR"/CrashCore -t -d "$BINDIR" -f "$TMPDIR"/config.yaml >/dev/null
     if [ "$?" != 0 ]; then
@@ -235,10 +249,24 @@ EOF
         cut -c 1- "$TMPDIR"/set.yaml $yaml_dns $yaml_add >"$TMPDIR"/config.yaml
         sed -i "/#自定义/d" "$TMPDIR"/config.yaml
     fi
+}
+
+finalize_clash_yaml() {
     #建立软连接
     [ ""$TMPDIR"" = ""$BINDIR"" ] || ln -sf "$TMPDIR"/config.yaml "$BINDIR"/config.yaml 2>/dev/null || cp -f "$TMPDIR"/config.yaml "$BINDIR"/config.yaml
     #清理缓存
     for char in $yaml_char set set_bak dns hosts; do
         rm -f "$TMPDIR"/${char}.yaml
     done
+}
+
+#修饰clash配置文件
+modify_yaml() {
+    prepare_clash_base_config
+    generate_set_and_hosts_yaml
+    split_and_customize_yaml_parts
+    add_custom_inbounds_and_rules
+    generate_rule_providers_and_merge_yaml
+    validate_and_rebuild_yaml_if_needed
+    finalize_clash_yaml
 }
