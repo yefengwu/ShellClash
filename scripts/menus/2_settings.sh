@@ -203,8 +203,8 @@ settings() {
             exit 0
             ;;
         b)
-            comp_box "1) $SET_LANG_ZH" \
-                "2) $SET_LANG_EN" \
+            comp_box "1) 简体中文" \
+                "2) English" \
                 "" \
                 "0) $COMMON_BACK"
             read -r -p "$COMMON_INPUT> " num

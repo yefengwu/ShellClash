@@ -4,7 +4,26 @@
 [ -n "$__IS_MODULE_USERGUIDE_LOADED" ] && return
 __IS_MODULE_USERGUIDE_LOADED=1
 
-load_lang userguide
+. "$CRASHDIR"/libs/check_dir_avail.sh
+
+select_lang() {
+	line_break
+	comp_box "1) 简体中文" \
+		"2) English"
+	read -r -p "请选择语言 Please choose your language > " num
+	case "$num" in
+	1)
+		echo chs >"$CRASHDIR"/configs/i18n.cfg
+		;;
+	2)
+		echo en >"$CRASHDIR"/configs/i18n.cfg
+		;;
+	esac
+	line_break
+	load_lang menu
+	load_lang common
+	load_lang userguide
+}
 
 forwhat() {
     while true; do
@@ -89,7 +108,9 @@ forwhat() {
 
 # 新手引导
 userguide() {
-    . "$CRASHDIR"/libs/check_dir_avail.sh
+
+	select_lang
+    
     forwhat
 
     # 检测小内存模式
