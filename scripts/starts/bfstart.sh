@@ -79,7 +79,7 @@ EOF
 [ ! -d "$BINDIR"/ui ] && mkdir -p "$BINDIR"/ui
 [ -z "$crashcore" ] && crashcore=meta
 #执行条件任务
-[ -s "$CRASHDIR"/task/bfstart ] && . "$CRASHDIR"/task/bfstart
+[ -s "$TASKCFGDIR"/bfstart ] && . "$TASKCFGDIR"/bfstart
 #检查内核配置文件
 if [ ! -f "$core_config" ]; then
     if [ -n "$Url" -o -n "$Https" ]; then
@@ -144,4 +144,3 @@ fi
 rm -rf /tmp/ShellCrash/debug.log
 rm -rf "$CRASHDIR"/debug.log
 exit 0
-

@@ -22,8 +22,10 @@ grep -qE '/(docker|lxc|kubepods|crio|containerd)/' /proc/1/cgroup 2>/dev/null ||
 [ "$systype" = 'container' ] && CRASHDIR='/etc/ShellCrash'
 [ -z "$CRASHDIR" ] && [ -n "$clashdir" ] && CRASHDIR="$clashdir"
 [ -z "$CRASHDIR" ] && [ -d /tmp/SC_tmp ] && . /tmp/SC_tmp/menus/set_crashdir.sh && set_crashdir
+TASKCFGDIR="$CRASHDIR"/configs/task
 #移动文件
 mkdir -p "$CRASHDIR"
+mkdir -p "$TASKCFGDIR"
 rm -rf /tmp/SC_tmp/menus/set_crashdir.sh
 mv -f /tmp/SC_tmp/* "$CRASHDIR" 2>/dev/null
 ##############################
@@ -189,6 +191,15 @@ done
 [ ! -L "$CRASHDIR"/config.yaml ] && mv -f "$CRASHDIR"/config.yaml "$CRASHDIR"/yamls/config.yaml 2>/dev/null
 for file in fake_ip_filter mac web_save servers_chs.list servers_en.list fake_ip_filter.list singbox_providers.list clash_providers.list; do
     mv -f "$CRASHDIR"/"$file" "$CRASHDIR"/configs/"$file" 2>/dev/null
+done
+#迁移任务状态文件到新目录
+for file in cron bfstart afstart running affirewall task.user; do
+    mv -f "$CRASHDIR"/"$file" "$TASKCFGDIR"/"$file" 2>/dev/null
+    mv -f "$CRASHDIR"/task/"$file" "$TASKCFGDIR"/"$file" 2>/dev/null
+done
+#修正旧版防火墙注入路径
+for file in /etc/init.d/firewall /etc/init.d/firewall.bak; do
+    [ -f "$file" ] && sed -i "s#$CRASHDIR/task/affirewall#$TASKCFGDIR/affirewall#g" "$file" 2>/dev/null
 done
 #配置文件改名
 mv -f "$CRASHDIR"/configs/ShellClash.cfg "$CFG_PATH" 2>/dev/null

@@ -11,7 +11,7 @@ getlanip() { #获取局域网host地址
                     ip -6 addr show dev $iface 2>/dev/null
                 done | grep 'scope global' | awk '{print $2}' | tr '\n' ' ' | sed 's/ $//'
             )
-			[ -z "$host_ipv6" ] && host_ipv6=$(ip -6 route show | grep -Ev 'default|unreachable|fe80::/|wan|ppp|utun|iot|peer|docker|podman|virbr|vnet|ovs|vmbr|veth|vmnic|vboxnet|lxcbr|xenbr|vEthernet' | awk '{print $1}' | tr '\n' ' ' | sed 's/ $//')
+			[ -z "$host_ipv6" ] && host_ipv6=$(ip -6 route show | grep -Ev 'default|unreachable|fe80::/|wan|ppp|utun|iot|peer|docker|podman|virbr|vnet|ovs|vmbr|veth|vmnic|vboxnet|lxcbr|xenbr|vEthernet|multicast|anycast' | awk '{print $1}' | tr '\n' ' ' | sed 's/ $//')
         }
         [ -f "$TMPDIR"/ShellCrash.log ] && break
         [ -n "$host_ipv4" -a "$ipv6_redir" != "ON" ] && break
