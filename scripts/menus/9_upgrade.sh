@@ -409,7 +409,7 @@ setcustcore() {
             "3) \033[36mSagerNet/sing-box\033[32m@release\033[0m$UPG_CUSTOM_CORE_MENU_OFFICIAL" \
             "4) \033[36mDustinWin/mihomo\033[0m$UPG_CUSTOM_CORE_MENU_MULTI" \
             "5) \033[36mDustinWin/sing-boxr\033[0m$UPG_CUSTOM_CORE_MENU_MULTI" \
-            "$UPG_CORE_MENU_9" \
+            "9) $UPG_CUSTOM_CORE_LINK_MENU" \
             "" \
             "0) $COMMON_BACK"
         read -r -p "$COMMON_INPUT> " num
