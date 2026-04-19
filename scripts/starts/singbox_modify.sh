@@ -189,8 +189,8 @@ EOF
         "routing_mark": $routing_mark
       },
       {
-        "tag": "dns_oix",
-        "type": "udp", "server": "124.221.68.73", "server_port": 1053,
+        "tag": "dns_proxy_server",
+        $(parse_singbox_dns "$dns_proxy_server")
         "routing_mark": $routing_mark
       }
     ],

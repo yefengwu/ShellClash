@@ -185,13 +185,17 @@ set_dns_adv() {
             "PROXY-DNS：" \
             "\033[36m$dns_fallback\033[0m" \
             "" \
-            "DEFAULT-DNS：" \
+            "RESOLVER-DNS：" \
             "\033[33m$dns_resolver\033[0m" \
+            "" \
+            "PROXY-SERVER-DNS：" \
+            "\033[33m$dns_proxy_server\033[0m" \
             ""
         btm_box "1) $DNS_ADV_EDIT_DIRECT" \
             "2) $DNS_ADV_EDIT_PROXY" \
-            "3) $DNS_ADV_EDIT_DEFAULT" \
-            "4) \033[32m$DNS_ADV_AUTO_ENCRYPT\033[0m" \
+            "3) $DNS_ADV_EDIT_RESOLVER" \
+			"4) $DNS_ADV_EDIT_PROXY_SERVER" \
+            "5) \033[32m$DNS_ADV_AUTO_ENCRYPT\033[0m" \
             "9) \033[33m$DNS_ADV_RESET\033[0m" \
             "" \
             "0) $COMMON_BACK"
@@ -201,9 +205,9 @@ set_dns_adv() {
             break
             ;;
         1)
-            comp_box "$DNS_DIRECT_NOW\033[32m$dns_nameserver\033[0m"
-            btm_box "\033[36m$DNS_INPUT_DIRECT_NEW\033[0m" \
-                "$DNS_INPUT_DIRECT_RESET" \
+            comp_box "$DNS_NOW\033[32m$dns_nameserver\033[0m"
+            btm_box "\033[36m$DNS_INPUT_NEW\033[0m" \
+                "$DNS_INPUT_RESET" \
                 "$DNS_INPUT_REDIR_BACK"
             read -r -p "$DNS_INPUT> " res
             case "$res" in
@@ -227,9 +231,9 @@ set_dns_adv() {
             esac
             ;;
         2)
-            comp_box "$DNS_PROXY_NOW\033[32m$dns_fallback\033[0m"
-            btm_box "\033[36m$DNS_INPUT_PROXY_NEW\033[0m" \
-                "$DNS_INPUT_PROXY_RESET" \
+            comp_box "$DNS_NOW\033[32m$dns_fallback\033[0m"
+            btm_box "\033[36m$DNS_INPUT_NEW\033[0m" \
+                "$DNS_INPUT_RESET" \
                 "$DNS_INPUT_REDIR_BACK"
             read -r -p "$DNS_INPUT> " res
             case "$res" in
@@ -253,9 +257,9 @@ set_dns_adv() {
             esac
             ;;
         3)
-            comp_box "$DNS_DEFAULT_NOW\033[32m$dns_resolver\033[0m"
-            btm_box "\033[36m$DNS_INPUT_DEFAULT_NEW\033[0m" \
-                "$DNS_INPUT_DEFAULT_RESET" \
+            comp_box "$DNS_NOW\033[32m$dns_resolver\033[0m"
+            btm_box "\033[36m$DNS_INPUT_NEW\033[0m" \
+                "$DNS_INPUT_RESET" \
                 "$DNS_INPUT_REDIR_BACK"
             separator_line "="
             read -r -p "$DNS_INPUT> " res
@@ -266,7 +270,7 @@ set_dns_adv() {
             "r")
                 dns_resolver="223.5.5.5, 2400:3200::1"
                 setconfig dns_resolver "'$dns_resolver'"
-                common_failed
+                common_success
                 ;;
             *)
                 if echo "$res" | grep -qE '://.*::'; then
@@ -280,6 +284,33 @@ set_dns_adv() {
             esac
             ;;
         4)
+            comp_box "$DNS_NOW\033[32m$dns_proxy_server\033[0m"
+            btm_box "\033[36m$DNS_INPUT_NEW\033[0m" \
+                "$DNS_INPUT_RESET" \
+                "$DNS_INPUT_REDIR_BACK"
+            separator_line "="
+            read -r -p "$DNS_INPUT> " res
+            case "$res" in
+            0)
+                continue
+                ;;
+            "r")
+                dns_proxy_server="$dns_resolver"
+                setconfig dns_proxy_server "'$dns_proxy_server'"
+                common_success
+                ;;
+            *)
+                if echo "$res" | grep -qE '://.*::'; then
+                    msg_alert "\033[31m$DNS_IPV6_NOT_SUPPORT\033[0m"
+                else
+                    dns_proxy_server=$(echo "$res" | sed 's#|#,\ #g')
+                    setconfig dns_proxy_server "'$dns_proxy_server'"
+                    msg_alert "\033[32m$COMMON_SUCCESS\033[0m"
+                fi
+                ;;
+            esac
+            ;;
+		5)
             line_break
             separator_line "="
             if echo "$crashcore" | grep -qE 'meta|singbox'; then
