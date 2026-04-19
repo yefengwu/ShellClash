@@ -7,10 +7,13 @@
 . "$CRASHDIR"/libs/compare.sh
 . "$CRASHDIR"/libs/set_config.sh
 . "$CRASHDIR"/libs/logger.sh
+. "$CRASHDIR"/libs/i18n.sh
 
-update_servers() { #更新servers.list
-    get_bin "$TMPDIR"/servers.list public/servers.list
-    [ "$?" = 0 ] && mv -f "$TMPDIR"/servers.list "$CRASHDIR"/configs/servers.list
+load_lang
+
+update_servers() { #更新servers_${i18n}.list
+    get_bin "$TMPDIR"/servers_${i18n}.list public/servers_${i18n}.list
+    [ "$?" = 0 ] && mv -f "$TMPDIR"/servers_${i18n}.list "$CRASHDIR"/configs/servers_${i18n}.list
 }
 gen_ua(){  #自动生成ua
     [ -z "$user_agent" -o "$user_agent" = "auto" ] && {
@@ -26,10 +29,10 @@ gen_ua(){  #自动生成ua
 }
 get_core_config() { #下载内核配置文件
     [ -z "$rule_link" ] && rule_link=1
-    [ -z "$server_link" ] || [ $server_link -gt $(grep -aE '^4' "$CRASHDIR"/configs/servers.list | wc -l) ] && server_link=1
-    Server=$(grep -aE '^3|^4' "$CRASHDIR"/configs/servers.list | sed -n ""$server_link"p" | awk '{print $3}')
-    Server_ua=$(grep -aE '^4' "$CRASHDIR"/configs/servers.list | sed -n ""$server_link"p" | awk '{print $4}')
-    Config=$(grep -aE '^5' "$CRASHDIR"/configs/servers.list | sed -n ""$rule_link"p" | awk '{print $3}')
+    [ -z "$server_link" ] || [ $server_link -gt $(grep -aE '^4' "$CRASHDIR"/configs/servers_${i18n}.list | wc -l) ] && server_link=1
+    Server=$(grep -aE '^3|^4' "$CRASHDIR"/configs/servers_${i18n}.list | sed -n ""$server_link"p" | awk '{print $3}')
+    Server_ua=$(grep -aE '^4' "$CRASHDIR"/configs/servers_${i18n}.list | sed -n ""$server_link"p" | awk '{print $4}')
+    Config=$(grep -aE '^5' "$CRASHDIR"/configs/servers_${i18n}.list | sed -n ""$rule_link"p" | awk '{print $3}')
     gen_ua
     #如果传来的是Url链接则合成Https链接，否则直接使用Https链接
     if [ -z "$Https" ]; then
