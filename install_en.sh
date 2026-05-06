@@ -3,7 +3,7 @@
 
 echo "***********************************************"
 echo "**               Welcome to                  **"
-echo "**                ShellCrash                 **"
+echo "**               ShellCrash                  **"
 echo "**                             by  Juewuy    **"
 echo "***********************************************"
 
