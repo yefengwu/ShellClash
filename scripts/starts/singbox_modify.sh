@@ -92,10 +92,11 @@ EOF
     ],
     "rules": [
       {
-        "ip_accept_any": true,
+        "preferred_by": [ "hosts" ],
         "server": "hosts"
       }
-    ]}
+    ]
+  }
 }
 EOF
     fi
@@ -153,7 +154,7 @@ generate_dns_related_jsons() {
         "format": "binary",
         $srs_path
         "url": "https://testingcf.jsdelivr.net/gh/DustinWin/ruleset_geodata@sing-box-ruleset/cn.srs",
-        "download_detour": "DIRECT"
+        "http_client": "detour_direct"
       }
     ]
   }
@@ -325,6 +326,21 @@ generate_outbounds_and_experimental_jsons() {
   ]
 }
 EOF
+    #生成http_clients.json
+    cat >"$TMPDIR"/jsons/http_clients.json <<EOF
+{
+  "http_clients": [
+    {
+      "tag": "detour_proxy",
+      "detour": "GLOBAL"
+    },
+    {
+      "tag": "detour_direct",
+      "detour": "DIRECT"
+    }
+  ]
+}
+EOF
     #生成experimental.json
     [ "$crashcore" = "singboxr" ] && urltest_unified_delay=',"urltest_unified_delay": true'
     cat >"$TMPDIR"/jsons/experimental.json <<EOF
@@ -394,7 +410,7 @@ link_custom_jsons() {
     #加载自定义配置文件
     mkdir -p "$TMPDIR"/jsons_base
     #以下为覆盖脚本的自定义文件
-    for char in log dns ntp certificate experimental; do
+    for char in log dns ntp certificate http_clients experimental; do
         [ -s "$CRASHDIR"/jsons/${char}.json ] && {
             ln -sf "$CRASHDIR"/jsons/${char}.json "$TMPDIR"/jsons/cust_${char}.json
             mv -f "$TMPDIR"/jsons/${char}.json "$TMPDIR"/jsons_base #如果重复则临时备份
