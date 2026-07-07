@@ -4,6 +4,7 @@ crondir="$(crond -h 2>&1 | grep -oE 'Default:.*' | awk -F ":" '{print $2}'| tr -
 [ ! -w "$crondir" ] && crondir="/var/spool/cron/crontabs"
 [ ! -w "$crondir" ] && crondir="/var/spool/cron"
 [ -z "$USER" ] && USER=$(whoami 2>/dev/null)
+[ -z "$TASKCFGDIR" ] && TASKCFGDIR="$CRASHDIR"/configs/task
 tmpcron=/tmp/cron_tmp
 touch "$tmpcron"
 
@@ -32,7 +33,8 @@ cronset() { #定时任务设置
     cronadd "$tmpcron"
     #华硕/Padavan固件存档在本地,其他则删除
     if [ -d /jffs ] || [ -d /etc/storage/ShellCrash ];then
-        mv -f "$tmpcron" "$CRASHDIR"/task/cron
+        mkdir -p "$TASKCFGDIR"
+        mv -f "$tmpcron" "$TASKCFGDIR"/cron
     else
         rm -f "$tmpcron"
     fi

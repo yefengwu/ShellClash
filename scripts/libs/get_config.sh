@@ -1,5 +1,6 @@
 
 # 检查配置文件
+[ -z "$TASKCFGDIR" ] && TASKCFGDIR="$CRASHDIR"/configs/task
 [ -f "$CRASHDIR"/configs/ShellCrash.cfg ] || . "$CRASHDIR"/init.sh >/dev/null 2>&1
 . "$CRASHDIR"/configs/command.env >/dev/null 2>&1
 . "$CRASHDIR"/configs/ShellCrash.cfg
@@ -20,3 +21,4 @@ routing_mark=$((fwmark + 2))
 }
 [ -z "$dns_fallback" ] && dns_fallback="1.1.1.1, 8.8.8.8"
 [ -z "$dns_resolver" ] && dns_resolver="223.5.5.5, 2400:3200::1"
+[ -z "$dns_proxy_server" ] && dns_proxy_server="$dns_resolver"

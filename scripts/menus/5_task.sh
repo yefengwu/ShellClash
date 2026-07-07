@@ -7,6 +7,7 @@ __IS_MODULE_5_TASK_LOADED=1
 # 通用工具
 . "$CRASHDIR"/libs/set_config.sh
 . "$CRASHDIR"/libs/set_cron.sh
+[ -z "$TASKCFGDIR" ] && TASKCFGDIR="$CRASHDIR"/configs/task
 
 load_lang 5_task
 
@@ -32,7 +33,8 @@ set_cron() {
 
 set_service() {
     # 参数1代表要任务类型,参数2代表任务ID,参数3代表任务描述,参数4代表running任务cron时间
-    task_file="$CRASHDIR"/task/$1
+    mkdir -p "$TASKCFGDIR"
+    task_file="$TASKCFGDIR"/$1
     [ -s "$task_file" ] && sed -i "/$3/d" "$task_file"
     # 运行时每分钟执行的任务特殊处理
     if [ "$1" = "running" ]; then
@@ -53,7 +55,7 @@ task_user_add() {
     while true; do
         comp_box "\033[33m$TASK5_USER_ADD_HINT1\033[0m" \
             "\033[36m$TASK5_USER_ADD_HINT2\033[0m" \
-            "$TASK5_USER_ADD_HINT3\033[32m${CRASHDIR}/task/task.user\033[0m$TASK5_USER_ADD_HINT4"
+            "$TASK5_USER_ADD_HINT3\033[32m${TASKCFGDIR}/task.user\033[0m$TASK5_USER_ADD_HINT4"
         btm_box "\033[36m$TASK5_INPUT_CMD\033[0m" \
             "$TASK5_OR_BACK"
         read -r -p "$TASK5_INPUT> " script
@@ -63,12 +65,12 @@ task_user_add() {
             task_command=$script
             comp_box "$TASK5_CHECK_INPUT\033[32m$task_command\033[0m"
             # 获取本任务ID
-            task_max_id=$(awk -F '#' '{print $1}' "$CRASHDIR"/task/task.user 2>/dev/null | sort -n | tail -n 1)
+            task_max_id=$(awk -F '#' '{print $1}' "$TASKCFGDIR"/task.user 2>/dev/null | sort -n | tail -n 1)
             [ -z "$task_max_id" ] && task_max_id=200
             task_id=$((task_max_id + 1))
             read -r -p "$TASK5_INPUT_REMARK> " txt
             [ -n "$txt" ] && task_name=$txt || task_name="$TASK5_CUSTOM_TASK$task_id"
-            echo "$task_id#$task_command#$task_name" >>"$CRASHDIR"/task/task.user
+            echo "$task_id#$task_command#$task_name" >>"$TASKCFGDIR"/task.user
             msg_alert "\033[32m$TASK5_CUSTOM_ADDED\033[0m"
             break
         else
@@ -80,10 +82,10 @@ task_user_add() {
 # 自定义命令删除
 task_user_del() {
     while true; do
-        if grep -Evq '^#' "$CRASHDIR/task/task.user" 2>/dev/null; then
+        if grep -Evq '^#' "$TASKCFGDIR/task.user" 2>/dev/null; then
             comp_box "$TASK5_USER_DEL_HINT1" \
-                "$TASK5_USER_DEL_HINT2\033[32m${CRASHDIR}/task/task.user\033[0m"
-            grep -Ev '^#' "$CRASHDIR/task/task.user" 2>/dev/null |
+                "$TASK5_USER_DEL_HINT2\033[32m${TASKCFGDIR}/task.user\033[0m"
+            grep -Ev '^#' "$TASKCFGDIR/task.user" 2>/dev/null |
                 awk -F '#' '{print $1") "$3}' |
                 while IFS= read -r line; do
                     content_line "$line"
@@ -94,7 +96,7 @@ task_user_del() {
             if [ "$num" = 0 ]; then
                 break
             elif [ -n "$num" ]; then
-                sed -i "/^$num#/d" "$CRASHDIR"/task/task.user 2>/dev/null
+                sed -i "/^$num#/d" "$TASKCFGDIR"/task.user 2>/dev/null
                 common_success
             else
                 msg_alert "\033[31m$TASK5_INPUT_ERROR\033[0m"
@@ -111,7 +113,7 @@ task_add() {
     while true; do
         comp_box "\033[36m$TASK5_SELECT_ADD\033[0m"
         # 输出任务列表
-        list=$(cat "$CRASHDIR"/task/task_${i18n}.list "$CRASHDIR"/task/task.user 2>/dev/null | grep -Ev '^(#|$)' | awk -F '#' '{print $3}')
+        list=$(cat "$CRASHDIR"/task/task_${i18n}.list "$TASKCFGDIR"/task.user 2>/dev/null | grep -Ev '^(#|$)' | awk -F '#' '{print $3}')
         list_box "$list"
         btm_box "" \
             "0) $COMMON_BACK"
@@ -122,8 +124,8 @@ task_add() {
             ;;
         [1-9] | [1-9][0-9])
             if [ "$num" -le "$(echo "$list" | wc -l)" ]; then
-                task_id=$(cat "$CRASHDIR"/task/task_${i18n}.list "$CRASHDIR"/task/task.user 2>/dev/null | grep -Ev '^(#|$)' | sed -n "$num p" | awk -F '#' '{print $1}')
-                task_name=$(cat "$CRASHDIR"/task/task_${i18n}.list "$CRASHDIR"/task/task.user 2>/dev/null | grep -Ev '^(#|$)' | sed -n "$num p" | awk -F '#' '{print $3}')
+                task_id=$(cat "$CRASHDIR"/task/task_${i18n}.list "$TASKCFGDIR"/task.user 2>/dev/null | grep -Ev '^(#|$)' | sed -n "$num p" | awk -F '#' '{print $1}')
+                task_name=$(cat "$CRASHDIR"/task/task_${i18n}.list "$TASKCFGDIR"/task.user 2>/dev/null | grep -Ev '^(#|$)' | sed -n "$num p" | awk -F '#' '{print $3}')
                 task_type
                 break
             else
@@ -142,11 +144,11 @@ task_del() {
     # 删除定时任务
     cronset "$1"
     # 删除条件任务
-    sed -i "/$1/d" "$CRASHDIR"/task/cron 2>/dev/null
-    sed -i "/$1/d" "$CRASHDIR"/task/bfstart 2>/dev/null
-    sed -i "/$1/d" "$CRASHDIR"/task/afstart 2>/dev/null
-    sed -i "/$1/d" "$CRASHDIR"/task/running 2>/dev/null
-    sed -i "/$1/d" "$CRASHDIR"/task/affirewall 2>/dev/null
+    sed -i "/$1/d" "$TASKCFGDIR"/cron 2>/dev/null
+    sed -i "/$1/d" "$TASKCFGDIR"/bfstart 2>/dev/null
+    sed -i "/$1/d" "$TASKCFGDIR"/afstart 2>/dev/null
+    sed -i "/$1/d" "$TASKCFGDIR"/running 2>/dev/null
+    sed -i "/$1/d" "$TASKCFGDIR"/affirewall 2>/dev/null
 }
 
 # 任务条件选择菜单
@@ -244,8 +246,8 @@ task_manager() {
     while true; do
         # 抽取并生成临时列表
         cronload >"$TMPDIR"/task_cronlist
-        cat "$TMPDIR"/task_cronlist "$CRASHDIR"/task/running 2>/dev/null | sort -u | grep -oE "task/task.sh .*" | cut -d ' ' -f 2- >"$TMPDIR"/task_list
-        cat "$CRASHDIR"/task/bfstart "$CRASHDIR"/task/afstart "$CRASHDIR"/task/affirewall 2>/dev/null | cut -d ' ' -f 2- >>"$TMPDIR"/task_list
+        cat "$TMPDIR"/task_cronlist "$TASKCFGDIR"/running 2>/dev/null | sort -u | grep -oE "task/task.sh .*" | cut -d ' ' -f 2- >"$TMPDIR"/task_list
+        cat "$TASKCFGDIR"/bfstart "$TASKCFGDIR"/afstart "$TASKCFGDIR"/affirewall 2>/dev/null | cut -d ' ' -f 2- >>"$TMPDIR"/task_list
         cat "$TMPDIR"/task_cronlist 2>/dev/null | sort -u | grep -oE " #.*" | grep -v "$TASK5_GUARD_WORD" | awk -F '#' '{print "0 '$TASK5_OLD_PREFIX'"$2}' >>"$TMPDIR"/task_list
         sed -i '/^ *$/d' "$TMPDIR"/task_list
         rm -rf "$TMPDIR"/task_cronlist
@@ -286,13 +288,13 @@ task_manager() {
                     if [ "$res" = 1 ]; then
                         cronname=$(echo "$task_txt" | awk -F '-' '{print $2}')
                         cronset "$cronname"
-                        sed -i "/$cronname/d" "$CRASHDIR"/task/cron 2>/dev/null
+                        sed -i "/$cronname/d" "$TASKCFGDIR"/cron 2>/dev/null
 
                         break
                     fi
                 else
                     task_des=$(echo "$task_txt" | awk '{print $2}')
-                    task_name=$(cat "$CRASHDIR"/task/task_${i18n}.list "$CRASHDIR"/task/task.user 2>/dev/null | grep "$task_id" | awk -F '#' '{print $3}')
+                    task_name=$(cat "$CRASHDIR"/task/task_${i18n}.list "$TASKCFGDIR"/task.user 2>/dev/null | grep "$task_id" | awk -F '#' '{print $3}')
                     comp_box "$TASK5_CURRENT_TASK\033[36m$task_des\033[0m"
                     btm_box "1) $TASK5_EDIT_TASK" \
                         "2) $TASK5_DEL_TASK" \
@@ -313,7 +315,7 @@ task_manager() {
                         common_success
                         ;;
                     3)
-                        task_command=$(cat "$CRASHDIR"/task/task_${i18n}.list "$CRASHDIR"/task/task.user 2>/dev/null | grep "$task_id" | awk -F '#' '{print $2}')
+                        task_command=$(cat "$CRASHDIR"/task/task_${i18n}.list "$TASKCFGDIR"/task.user 2>/dev/null | grep "$task_id" | awk -F '#' '{print $2}')
                         eval "$task_command" && task_res="$TASK5_RUN_OK" || task_res="$TASK5_RUN_FAIL"
                         msg_alert "\033[33m$TASK5_TASK_PREFIX$task_des】$task_res\033[0m"
                         ;;
@@ -367,7 +369,8 @@ task_recom() {
 task_menu() {
     while true; do
         # 检测并创建自定义任务文件
-        [ -f "$CRASHDIR"/task/task.user ] || echo "$TASK5_USER_FILE_HEADER" >"$CRASHDIR"/task/task.user
+        mkdir -p "$TASKCFGDIR"
+        [ -f "$TASKCFGDIR"/task.user ] || echo "$TASK5_USER_FILE_HEADER" >"$TASKCFGDIR"/task.user
         comp_box "\033[30;47m$TASK5_MENU_TITLE\033[0m"
         btm_box "1) $TASK5_MENU_1" \
             "2) $TASK5_MENU_2" \

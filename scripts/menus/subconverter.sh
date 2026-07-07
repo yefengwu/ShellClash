@@ -124,7 +124,7 @@ gen_link_config() {
     content_line ""
     common_back
     read -r -p "$COMMON_INPUT> " num
-    totalnum=$(grep -acE '^5' "$CRASHDIR"/configs/servers.list)
+    totalnum=$(grep -acE '^5' "$CRASHDIR"/configs/servers_"$i18n".list)
     if [ -z "$num" ] || [ "$num" -gt "$totalnum" ]; then
         errornum
     elif [ "$num" = 0 ]; then
@@ -153,7 +153,7 @@ gen_link_server() {
     content_line ""
     common_back
     read -r -p "$COMMON_INPUT> " num
-    totalnum=$(grep -acE '^3|^4' "$CRASHDIR"/configs/servers.list)
+    totalnum=$(grep -acE '^3|^4' "$CRASHDIR"/configs/servers_"$i18n".list)
     if [ -z "$num" ] || [ "$num" -gt "$totalnum" ]; then
         errornum
     elif [ "$num" = 0 ]; then
