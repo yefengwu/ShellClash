@@ -540,7 +540,7 @@ EOF
 # s自定义singbox配置文件
 set_singbox_adv() {
     comp_box "\033[33m$OVR_SING_TITLE1\033[0m" \
-        "\033[36mlog dns ntp certificate experimental\033[0m" \
+        "\033[36mlog dns ntp certificate http_clients experimental\033[0m" \
         "\033[33m$OVR_SING_TITLE2\033[0m" \
         "\033[36mendpoints inbounds outbounds providers route services\033[0m" \
         "$OVR_SING_TITLE3" \

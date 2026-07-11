@@ -92,10 +92,11 @@ EOF
     ],
     "rules": [
       {
-        "ip_accept_any": true,
+        "preferred_by": [ "hosts" ],
         "server": "hosts"
       }
-    ]}
+    ]
+  }
 }
 EOF
     fi
@@ -153,7 +154,7 @@ generate_dns_related_jsons() {
         "format": "binary",
         $srs_path
         "url": "https://testingcf.jsdelivr.net/gh/DustinWin/ruleset_geodata@sing-box-ruleset/cn.srs",
-        "download_detour": "DIRECT"
+        "http_client": "detour_direct"
       }
     ]
   }
@@ -217,7 +218,8 @@ EOF
 generate_route_and_inbounds_jsons() {
     #生成add_route.json
     #域名嗅探配置
-    [ "$sniffer" != OFF ] && sniffer_set='{ "domain_suffix": [ "push.apple.com" ], "rule_set": [ "telegramip" ], "domain": [ "Mijia Cloud" ], "invert": true, "action": "sniff", "timeout": "500ms" },'
+    grep -q 'telegramip' "$TMPDIR"/jsons/route.json && telegramip_set=' "rule_set": [ "telegramip" ],'
+    [ "$sniffer" != OFF ] && sniffer_set='{ "domain_suffix": [ "push.apple.com" ],'"$telegramip_set"' "domain": [ "Mijia Cloud" ], "invert": true, "action": "sniff", "timeout": "500ms" },'
     [ "$ts_service" = ON ] && tailscale_set='{ "inbound": [ "ts-ep" ], "port": 53, "action": "hijack-dns" },'
     cat >"$TMPDIR"/jsons/add_route.json <<EOF
 {
@@ -225,9 +227,9 @@ generate_route_and_inbounds_jsons() {
     "default_domain_resolver": "dns_resolver",
     "default_mark": $routing_mark,
     "rules": [
-      { "inbound": [ "dns-in" ], "action": "hijack-dns" },
       $tailscale_set
       $sniffer_set
+      { "inbound": [ "dns-in" ], "action": "hijack-dns" },
       { "clash_mode": "Direct" , "outbound": "DIRECT" },
       { "clash_mode": "Global" , "outbound": "GLOBAL" }
     ]
@@ -325,6 +327,21 @@ generate_outbounds_and_experimental_jsons() {
   ]
 }
 EOF
+    #生成http_clients.json
+    cat >"$TMPDIR"/jsons/http_clients.json <<EOF
+{
+  "http_clients": [
+    {
+      "tag": "detour_proxy",
+      "detour": "GLOBAL"
+    },
+    {
+      "tag": "detour_direct",
+      "detour": "DIRECT"
+    }
+  ]
+}
+EOF
     #生成experimental.json
     [ "$crashcore" = "singboxr" ] && urltest_unified_delay=',"urltest_unified_delay": true'
     cat >"$TMPDIR"/jsons/experimental.json <<EOF
@@ -394,7 +411,7 @@ link_custom_jsons() {
     #加载自定义配置文件
     mkdir -p "$TMPDIR"/jsons_base
     #以下为覆盖脚本的自定义文件
-    for char in log dns ntp certificate experimental; do
+    for char in log dns ntp certificate http_clients experimental; do
         [ -s "$CRASHDIR"/jsons/${char}.json ] && {
             ln -sf "$CRASHDIR"/jsons/${char}.json "$TMPDIR"/jsons/cust_${char}.json
             mv -f "$TMPDIR"/jsons/${char}.json "$TMPDIR"/jsons_base #如果重复则临时备份
