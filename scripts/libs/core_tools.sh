@@ -2,12 +2,18 @@
 
 [ -n "$(find --help 2>&1 | grep -o size)" ] && find_para=' -size +2000'             #find命令兼容
 
-#$TMPDIR为内存(tmpfs)且$BINDIR在透明压缩文件系统(squashfs/ubifs/overlay)上时返回0
-#此类设备应把裸二进制存于$BINDIR(rom透明压缩)并软链，而非解压/memfd占用内存
-store_on_rom(){
+#根据环境权衡决定是否把裸二进制存于$BINDIR(rom)——省RAM，前提是rom装得下
+#$1=裸二进制字节数。仅当$TMPDIR在内存(tmpfs)时裸存才省RAM；
+#再按$BINDIR文件系统估算裸二进制落盘体积(透明压缩fs约2:1)，需留有余量($raw_margin,默认8M)
+store_raw_worth_it(){
     case "$(df -T "$TMPDIR" 2>/dev/null | awk 'END{print $2}')" in tmpfs|ramfs) ;; *) return 1 ;; esac
-    case "$(df -T "$BINDIR" 2>/dev/null | awk 'END{print $2}')" in squashfs|ubifs|overlay|overlayfs) return 0 ;; esac
-    return 1
+    rom_free=$(df -k "$BINDIR" 2>/dev/null | awk 'END{print $4}')          #KB
+    [ -z "$rom_free" ] && return 1
+    case "$(df -T "$BINDIR" 2>/dev/null | awk 'END{print $2}')" in
+        squashfs|ubifs|overlay|overlayfs) est=$(( ${1:-0}/1024/2 )) ;;    #透明压缩，约2:1
+        *) est=$(( ${1:-0}/1024 )) ;;                                     #无压缩，全量
+    esac
+    [ $(( rom_free - est )) -gt "${raw_margin:-8192}" ] && return 0 || return 1
 }
 
 core_unzip() { #$1:需要解压的文件 $2:目标文件名
@@ -60,7 +66,7 @@ core_check(){
             mv -f "$1" "$BINDIR/CrashCore.upx"
             rm -f "$TMPDIR"/core_new
             ln -sf "$BINDIR/CrashCore.upx" "$TMPDIR/CrashCore"
-        elif store_on_rom ;then
+        elif store_raw_worth_it "$(wc -c < "$TMPDIR/core_new")" ;then
             rm -f "$1"
             mv -f "$TMPDIR/core_new" "$BINDIR/CrashCore.raw"
             ln -sf "$BINDIR/CrashCore.raw" "$TMPDIR/CrashCore"
@@ -84,8 +90,8 @@ core_webget(){
     . "$CRASHDIR"/libs/check_target.sh
     if [ -z "$custcorelink" ];then
         [ -z "$zip_type" ] && zip_type='tar.gz'
-        #压缩rom+内存tmp设备避免下载upx(运行时memfd占RAM)，改取tar.gz的裸二进制存于rom
-        [ "$zip_type" = 'upx' ] && store_on_rom && zip_type='tar.gz'
+        #若环境适合裸存(见store_raw_worth_it，按典型核心~45M估算)，避免下载upx，改取tar.gz的裸二进制
+        [ "$zip_type" = 'upx' ] && store_raw_worth_it 47185920 && zip_type='tar.gz'
         get_bin "$TMPDIR/Coretmp.$zip_type" "bin/$crashcore/${target}-linux-${cpucore}.$zip_type"
     else
         case "$custcorelink" in
