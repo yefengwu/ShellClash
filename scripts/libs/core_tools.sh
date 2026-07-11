@@ -14,6 +14,8 @@ core_unzip() { #$1:需要解压的文件 $2:目标文件名
         rm -rf "$TMPDIR"/core_tmp
     elif echo "$1" |grep -q '.gz$' ;then
         gunzip -c "$1" > "$TMPDIR"/"$2"
+    elif echo "$1" |grep -q '.raw$' ;then
+        ln -sf "$1" "$TMPDIR"/"$2"
     elif echo "$1" |grep -q '.upx$' ;then
         ln -sf "$1" "$TMPDIR"/"$2"
     else
@@ -45,16 +47,27 @@ core_check(){
         rm -rf "$1" "$TMPDIR"/core_new
         return 2
     else
-        rm -f "$BINDIR"/CrashCore.tar.gz "$BINDIR"/CrashCore.gz "$BINDIR"/CrashCore.upx
-        if [ -z "$zip_type" ];then
+        rm -f "$BINDIR"/CrashCore.tar.gz "$BINDIR"/CrashCore.gz "$BINDIR"/CrashCore.upx "$BINDIR"/CrashCore.raw
+        #$TMPDIR为内存(tmpfs)且$BINDIR为透明压缩文件系统(squashfs/ubifs)时，直接以裸二进制存于$BINDIR并软链，省内存
+        store_raw=0
+        tmp_fs=$(df -T "$TMPDIR" 2>/dev/null | awk 'END{print $2}')
+        rom_fs=$(df -T "$BINDIR" 2>/dev/null | awk 'END{print $2}')
+        case "$tmp_fs" in tmpfs|ramfs)
+            case "$rom_fs" in squashfs|ubifs|overlay|overlayfs) store_raw=1 ;; esac ;;
+        esac
+        if [ "$zip_type" = 'upx' ];then
+            mv -f "$1" "$BINDIR/CrashCore.upx"
+            rm -f "$TMPDIR"/core_new
+            ln -sf "$BINDIR/CrashCore.upx" "$TMPDIR/CrashCore"
+        elif [ "$store_raw" = 1 ];then
+            rm -f "$1"
+            mv -f "$TMPDIR/core_new" "$BINDIR/CrashCore.raw"
+            ln -sf "$BINDIR/CrashCore.raw" "$TMPDIR/CrashCore"
+        elif [ -z "$zip_type" ];then
             gzip -c "$TMPDIR/core_new" > "$BINDIR/CrashCore.gz"
+            mv -f "$TMPDIR/core_new" "$TMPDIR/CrashCore"
         else
             mv -f "$1" "$BINDIR/CrashCore.$zip_type"
-        fi
-        if [ "$zip_type" = 'upx' ];then
-            rm -f "$1" "$TMPDIR"/core_new
-            ln -sf "$TMPDIR/CrashCore.upx" "$TMPDIR/CrashCore"
-        else
             mv -f "$TMPDIR/core_new" "$TMPDIR/CrashCore"
         fi
         core_v="$v"
