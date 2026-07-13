@@ -72,7 +72,22 @@ start_ipt_route() { #iptables-route通用工具
             done
         fi
         #将所在链指定流量指向shellcrash表
-        "$1" $w -t "$2" -I "$3" -p "$5" $ports -j "$4"
+        if [ -n "$ports" ]; then
+            clean_ports=$(echo "$multiport" | sed 's/ //g')
+            echo "$clean_ports" | awk -F, '{
+                for(i=1; i<=NF; i+=9) {
+                    group=""
+                    for(j=i; j<i+9 && j<=NF; j++) {
+                        group=(group == "" ? $j : group "," $j)
+                    }
+                    print group
+                }
+            }' | while read -r port_group; do
+                [ -n "$port_group" ] && "$1" $w -t "$2" -I "$3" -p "$5" -m multiport --dports "$port_group" -j "$4"
+            done
+        else
+            "$1" $w -t "$2" -I "$3" -p "$5" -j "$4"
+        fi
         [ "$dns_mod" = "mix" -o "$dns_mod" = "fake-ip" ] && [ "$common_ports" = "ON" ] && [ "$1" = iptables ] && "$1" $w -t "$2" -I "$3" -p "$5" -d 28.0.0.0/8 -j "$4"
         [ "$dns_mod" = "mix" -o "$dns_mod" = "fake-ip" ] && [ "$common_ports" = "ON" ] && [ "$1" = ip6tables ] && "$1" $w -t "$2" -I "$3" -p "$5" -d fc00::/16 -j "$4"
     }

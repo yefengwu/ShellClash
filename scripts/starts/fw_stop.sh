@@ -20,24 +20,44 @@ ckcmd iptables && {
     $iptable -t nat -D PREROUTING -p udp --dport 53 -j shellcrash_dns 2>/dev/null
     $iptable -t nat -D OUTPUT -p udp --dport 53 -j shellcrash_dns_out 2>/dev/null
     $iptable -t nat -D OUTPUT -p tcp --dport 53 -j shellcrash_dns_out 2>/dev/null
+    if [ -n "$ports" ]; then
+        clean_ports=$(echo "$multiport" | sed 's/ //g')
+        echo "$clean_ports" | awk -F, '{
+            for(i=1; i<=NF; i+=9) {
+                group=""; for(j=i; j<i+9 && j<=NF; j++) group=(group == "" ? $j : group "," $j)
+                print group
+            }
+        }' | while read -r port_group; do
+            if [ -n "$port_group" ]; then
+                $iptable -t nat -D PREROUTING -p tcp -m multiport --dports "$port_group" -j shellcrash 2>/dev/null
+                $iptable -t nat -D OUTPUT -p tcp -m multiport --dports "$port_group" -j shellcrash_out 2>/dev/null
+                $iptable -t nat -D PREROUTING -p tcp -m multiport --dports "$port_group" -j shellcrash_vm 2>/dev/null
+                $iptable -t mangle -D PREROUTING -p tcp -m multiport --dports "$port_group" -j shellcrash_mark 2>/dev/null
+                $iptable -t mangle -D PREROUTING -p udp -m multiport --dports "$port_group" -j shellcrash_mark 2>/dev/null
+                $iptable -t mangle -D OUTPUT -p tcp -m multiport --dports "$port_group" -j shellcrash_mark_out 2>/dev/null
+                $iptable -t mangle -D OUTPUT -p udp -m multiport --dports "$port_group" -j shellcrash_mark_out 2>/dev/null
+            fi
+        done
+    else
+        $iptable -t nat -D PREROUTING -p tcp -j shellcrash 2>/dev/null
+        $iptable -t nat -D OUTPUT -p tcp -j shellcrash_out 2>/dev/null
+        $iptable -t nat -D PREROUTING -p tcp -j shellcrash_vm 2>/dev/null
+        $iptable -t mangle -D PREROUTING -p tcp -j shellcrash_mark 2>/dev/null
+        $iptable -t mangle -D PREROUTING -p udp -j shellcrash_mark 2>/dev/null
+        $iptable -t mangle -D OUTPUT -p tcp -j shellcrash_mark_out 2>/dev/null
+        $iptable -t mangle -D OUTPUT -p udp -j shellcrash_mark_out 2>/dev/null
+    fi
     #redir
-    $iptable -t nat -D PREROUTING -p tcp $ports -j shellcrash 2>/dev/null
     $iptable -t nat -D PREROUTING -p tcp -d 28.0.0.0/8 -j shellcrash 2>/dev/null
-    $iptable -t nat -D OUTPUT -p tcp $ports -j shellcrash_out 2>/dev/null
     $iptable -t nat -D OUTPUT -p tcp -d 28.0.0.0/8 -j shellcrash_out 2>/dev/null
     #vm_dns
     $iptable -t nat -D PREROUTING -p tcp --dport 53 -j shellcrash_vm_dns 2>/dev/null
     $iptable -t nat -D PREROUTING -p udp --dport 53 -j shellcrash_vm_dns 2>/dev/null
     #vm_redir
-    $iptable -t nat -D PREROUTING -p tcp $ports -j shellcrash_vm 2>/dev/null
     $iptable -t nat -D PREROUTING -p tcp -d 28.0.0.0/8 -j shellcrash_vm 2>/dev/null
     #TPROXY&tun
-    $iptable -t mangle -D PREROUTING -p tcp $ports -j shellcrash_mark 2>/dev/null
-    $iptable -t mangle -D PREROUTING -p udp $ports -j shellcrash_mark 2>/dev/null
     $iptable -t mangle -D PREROUTING -p tcp -d 28.0.0.0/8 -j shellcrash_mark 2>/dev/null
     $iptable -t mangle -D PREROUTING -p udp -d 28.0.0.0/8 -j shellcrash_mark 2>/dev/null
-    $iptable -t mangle -D OUTPUT -p tcp $ports -j shellcrash_mark_out 2>/dev/null
-    $iptable -t mangle -D OUTPUT -p udp $ports -j shellcrash_mark_out 2>/dev/null
     $iptable -t mangle -D OUTPUT -p tcp -d 28.0.0.0/8 -j shellcrash_mark_out 2>/dev/null
     $iptable -t mangle -D OUTPUT -p udp -d 28.0.0.0/8 -j shellcrash_mark_out 2>/dev/null
     $iptable -t mangle -D PREROUTING -m mark --mark $fwmark -p tcp -j TPROXY --on-port $tproxy_port 2>/dev/null
@@ -73,20 +93,39 @@ ckcmd ip6tables && {
     #dns
     $ip6table -t nat -D PREROUTING -p tcp --dport 53 -j shellcrashv6_dns 2>/dev/null
     $ip6table -t nat -D PREROUTING -p udp --dport 53 -j shellcrashv6_dns 2>/dev/null
+    if [ -n "$ports" ]; then
+        clean_ports=$(echo "$multiport" | sed 's/ //g')
+        echo "$clean_ports" | awk -F, '{
+            for(i=1; i<=NF; i+=9) {
+                group=""; for(j=i; j<i+9 && j<=NF; j++) group=(group == "" ? $j : group "," $j)
+                print group
+            }
+        }' | while read -r port_group; do
+            if [ -n "$port_group" ]; then
+                $ip6table -t nat -D PREROUTING -p tcp -m multiport --dports "$port_group" -j shellcrashv6 2>/dev/null
+                $ip6table -t nat -D OUTPUT -p tcp -m multiport --dports "$port_group" -j shellcrashv6_out 2>/dev/null
+                $ip6table -t mangle -D PREROUTING -p tcp -m multiport --dports "$port_group" -j shellcrashv6_mark 2>/dev/null
+                $ip6table -t mangle -D PREROUTING -p udp -m multiport --dports "$port_group" -j shellcrashv6_mark 2>/dev/null
+                $ip6table -t mangle -D OUTPUT -p tcp -m multiport --dports "$port_group" -j shellcrashv6_mark_out 2>/dev/null
+                $ip6table -t mangle -D OUTPUT -p udp -m multiport --dports "$port_group" -j shellcrashv6_mark_out 2>/dev/null
+            fi
+        done
+    else
+        $ip6table -t nat -D PREROUTING -p tcp -j shellcrashv6 2>/dev/null
+        $ip6table -t nat -D OUTPUT -p tcp -j shellcrashv6_out 2>/dev/null
+        $ip6table -t mangle -D PREROUTING -p tcp -j shellcrashv6_mark 2>/dev/null
+        $ip6table -t mangle -D PREROUTING -p udp -j shellcrashv6_mark 2>/dev/null
+        $ip6table -t mangle -D OUTPUT -p tcp -j shellcrashv6_mark_out 2>/dev/null
+        $ip6table -t mangle -D OUTPUT -p udp -j shellcrashv6_mark_out 2>/dev/null
+    fi
     #redir
-    $ip6table -t nat -D PREROUTING -p tcp $ports -j shellcrashv6 2>/dev/null
     $ip6table -t nat -D PREROUTING -p tcp -d fc00::/16 -j shellcrashv6 2>/dev/null
-    $ip6table -t nat -D OUTPUT -p tcp $ports -j shellcrashv6_out 2>/dev/null
     $ip6table -t nat -D OUTPUT -p tcp -d fc00::/16 -j shellcrashv6_out 2>/dev/null
     $ip6table -D INPUT -p tcp --dport 53 -j REJECT 2>/dev/null
     $ip6table -D INPUT -p udp --dport 53 -j REJECT 2>/dev/null
     #mark
-    $ip6table -t mangle -D PREROUTING -p tcp $ports -j shellcrashv6_mark 2>/dev/null
-    $ip6table -t mangle -D PREROUTING -p udp $ports -j shellcrashv6_mark 2>/dev/null
     $ip6table -t mangle -D PREROUTING -p tcp -d fc00::/16 -j shellcrashv6_mark 2>/dev/null
     $ip6table -t mangle -D PREROUTING -p udp -d fc00::/16 -j shellcrashv6_mark 2>/dev/null
-    $ip6table -t mangle -D OUTPUT -p tcp $ports -j shellcrashv6_mark_out 2>/dev/null
-    $ip6table -t mangle -D OUTPUT -p udp $ports -j shellcrashv6_mark_out 2>/dev/null
     $ip6table -t mangle -D OUTPUT -p tcp -d fc00::/16 -j shellcrashv6_mark_out 2>/dev/null
     $ip6table -t mangle -D OUTPUT -p udp -d fc00::/16 -j shellcrashv6_mark_out 2>/dev/null
     $ip6table -D INPUT -p udp --dport 443 $set_cn_ip -j REJECT 2>/dev/null
