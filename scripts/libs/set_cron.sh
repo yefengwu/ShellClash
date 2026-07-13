@@ -11,7 +11,7 @@ touch "$tmpcron"
 cronadd() { #定时任务工具
     if crontab -h 2>&1 | grep -q '\-l'; then
         crontab "$1"
-    elif [ -f "$crondir/$USER" ];then
+    elif [ -w "$crondir" ];then
         cat "$1" >"$crondir"/"$USER" && cru a REFRESH "0 0 1 1 * /bin/true" 2>/dev/null
     else
         echo "找不到可用的crond或者crontab应用！No available crond or crontab application can be found!"
