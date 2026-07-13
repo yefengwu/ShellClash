@@ -2,7 +2,7 @@ getlanip() { #获取局域网host地址
     i=1
     while [ "$i" -le "20" ]; do
         #ipv4局域网网段
-        host_ipv4=$(ip route show scope link | grep -Ev 'wan|utun|iot|peer|docker|podman|virbr|vnet|ovs|vmbr|veth|vmnic|vboxnet|lxcbr|xenbr|vEthernet|wgs|multicast|anycast' | awk '{print $1}')
+        host_ipv4=$(ip route show scope link | grep -Ev 'default|wan|utun|iot|peer|docker|podman|virbr|vnet|ovs|vmbr|veth|vmnic|vboxnet|lxcbr|xenbr|vEthernet|wgs|multicast|anycast' | awk '{print $1}')
         #ipv6局域网网段 - 从IPv4已识别的LAN接口获取全局IPv6前缀
         [ "$ipv6_redir" = "ON" ] && {
             lan_ifaces=$(ip route show scope link | grep -Ev 'ppp|wan|utun|iot|peer|docker|podman|virbr|vnet|ovs|vmbr|veth|vmnic|vboxnet|lxcbr|xenbr|vEthernet|wgs|multicast|anycast' | awk '{for(i=1;i<=NF;i++) if($i=="dev") {print $(i+1); break}}' | grep -v '^lo$' | sort -u)
