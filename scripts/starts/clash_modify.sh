@@ -37,7 +37,7 @@ dns:
   default-nameserver: [ $dns_resolver ]
   direct-nameserver: [ $dns_nameserver ]
   enhanced-mode: fake-ip
-  fake-ip-range: 28.0.0.0/8
+  fake-ip-range: 198.18.0.0/15
   fake-ip-range6: fc00::/16
   fake-ip-filter:
 EOF

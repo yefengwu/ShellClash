@@ -193,7 +193,7 @@ EOF
       {
         "tag": "dns_fakeip",
         "type": "fakeip",
-        "inet4_range": "28.0.0.0/8",
+        "inet4_range": "198.18.0.0/15",
         "inet6_range": "fc00::/16"
       },
       {
@@ -309,7 +309,7 @@ EOF
       "interface_name": "utun",
       "address": [
         $ipv6_address
-        "28.0.0.1/30"
+        "198.18.0.1/15"
       ],
       "auto_route": false,
       "stack": "system"

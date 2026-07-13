@@ -38,12 +38,12 @@ start_nft_route() { #nftables-route通用工具
     [ -z "$ports" ] && nft add rule inet shellcrash $1 tcp dport {"$mix_port, $redir_port, $tproxy_port"} return
     #过滤常用端口
     [ -n "$PORTS" ] && {
-        nft add rule inet shellcrash $1 ip daddr != {28.0.0.0/8} tcp dport != {$PORTS} return
-        nft add rule inet shellcrash $1 ip daddr != {28.0.0.0/8} udp dport != {$PORTS} return
+        nft add rule inet shellcrash $1 ip daddr != {198.18.0.0/15} tcp dport != {$PORTS} return
+        nft add rule inet shellcrash $1 ip daddr != {198.18.0.0/15} udp dport != {$PORTS} return
         nft add rule inet shellcrash $1 ip6 daddr != {fc00::/16} tcp dport != {$PORTS} return
         nft add rule inet shellcrash $1 ip6 daddr != {fc00::/16} udp dport != {$PORTS} return
     }
-    #nft add rule inet shellcrash $1 ip saddr 28.0.0.0/8 return
+    #nft add rule inet shellcrash $1 ip saddr 198.18.0.0/15 return
     nft add rule inet shellcrash $1 ip daddr {$RESERVED_IP} return #过滤保留地址
     #过滤局域网设备
     [ "$1" = 'prerouting' ] && {

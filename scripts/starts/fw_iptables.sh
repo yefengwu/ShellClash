@@ -88,7 +88,7 @@ start_ipt_route() { #iptables-route通用工具
         else
             "$1" $w -t "$2" -I "$3" -p "$5" -j "$4"
         fi
-        [ "$dns_mod" = "mix" -o "$dns_mod" = "fake-ip" ] && [ "$common_ports" = "ON" ] && [ "$1" = iptables ] && "$1" $w -t "$2" -I "$3" -p "$5" -d 28.0.0.0/8 -j "$4"
+        [ "$dns_mod" = "mix" -o "$dns_mod" = "fake-ip" ] && [ "$common_ports" = "ON" ] && [ "$1" = iptables ] && "$1" $w -t "$2" -I "$3" -p "$5" -d 198.18.0.0/15 -j "$4"
         [ "$dns_mod" = "mix" -o "$dns_mod" = "fake-ip" ] && [ "$common_ports" = "ON" ] && [ "$1" = ip6tables ] && "$1" $w -t "$2" -I "$3" -p "$5" -d fc00::/16 -j "$4"
     }
     [ "$5" = "tcp" -o "$5" = "all" ] && proxy_set "$1" "$2" "$3" "$4" tcp
