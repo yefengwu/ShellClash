@@ -129,7 +129,7 @@ web_save_auto(){
     . "$CRASHDIR"/libs/web_save.sh && web_save
 }
 update_config() { #更新订阅并重启
-    . "$CRASHDIR"/starts/core_config.sh && get_core_config && "$CRASHDIR"/start.sh start
+    . "$CRASHDIR"/starts/core_config.sh get_core_config && "$CRASHDIR"/start.sh start
 }
 hotupdate() { #热更新订阅
     . "$CRASHDIR"/starts/core_config.sh && get_core_config &&
