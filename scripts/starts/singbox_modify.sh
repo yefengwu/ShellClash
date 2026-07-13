@@ -55,6 +55,14 @@ extract_base_jsons() {
 }
 
 generate_basic_jsons() {
+	#适配1.14+版本
+	if [ "$(printf '%s' "$core_v" | cut -d. -f2)" -lt 14 ];then
+		preferred='"ip_accept_any": true,'
+		detour_direct='"download_detour": "DIRECT"'
+	else
+		preferred='"preferred_by": [ "hosts" ],'
+		detour_direct='"http_client": "detour_direct"'
+	fi
     #生成endpoints.json
     [ "$ts_service" = ON ] || [ "$wg_service" = ON ] && [ "$zip_type" != upx ] && {
         . "$CRASHDIR"/configs/gateway.cfg
@@ -92,7 +100,7 @@ EOF
     ],
     "rules": [
       {
-        "preferred_by": [ "hosts" ],
+        $preferred
         "server": "hosts"
       }
     ]
@@ -158,7 +166,7 @@ generate_dns_related_jsons() {
         "format": "binary",
         $srs_path
         "url": "https://testingcf.jsdelivr.net/gh/DustinWin/ruleset_geodata@sing-box-ruleset/cn.srs",
-        "http_client": "detour_direct"
+        $detour_direct
       }
     ]
   }
