@@ -625,6 +625,8 @@ set_firewall_vm() {
             common_success
         else
             msg_alert "\033[33m$VM_NO_NET_DETECTED\033[0m"
+			set_firewall_vm
+			return
         fi
 
         ;;
@@ -639,16 +641,12 @@ set_firewall_vm() {
     3)
         vm_redir=OFF
         vm_ipv4=''
-        common_success
         ;;
-    *) ;;
+    *) return ;;
     esac
-    case "$num" in
-    1-3)
-        setconfig vm_redir "$vm_redir"
-        setconfig vm_ipv4 "'$vm_ipv4'"
-        ;;
-    esac
+	common_success
+	setconfig vm_redir "$vm_redir"
+	setconfig vm_ipv4 "'$vm_ipv4'"
 }
 
 # ipv6设置
