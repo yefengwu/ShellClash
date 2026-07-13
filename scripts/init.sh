@@ -22,6 +22,7 @@ grep -qE '/(docker|lxc|kubepods|crio|containerd)/' /proc/1/cgroup 2>/dev/null ||
 [ "$systype" = 'container' ] && CRASHDIR='/etc/ShellCrash'
 [ -z "$CRASHDIR" ] && [ -n "$clashdir" ] && CRASHDIR="$clashdir"
 [ -z "$CRASHDIR" ] && [ -d /tmp/SC_tmp ] && . /tmp/SC_tmp/menus/set_crashdir.sh && set_crashdir
+CRASHDIR=$(echo "$CRASHDIR" | sed 's#/*$##') #删除末尾的/
 TASKCFGDIR="$CRASHDIR"/configs/task
 #移动文件
 mkdir -p "$CRASHDIR"
