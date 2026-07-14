@@ -52,6 +52,8 @@ extract_base_jsons() {
         cat "$TMPDIR"/format.json | sed -n '/^  "providers":/,/^  "[a-z]/p' | sed '$d' >>"$TMPDIR"/jsons/providers.json
     }
     cat "$TMPDIR"/format.json | sed -n '/"route":/,/^\(  "[a-z]\|}\)/p' | sed '$d' >>"$TMPDIR"/jsons/route.json
+	#清理PASS规则
+    sed -i 's/"PASS"/"DIRECT"/g' "$TMPDIR"/jsons/outbounds.json
 }
 
 generate_basic_jsons() {
@@ -62,6 +64,21 @@ generate_basic_jsons() {
 	else
 		preferred='"preferred_by": [ "hosts" ],'
 		detour_direct='"http_client": "detour_direct"'
+		#生成http_clients.json
+		cat >"$TMPDIR"/jsons/http_clients.json <<EOF
+	{
+	  "http_clients": [
+		{
+		  "tag": "detour_proxy",
+		  "detour": "GLOBAL"
+		},
+		{
+		  "tag": "detour_direct",
+		  "detour": "DIRECT"
+		}
+	  ]
+	}
+EOF
 	fi
     #生成endpoints.json
     [ "$ts_service" = ON ] || [ "$wg_service" = ON ] && [ "$zip_type" != upx ] && {
@@ -140,7 +157,7 @@ prepare_dns_config() {
         [ -n "$fake_ip_filter_domain" ] && fake_ip_filter_domain="{ \"domain\": [$fake_ip_filter_domain], \"server\": \"dns_direct\" },"
         [ -n "$fake_ip_filter_suffix" ] && fake_ip_filter_suffix="{ \"domain_suffix\": [$fake_ip_filter_suffix], \"server\": \"dns_direct\" },"
         [ -n "$fake_ip_filter_regex" ] && fake_ip_filter_regex="{ \"domain_regex\": [$fake_ip_filter_regex], \"server\": \"dns_direct\" },"
-        proxy_dns='{ "query_type": ["A", "AAAA"], "server": "dns_fakeip", "strategy": "'"$strategy"'", "rewrite_ttl": 1 }'
+        proxy_dns='{ "query_type": ["A", "AAAA"], "server": "dns_fakeip", "rewrite_ttl": 1 }'
         #mix模式插入fakeip过滤规则
         [ "$dns_mod" = "mix" ] && direct_dns='{ "rule_set": ["cn"], "server": "dns_direct" },'
     }
@@ -208,18 +225,17 @@ EOF
       }
     ],
     "rules": [
-      { "clash_mode": "Direct", "server": "dns_direct", "strategy": "$strategy" },
-      { "domain_suffix": ["services.googleapis.cn"], "server": "dns_fakeip", "strategy": "$strategy", "rewrite_ttl": 1 },
+      { "clash_mode": "Direct", "server": "dns_direct" },
+      { "domain_suffix": ["services.googleapis.cn"], "server": "dns_fakeip", "rewrite_ttl": 1 },
       $fake_ip_filter_domain
       $fake_ip_filter_suffix
       $fake_ip_filter_regex
-      { "clash_mode": "Global", "query_type": ["A", "AAAA"], "server": "$global_dns", "strategy": "$strategy", "rewrite_ttl": 1 },
+      { "clash_mode": "Global", "query_type": ["A", "AAAA"], "server": "$global_dns", "rewrite_ttl": 1 },
       $direct_dns
       $proxy_dns
     ],
     "final": "dns_proxy",
     "strategy": "$strategy",
-    "independent_cache": true,
     $client_subnet
     "reverse_mapping": true
   }
@@ -339,21 +355,7 @@ generate_outbounds_and_experimental_jsons() {
   ]
 }
 EOF
-    #生成http_clients.json
-    cat >"$TMPDIR"/jsons/http_clients.json <<EOF
-{
-  "http_clients": [
-    {
-      "tag": "detour_proxy",
-      "detour": "GLOBAL"
-    },
-    {
-      "tag": "detour_direct",
-      "detour": "DIRECT"
-    }
-  ]
-}
-EOF
+
     #生成experimental.json
     [ "$crashcore" = "singboxr" ] && urltest_unified_delay=',"urltest_unified_delay": true'
     cat >"$TMPDIR"/jsons/experimental.json <<EOF
@@ -401,7 +403,7 @@ normalize_and_finalize_jsons() {
     #清理route.json中的process_name规则以及"auto_detect_interface"
     sed -i '/"process_name": \[/,/],$/d' "$TMPDIR"/jsons/route.json
     sed -i '/"process_name": "[^"]*",/d' "$TMPDIR"/jsons/route.json
-    sed -i 's/"auto_detect_interface": true/"auto_detect_interface": false/g' "$TMPDIR"/jsons/route.json
+	sed -i 's/"auto_detect_interface": true/"auto_detect_interface": false/g' "$TMPDIR"/jsons/route.json
     #跳过本地tls证书验证
     if [ "$skip_cert" != "OFF" ]; then
         sed -i 's/"insecure": false/"insecure": true/' "$TMPDIR"/jsons/outbounds.json "$TMPDIR"/jsons/providers.json 2>/dev/null
