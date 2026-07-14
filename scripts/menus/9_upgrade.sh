@@ -447,6 +447,12 @@ setcustcore() {
             crashcore=singboxr
             checkcustcore
             ;;
+        6)
+            project=vernesong/mihomo-oix
+            api_tag=Pre-Alpha
+            crashcore=meta
+            checkcustcore
+            ;;
         9)
             comp_box "$UPG_CUSTOM_CORE_LINK_HINT" \
                 "$UPG_CUSTOM_CORE_LINK_HINT2" \
