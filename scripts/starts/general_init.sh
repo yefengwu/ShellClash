@@ -27,5 +27,6 @@ set_profile "$profile"
 if [ -f "$CRASHDIR"/.dis_startup ] || [ -f "$CRASHDIR"/.start_error ];then
     cronset "保守模式守护进程"
 else
+	echo 0 > /proc/sys/vm/overcommit_memory #优化系统默认内存检测机制
     "$CRASHDIR"/start.sh start
 fi
