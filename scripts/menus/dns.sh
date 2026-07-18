@@ -101,7 +101,7 @@ set_dns_mod() {
                             common_success
                             break
                         else
-                            msg_alert
+                            msg_alert "\033[33m$DNS_REDIR_NO_SERVICE\033[0m"
                         fi
                     else
                         errornum
