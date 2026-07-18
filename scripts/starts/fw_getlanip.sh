@@ -30,7 +30,7 @@ getlanip() { #获取局域网host地址
         [ -n "$wg_ipv6" ] && wg_host_ipv6=' $wg_ipv6'
     }
     #添加自定义ipv4局域网网段
-    if [ "$replace_default_host_ipv4" == "ON" ]; then
+    if [ "$replace_default_host_ipv4" = "ON" ]; then
         host_ipv4="$cust_host_ipv4"
     else
         host_ipv4=$(echo "$host_ipv4 $cust_host_ipv4$ts_host_ipv4$wg_host_ipv4" | tr '\n' ' ' | sed 's/ $//')
