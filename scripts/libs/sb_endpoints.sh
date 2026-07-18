@@ -4,6 +4,8 @@
 [ "$ts_service" = ON ] && ! grep -q '"tailscale"' "$CRASHDIR"/jsons/endpoints.json 2>/dev/null && {
     [ "$ts_subnet" = true ] && {
         . "$CRASHDIR"/starts/fw_getlanip.sh && getlanip
+        # 给没有 CIDR 前缀的裸 IP 补 /32
+        host_ipv4=$(echo $host_ipv4 | awk '{for(i=1;i<=NF;i++){if($i !~ /\//){$i=$i"/32"}} print}')
         advertise_routes=$(echo "$host_ipv4"|sed 's/[[:space:]]\+/", "/g; s/^/"/; s/$/"/')
     }
     [ -z "$ts_exit_node" ] && ts_exit_node=false
