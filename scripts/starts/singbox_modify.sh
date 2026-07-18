@@ -1,8 +1,9 @@
 #!/bin/sh
 # Copyright (C) Juewuy
 
- #修饰singbox配置文件
-parse_singbox_dns() { #dns转换
+#修饰singbox配置文件
+
+parse_singbox_dns() { #dns转换工具
     first_dns=$(echo "$1" | cut -d',' -f1 | cut -d' ' -f1)
     type=""
     server=""
@@ -41,8 +42,8 @@ parse_singbox_dns() { #dns转换
     # 输出
     echo '"type": "'"$type"'", "server": "'"$server"'", "server_port": '"$port"','
 }
-extract_base_jsons() {
-    #提取配置文件以获得outbounds.json,providers.json及route.json
+
+extract_base_jsons() { #提取配置文件以获得outbounds.json,providers.json及route.json
     "$TMPDIR"/CrashCore format -c $core_config >"$TMPDIR"/format.json
     echo '{' >"$TMPDIR"/jsons/outbounds.json
     echo '{' >"$TMPDIR"/jsons/route.json
@@ -127,7 +128,7 @@ EOF
     fi
 }
 
-prepare_dns_config() {
+gen_dns() {
     #生成dns.json
     [ "$ipv6_dns" != "OFF" ] && strategy='prefer_ipv4' || strategy='ipv4_only'
     #获取detour出口
@@ -167,9 +168,6 @@ prepare_dns_config() {
     }
     #防泄露设置
     [ "$dns_protect" = "OFF" ] && sed -i 's/"server": "dns_proxy"/"server": "dns_direct"/g' "$TMPDIR"/jsons/route.json
-}
-
-generate_dns_related_jsons() {
     #生成add_rule_set.json
     [ "$dns_mod" = "mix" ] || [ "$dns_mod" = "route" ] && ! grep -Eq '"tag" *:[[:space:]]*"cn"' "$CRASHDIR"/jsons/*.json && {
         [ "$crashcore" = "singboxr" ] && srs_path='"path": "./ruleset/cn.srs",'
@@ -243,7 +241,7 @@ EOF
 EOF
 }
 
-generate_route_and_inbounds_jsons() {
+gen_outbounds() {
     #生成add_route.json
     #域名嗅探配置
     grep -q 'telegramip' "$TMPDIR"/jsons/route.json && telegramip_set=' "rule_set": [ "telegramip" ],'
@@ -264,7 +262,9 @@ generate_route_and_inbounds_jsons() {
   }
 }
 EOF
-    #生成certificate.json
+}
+
+gen_certificate() { #生成certificate.json
     cat >"$TMPDIR"/jsons/certificate.json <<EOF
 {
   "certificate": {
@@ -272,7 +272,9 @@ EOF
   }
 }
 EOF
-    #生成inbounds.json
+}
+
+gen_inbounds() { #生成inbounds.json
     [ -n "$authentication" ] && {
         username=$(echo $authentication | awk -F ':' '{print $1}') #混合端口账号密码
         password=$(echo $authentication | awk -F ':' '{print $2}')
@@ -336,8 +338,7 @@ EOF
     fi
 }
 
-generate_outbounds_and_experimental_jsons() {
-    #生成add_outbounds.json
+add_outbounds() { #生成add_outbounds.json
     grep -qE '"tag": "DIRECT"' "$TMPDIR"/jsons/outbounds.json || add_direct='{ "tag": "DIRECT", "type": "direct" }'
     grep -qE '"tag": "REJECT"' "$TMPDIR"/jsons/outbounds.json || add_reject='{ "tag": "REJECT", "type": "block" }'
     grep -qE '"tag": "GLOBAL"' "$TMPDIR"/jsons/outbounds.json || {
@@ -355,8 +356,9 @@ generate_outbounds_and_experimental_jsons() {
   ]
 }
 EOF
+}
 
-    #生成experimental.json
+gen_experimental() { #生成experimental.json
     [ "$crashcore" = "singboxr" ] && urltest_unified_delay=',"urltest_unified_delay": true'
     cat >"$TMPDIR"/jsons/experimental.json <<EOF
 {
@@ -373,8 +375,7 @@ EOF
 EOF
 }
 
-generate_custom_rules_json() {
-    #生成自定义规则文件
+generate_custom_rules_json() { #生成自定义规则文件
     [ -n "$(grep -Ev ^# "$CRASHDIR"/yamls/rules.yaml 2>/dev/null)" ] && {
         cat "$CRASHDIR"/yamls/rules.yaml |
             sed '/#.*/d' |
@@ -399,7 +400,7 @@ generate_custom_rules_json() {
     }
 }
 
-normalize_and_finalize_jsons() {
+normalize_and_finalize_jsons() { #修饰文件
     #清理route.json中的process_name规则以及"auto_detect_interface"
     sed -i '/"process_name": \[/,/],$/d' "$TMPDIR"/jsons/route.json
     sed -i '/"process_name": "[^"]*",/d' "$TMPDIR"/jsons/route.json
@@ -421,7 +422,7 @@ normalize_and_finalize_jsons() {
     done
 }
 
-link_custom_jsons() {
+link_custom_jsons() { #合并文件
     #加载自定义配置文件
     mkdir -p "$TMPDIR"/jsons_base
     #以下为覆盖脚本的自定义文件
@@ -439,8 +440,7 @@ link_custom_jsons() {
     done
 }
 
-validate_and_restore_custom_jsons() {
-    #测试自定义配置文件
+test_json() { #测试自定义配置文件
     if ! error=$("$TMPDIR"/CrashCore check -D "$BINDIR" -C "$TMPDIR"/jsons 2>&1); then
         echo $error
         error_file=$(echo $error | grep -Eo 'cust.*\.json' | sed 's/cust_//g')
@@ -453,17 +453,19 @@ validate_and_restore_custom_jsons() {
     fi
 }
 
-modify_json() {
+modify_json() { #入口
     extract_base_jsons
     generate_basic_jsons
-    prepare_dns_config
-    generate_dns_related_jsons
-    generate_route_and_inbounds_jsons
-    generate_outbounds_and_experimental_jsons
+    gen_dns
+    gen_outbounds
+	gen_certificate
+	gen_inbounds
+    add_outbounds
+	gen_experimental
     generate_custom_rules_json
     normalize_and_finalize_jsons
     link_custom_jsons
-    validate_and_restore_custom_jsons
+    test_json
     #清理缓存
     rm -rf "$TMPDIR"/*.json
     rm -rf "$TMPDIR"/jsons_base
