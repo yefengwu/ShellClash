@@ -1,36 +1,45 @@
-
 getlanip() { #获取局域网host地址
     i=1
     while [ "$i" -le "20" ]; do
-        host_ipv4=$(ip route show scope link | grep -Ev 'wan|utun|iot|peer|docker|podman|virbr|vnet|ovs|vmbr|veth|vmnic|vboxnet|lxcbr|xenbr|vEthernet' | awk '{print $1}') #ipv4局域网网段
-        [ "$ipv6_redir" = "ON" ] && host_ipv6=$(ip -6 route show default | awk '{print $3}' | tr '\n' ' ' | sed 's/ $//') #ipv6公网地址段
+        #ipv4局域网网段
+        host_ipv4=$(ip route show scope link | grep -Ev 'default|wan|utun|iot|peer|docker|podman|virbr|vnet|ovs|vmbr|veth|vmnic|vboxnet|lxcbr|xenbr|vEthernet|wgs|multicast|anycast' | awk '{print $1}')
+        #ipv6局域网网段 - 从IPv4已识别的LAN接口获取全局IPv6前缀
+        [ "$ipv6_redir" = "ON" ] && {
+            lan_ifaces=$(ip route show scope link | grep -Ev 'ppp|wan|utun|iot|peer|docker|podman|virbr|vnet|ovs|vmbr|veth|vmnic|vboxnet|lxcbr|xenbr|vEthernet|wgs|multicast|anycast' | awk '{for(i=1;i<=NF;i++) if($i=="dev") {print $(i+1); break}}' | grep -v '^lo$' | sort -u)
+            host_ipv6=$(
+                for iface in $lan_ifaces; do
+                    ip -6 addr show dev $iface 2>/dev/null
+                done | grep 'scope global' | awk '{print $2}' | tr '\n' ' ' | sed 's/ $//'
+            )
+			[ -z "$host_ipv6" ] && host_ipv6=$(ip -6 route show | grep -Ev 'default|unreachable|fe80::/|wan|ppp|utun|iot|peer|docker|podman|virbr|vnet|ovs|vmbr|veth|vmnic|vboxnet|lxcbr|xenbr|vEthernet|wgs|multicast|anycast' | awk '{print $1}' | tr '\n' ' ' | sed 's/ $//')
+        }
         [ -f "$TMPDIR"/ShellCrash.log ] && break
         [ -n "$host_ipv4" -a "$ipv6_redir" != "ON" ] && break
         [ -n "$host_ipv4" -a -n "$host_ipv6" ] && break
         sleep 1 && i=$((i + 1))
     done
-	#Tailscale
-	[ "$ts_service" = ON ] && {
-		ts_host_ipv4=' 100.64.0.0/10'
-		ts_host_ipv6=' fd7a:115c:a1e0::/48'
-	}
-	#Wireguard
-	[ "$wg_service" = ON ] && {
-		. "$CRASHDIR"/configs/gateway.cfg
-		wg_host_ipv4=' $wg_ipv4'
-		[ -n "$wg_ipv6" ] && wg_host_ipv6=' $wg_ipv6'
-	}
+    #Tailscale
+    [ "$ts_service" = ON ] && {
+        ts_host_ipv4=' 100.64.0.0/10'
+        ts_host_ipv6=' fd7a:115c:a1e0::/48'
+    }
+    #Wireguard
+    [ "$wg_service" = ON ] && {
+        . "$CRASHDIR"/configs/gateway.cfg
+        wg_host_ipv4=' $wg_ipv4'
+        [ -n "$wg_ipv6" ] && wg_host_ipv6=' $wg_ipv6'
+    }
     #添加自定义ipv4局域网网段
-    if [ "$replace_default_host_ipv4" == "ON" ]; then
+    if [ "$replace_default_host_ipv4" = "ON" ]; then
         host_ipv4="$cust_host_ipv4"
     else
-        host_ipv4=$(echo "$host_ipv4 $cust_host_ipv4$ts_host_ipv4$wg_host_ipv4"| tr '\n' ' ' | sed 's/ $//')
+        host_ipv4=$(echo "$host_ipv4 $cust_host_ipv4$ts_host_ipv4$wg_host_ipv4" | tr '\n' ' ' | sed 's/ $//')
     fi
     #缺省配置
     [ -z "$host_ipv4" ] && {
-		host_ipv4='192.168.0.0/16 10.0.0.0/12 172.16.0.0/12'
-		logger "无法获取本地LAN-IPV4网段，请前往流量过滤设置界面设置自定义网段！" 31
-	}
+        host_ipv4='192.168.0.0/16 10.0.0.0/12 172.16.0.0/12'
+        logger "无法获取本地LAN-IPV4网段，请前往流量过滤设置界面设置自定义网段！" 31
+    }
     host_ipv6="fe80::/10 fd00::/8 $host_ipv6$ts_host_ipv6$wg_host_ipv6"
     #获取本机出口IP地址
     local_ipv4=$(ip route 2>&1 | grep -Ev 'utun|iot|docker|linkdown' | grep -Eo 'src.*' | grep -Eo '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' | sort -u)

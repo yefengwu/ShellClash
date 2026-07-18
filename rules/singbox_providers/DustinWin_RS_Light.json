@@ -2,7 +2,8 @@
 {
   "outbounds": [
     { "tag": "🚀 节点选择", "type": "selector", "outbounds": [ "♻️ 自动选择", "👉 手动选择", "🇭🇰 香港节点", "🇹🇼 台湾节点", "🇯🇵 日本节点", "🇸🇬 新加坡节点", "🇺🇸 美国节点", "👑 高级节点", "📉 省流节点", "🎯 本地直连", {providers_tags} ] },
-    { "tag": "🧱 代理域名", "type": "selector", "outbounds": [ "🚀 节点选择", "🎯 本地直连" ] },
+    { "tag": "🀄️ 国内 IP", "type": "selector", "outbounds": [ "🎯 本地直连", "🚀 节点选择" ] },
+    { "tag": "🌎 国外域名", "type": "selector", "outbounds": [ "🚀 节点选择", "🎯 本地直连" ] },
     { "tag": "📲 电报消息", "type": "selector", "outbounds": [ "🚀 节点选择", "🇭🇰 香港节点", "🇹🇼 台湾节点", "🇯🇵 日本节点", "🇸🇬 新加坡节点", "🇺🇸 美国节点", "👑 高级节点", "📉 省流节点", {providers_tags} ] },
     { "tag": "🐟 漏网之鱼", "type": "selector", "outbounds": [ "🚀 节点选择", "🇭🇰 香港节点", "🇹🇼 台湾节点", "🇯🇵 日本节点", "🇸🇬 新加坡节点", "🇺🇸 美国节点", "👑 高级节点", "📉 省流节点", {providers_tags}, "🎯 本地直连" ] },
     { "tag": "🎯 本地直连", "type": "direct" },
@@ -20,24 +21,15 @@
   "route": {
     "rules": [
       { "rule_set": [ "private" ], "outbound": "🎯 本地直连" },
-      { "rule_set": [ "tld-proxy" ], "outbound": "🧱 代理域名" },
-      { "rule_set": [ "proxy" ], "outbound": "🧱 代理域名" },
-      { "rule_set": [ "cn" ], "outbound": "🎯 本地直连" },
-      { "rule_set": [ "privateip" ], "outbound": "🎯 本地直连" },
+      { "rule_set": [ "tld-proxy" ], "outbound": "🌎 国外域名" },
+      { "rule_set": [ "proxy" ], "outbound": "🌎 国外域名" },
+      { "ip_is_private": true, "outbound": "🎯 本地直连" },
       { "rule_set": [ "telegramip" ], "outbound": "📲 电报消息" },
 
       { "action": "resolve", "server": "dns_proxy", "strategy": "prefer_ipv4", "match_only": true},
-      { "rule_set": [ "cnip" ], "outbound": "🎯 本地直连" }
+      { "rule_set": [ "cnip" ], "outbound": "🀄️ 国内 IP" }
     ],
     "rule_set": [
-      {
-        "tag": "cn",
-        "type": "remote",
-        "format": "binary",
-        "path": "./ruleset/cn.srs",
-        "url": "https://testingcf.jsdelivr.net/gh/DustinWin/ruleset_geodata@sing-box-ruleset/cn.srs",
-        "download_detour": "DIRECT"
-      },
       {
         "tag": "private",
         "type": "remote",
@@ -63,11 +55,11 @@
         "download_detour": "DIRECT"
       },
       {
-        "tag": "privateip",
+        "tag": "telegramip",
         "type": "remote",
         "format": "binary",
-        "path": "./ruleset/privateip.srs",
-        "url": "https://testingcf.jsdelivr.net/gh/DustinWin/ruleset_geodata@sing-box-ruleset/privateip.srs",
+        "path": "./ruleset/telegramip.srs",
+        "url": "https://testingcf.jsdelivr.net/gh/DustinWin/ruleset_geodata@sing-box-ruleset/telegramip.srs",
         "download_detour": "DIRECT"
       },
       {
@@ -76,14 +68,6 @@
         "format": "binary",
         "path": "./ruleset/cnip.srs",
         "url": "https://testingcf.jsdelivr.net/gh/DustinWin/ruleset_geodata@sing-box-ruleset/cnip.srs",
-        "download_detour": "DIRECT"
-      },
-      {
-        "tag": "telegramip",
-        "type": "remote",
-        "format": "binary",
-        "path": "./ruleset/telegramip.srs",
-        "url": "https://testingcf.jsdelivr.net/gh/DustinWin/ruleset_geodata@sing-box-ruleset/telegramip.srs",
         "download_detour": "DIRECT"
       }
     ],
